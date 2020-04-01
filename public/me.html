@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="./loader.css" />
+    <link rel="icon" href="./logo.png" />
+    <meta
+      name="description"
+      content="An interactive journey into your music taste, powered by Spotify."
+    />
+    <meta property="og:title" content="Eclectix - Your music taste" />
+    <meta property="og:url" content="https://eclectix.herokuapp.com" />
+    <meta
+      property="og:description"
+      content="An interactive journey into your music taste, powered by Spotify."
+    />
+    <meta
+      property="og:image"
+      content="https://boristane-projects-data.s3.eu-west-2.amazonaws.com/eclectix/background.jpg"
+    />
+    <title>Eclectix</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div style="display: none" controls>
+      <audio id="player" controls crossorigin="anonymous" loop></audio>
+    </div>
+    <div class="loader"></div>
+    <div id="visual-player">
+      <div id="visual-player-photo-container">
+        <img src="white.svg" alt="song-cover" id="visual-player-photo" width="50px" />
+        <div id="visuaisation-bars-container">
+          <div class="visualasation-bar"></div>
+          <div class="visualasation-bar"></div>
+          <div class="visualasation-bar"></div>
+        </div>
+      </div>
+      <div>
+        <div id="visual-player-title" class="visual-player-text">-</div>
+        <div id="visual-player-artist" class="visual-player-text">-</div>
+      </div>
+    </div>
+    <section id="section0">
+      <div class="intro-container">
+        <div class="intro-internal-container">
+          <p>Hi <span id="user"></span>, which time period do you want us to analyse?</p>
+          <div style="text-align: center; margin-top: 5vh">
+            <button class="term-buttons styled-buttons" id="all-time-button">ALL TIME</button>
+            <button class="term-buttons styled-buttons" id="six-months-button">6 MONTHS</button>
+            <button class="term-buttons styled-buttons" id="one-month-button">1 MONTH</button>
+          </div>
+        </div>
+        <a class="scroll" href="#section1"><span></span>Scroll</a>
+        <div id="inner-loader" style="margin-top: 5%"></div>
+        <div id="loading-text"></div>
+        <div id="instructions">
+          <div>
+            <img
+              width="50px"
+              src="https://boristane-projects-data.s3.eu-west-2.amazonaws.com/eclectix/cursor.svg"
+              alt="cursor"
+            />
+          </div>
+          <div>
+            The experience is interactive, feel free to click on artists, songs and music genres to
+            explore !
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="section1">
+      <div class="top-artists-list-container"></div>
+      <div class="mainstream-meter-container"></div>
+      <a
+        class="scroll"
+        href="#section2"
+        style="-webkit-transform: translate(0, -90%);
+      transform: translate(0, -90%);"
+        ><span></span>Scroll</a
+      >
+    </section>
+    <section id="section2">
+      <div class="network-container"></div>
+      <a class="scroll" href="#section3"><span></span>Scroll</a>
+    </section>
+    <section id="section3">
+      <div class="genres-container"></div>
+      <a class="scroll" href="#section4"><span></span>Scroll</a>
+    </section>
+    <section id="section4">
+      <div class="ages-container"></div>
+      <a class="scroll" href="#section5"><span></span>Scroll</a>
+    </section>
+    <section id="section5">
+      <div class="report-container">
+        <div>
+          <div class="report-internal-container">
+            <div class="left-panel">
+              <div>
+                <img src="placeholder.png" alt="me" id="user-photo" />
+              </div>
+              <div id="username"></div>
+              <div id="score" class="bold"></div>
+            </div>
+            <div class="right-panel">
+              <h1>Your Eclectix Report - <span id="period"></span></h1>
+              <div>
+                <p>
+                  <span id="name"></span>, your Eclectix Score is
+                  <span id="eclectix-score" class="bold"></span>, ranking you in the
+                  <span id="eclectix-top"></span> <span id="eclectix-percentage"></span>% of our
+                  users.
+                </p>
+                <p>
+                  Based on your top 20 artists, your music taste is
+                  <span id="music-taste-category" class="bold"></span> (<span id="popularity"></span
+                  >% popular).
+                </p>
+                <p>
+                  <span id="network-center" class="italic"></span> is the center of your top 50
+                  artists network, with <span id="max-connections"></span> connections.
+                  <span id="lone-nodes" class="italic"></span> on the edge of your musical
+                  landscape, with no connections. Artists from your top 50 are in average connected
+                  to <span id="average-connections"></span> other artists in your top 50.
+                </p>
+                <p>
+                  Your favourite music genre based on your top 50 artists is
+                  <span id="favourite-genre"></span>, followed by
+                  <span id="second-favourite-genre"></span> and
+                  <span id="third-favourite-genre"></span>. In total, your top 50 artists perform
+                  <span id="total-number-genres"></span> distinct music genres.
+                </p>
+                <p>
+                  Your top 50 tracks are in average <span id="average-track-age"></span> years old,
+                  with <span id="oldest-track-title" class="italic"></span> by
+                  <span id="oldest-track-artist" class="italic"></span> being the oldest and
+                  <span id="newest-track-title" class="italic"></span> by
+                  <span id="newest-track-artist" class="italic"></span> the most recent.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: center; margin-top: 5vh">
+            <div class="styled-buttons" id="generate-playlist">
+              <div style="display: inline">
+                GENERATE PLAYLIST
+              </div>
+              <div id="generate-playlist-loader"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a class="scroll" href="#section0"><span></span>Scroll</a>
+    </section>
+    <script src="index.ts"></script>
+  </body>
+</html>

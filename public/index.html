@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="icon" href="./logo.png" />
+    <link rel="stylesheet" href="./home.css" />
+    <title>Eclectix</title>
+    <meta
+      name="description"
+      content="An interactive journey into your music taste, powered by Spotify."
+    />
+    <meta property="og:title" content="Eclectix - Your music taste" />
+    <meta property="og:url" content="https://eclectix.herokuapp.com" />
+    <meta
+      property="og:description"
+      content="An interactive journey into your music taste, powered by Spotify."
+    />
+    <meta
+      property="og:image"
+      content="https://boristane-projects-data.s3.eu-west-2.amazonaws.com/eclectix/background.jpg"
+    />
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="main-container">
+      <div class="left">
+        <img src="./logo.png" alt="logo" id="logo" />
+        <h1 style="margin-bottom: 40px">
+          Eclectix
+        </h1>
+        <p>An interactive journey into your music taste, powered by Spotify.</p>
+        <p class="info">A project by <a class="me" href="http://boristane.com">Boris Tane</a>.</p>
+        <div class="mobile">
+          <p class="info" style="font-size: 1em">
+            Eclectix was designed for a desktop/laptop experience.
+            <a
+              class="me"
+              href="mailto:?subject=Note to Self - Try out Eclectix&body=https://eclectix.herokuapp.com/"
+              >Email yourself the link</a
+            >, try it on the big screen and explore your music taste! Or just copy the link and do
+            with it what you will.
+          </p>
+          <p>
+            <input class="mobile-input" type="text" value="https://eclectix.herokuapp.com/" />
+          </p>
+        </div>
+        <div class="button-container">
+          <a id="primaryButton" href="/login">LOG IN WITH SPOTIFY</a>
+          <p class="info" style="position: absolute; bottom: 10px; left: 80px;">
+            * We do not store any personal data.
+          </p>
+        </div>
+      </div>
+      <div class="right"></div>
+    </div>
+  </body>
+</html>

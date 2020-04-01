@@ -1,0 +1,128 @@
+@import url("https://fonts.googleapis.com/css?family=Dosis&display=swap");
+
+body {
+  margin: 0;
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+#logo {
+  width: 30px;
+  border-radius: 50%;
+  position: absolute;
+  top: 185px;
+  left: 60px;
+}
+
+.left {
+  font-family: "Dosis", sans-serif;
+  font-size: 1.2em;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 100px;
+  padding-top: 150px;
+}
+
+.right {
+  height: 100vh;
+  background-image: url("./background.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.button-container {
+  margin-top: 5%;
+}
+
+.info {
+  font-size: 0.8em;
+  color: grey;
+  margin-top: 10px;
+}
+
+#primaryButton {
+  font-family: "Dosis", sans-serif;
+  color: white;
+  font-weight: bold;
+  background-color: #1db91d;
+  border-radius: 100px;
+  width: 238px;
+  padding: 5px;
+  font-size: 0.9em;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.2s ease-out;
+}
+
+#primaryButton:hover {
+  background-color: #fa6b52;
+}
+
+.me {
+  color: black;
+}
+.me:hover {
+  color: rgb(250, 90, 95);
+}
+a:link {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a:active {
+  text-decoration: none;
+}
+
+.mobile {
+  display: none;
+}
+
+@media only screen and (max-width: 1200px) {
+  .main-container {
+    display: block;
+  }
+
+  .right {
+    display: none;
+  }
+
+  .button-container {
+    display: none;
+  }
+
+  .mobile {
+    display: block;
+    margin-top: 50px;
+  }
+
+  .mobile-input {
+    border: 1px solid #fa6b52;
+    border-radius: 2px;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 300px;
+    padding: 10px;
+  }
+
+  .left {
+    padding: 20px;
+    padding-left: 70px;
+  }
+
+  #logo {
+    top: 55px;
+    left: 30px;
+  }
+}
