@@ -1,18 +1,13 @@
 import axios from "axios";
 import "babel-polyfill";
 import ArtistList from "../src/front/artists-list";
-import {
-  IMargin,
-  IArtistListDataItem,
-  IArtistsListProps,
-  ISpotifyTrack,
-  IServerResponse
-} from "../src/types";
 import MainstreamMeter from "../src/front/mainstream-meter";
 import Network from "../src/front/network";
 import GenreChart from "../src/front/genres";
 import AgesChart from "../src/front/age";
 import moment from "moment";
+import { IMargin, IArtistListDataItem, IArtistsListProps, IServerResponse } from "../src/typings/front";
+import { ISpotifyTrack } from "../src/typings/spotify";
 
 const margin: IMargin = {
   top: 10,
