@@ -21,11 +21,11 @@ async function getToken() {
 
 let token: string;
 let user;
-let id: string;
+let roomId: string;
 
 document.getElementById("skip").addEventListener("click", async (e: MouseEvent) => {
   try {
-    await axios.post(`/spotify/skip/?token=${token}`);
+    await axios.post(`/room/skip/${roomId}/?userId=${user.id}`);
   } catch (error) {
     console.log("There was problem skipping the track", error);
   }
@@ -61,11 +61,10 @@ async function main() {
     return window.location.replace("/");
   }
 
-  id = getCookies()["rooom_id"];
-
-  if(id) {
+  roomId = getCookies()["rooom_id"];
+  if(roomId && roomId !== "null") {
     try {
-      await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}`);
+      await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}`);
     } catch (error) {
       console.log("There was an error when joining a rooom", error);
     }
@@ -81,6 +80,7 @@ async function main() {
 
 function getCookies(): Record<string, string> {
   const pairs = document.cookie.split(";");
+  console.log(pairs);
   const cookies = {};
   for (let i=0; i<pairs.length; i++){
     const pair = pairs[i].split("=");

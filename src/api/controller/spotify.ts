@@ -100,16 +100,6 @@ export async function refreshToken(req: Request, res: Response) {
   }
 }
 
-export async function skipTrack(req: Request, res: Response, next: NextFunction) {
-  const { token } = req.query;
-  try {
-    await skipToNextTrack(token);
-  } catch (error) {
-    res.status(500).json({ error: "error" });
-    logger.error("There was an error skipping to the next track", { error });
-  }
-}
-
 export async function getUser(req: Request, res: Response) {
   const { token } = req.query;
   try {
