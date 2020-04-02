@@ -35,7 +35,16 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
   try {
     await axios.post(`/spotify/play/?token=${token}`);
   } catch (error) {
-    console.log("There was problem skipping the track", error);
+    console.log("There was problem playing the track", error);
+  }
+});
+
+document.getElementById("create").addEventListener("click", async (e: MouseEvent) => {
+  try {
+    await axios.post(`/room/create/?token=${token}&userId=${user.id}`);
+    window.location.reload();
+  } catch (error) {
+    console.log("There was problem creating the room", error);
   }
 });
 
@@ -52,13 +61,18 @@ async function main() {
     return window.location.replace("/");
   }
 
-  try {
-    id = getCookies()["rooom_id"];
-    console.log(id);
-    await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}`);
-  } catch (error) {
-    console.log("There was an error when joining a rooom", error);
+  id = getCookies()["rooom_id"];
+
+  if(id) {
+    try {
+      await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}`);
+    } catch (error) {
+      console.log("There was an error when joining a rooom", error);
+    }
+  } else {
+    document.getElementById("create").style.display = "block";
   }
+
 
   const username = user.display_name ? user.display_name.split(" ")[0] : "there";
   document.getElementById("user").textContent = username;

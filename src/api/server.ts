@@ -4,11 +4,8 @@ import roomRouter from "./router/room";
 import cookieParser from "cookie-parser";
 import express, { Response, Request, NextFunction } from "express";
 import path from "path";
-import mongoose from "mongoose";
 import logger from "logger";
-
-const mongoDBURI = `mongodb+srv://eclectic:${process.env.MONGO_ATLAS_PASSWORD}@eclecticdata-zt9sk.mongodb.net/${process.env.MONGO_ATLAS_DATABASE}?retryWrites=true&w=majority`;
-mongoose.connect(mongoDBURI, { useNewUrlParser: true });
+import { connectToDb } from "./helpers/database";
 
 const app = express()
   .use(express.static(__dirname + "/../../dist"))
@@ -61,6 +58,8 @@ function responseLogger(
   }
   next();
 }
+
+connectToDb();
 
 app.use(requestLogger);
 app.use("/spotify", spotifyRouter);

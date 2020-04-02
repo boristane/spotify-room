@@ -3,7 +3,8 @@ import { Request, Response, NextFunction } from "express";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import {createPlaylist, addTracksToPlaylist, getUserProfile, getTopArtists, getTopTracks, skipToNextTrack} from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, getTopArtists, getTopTracks, skipToNextTrack } from "../services/spotify";
+import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
 
@@ -24,14 +25,14 @@ export function login(req: Request, res: Response) {
   const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
-      qs.stringify({
-        response_type: "code",
-        client_id: clientId,
-        scope: scope,
-        redirect_uri: redirectUri,
-        state: state,
-        show_dialog: dialog,
-      })
+    qs.stringify({
+      response_type: "code",
+      client_id: clientId,
+      scope: scope,
+      redirect_uri: redirectUri,
+      state: state,
+      show_dialog: dialog,
+    })
   );
 }
 
@@ -105,7 +106,7 @@ export async function skipTrack(req: Request, res: Response, next: NextFunction)
     await skipToNextTrack(token);
   } catch (error) {
     res.status(500).json({ error: "error" });
-    logger.error("There was an error skipping to the next track", {error});
+    logger.error("There was an error skipping to the next track", { error });
   }
 }
 
@@ -113,6 +114,7 @@ export async function getUser(req: Request, res: Response) {
   const { token } = req.query;
   try {
     const user = await getUserProfile(token);
+    await saveUser(user);
     res.status(200).json(user);
   } catch (err) {
     console.log(err);
