@@ -1,13 +1,11 @@
 
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import {createPlaylist, addTracksToPlaylist, getUserProfile, getTopArtists, getTopTracks} from "../services/spotify";
+import {createPlaylist, addTracksToPlaylist, getUserProfile, getTopArtists, getTopTracks, skipToNextTrack} from "../services/spotify";
 import qs from "qs";
-import {clusterGenres, findConnections, getExplicit, clusterTracksAges, getScore, getPeriod} from "../helpers/spotify"
-import { getScorePercentage, saveToDB } from "./users";
-import { IServerResponse } from "../../typings/front";
+import logger from "logger";
 
 require("dotenv").config();
 
@@ -21,7 +19,7 @@ const stateKey = "spotify_auth_state";
 export function login(req: Request, res: Response) {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
-  var scope = "user-read-private user-read-email user-top-read playlist-modify-public";
+  const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
       qs.stringify({
@@ -30,7 +28,7 @@ export function login(req: Request, res: Response) {
         scope: scope,
         redirect_uri: redirectUri,
         state: state,
-        show_dialog: dialog
+        show_dialog: true
       })
   );
 }
@@ -64,6 +62,7 @@ export async function getToken(req: Request, res: Response) {
       dataString,
       axiosConfig
     );
+    logger.info("Token", response.data);
     res.status(200).json(response.data);
   } catch {
     console.log({ error: "invalid_token" });
@@ -98,37 +97,13 @@ export async function refreshToken(req: Request, res: Response) {
   }
 }
 
-export async function doIt(req: Request, res: Response) {
-  const { token, term } = req.query;
+export async function skipTrack(req: Request, res: Response, next: NextFunction) {
+  const { token } = req.query;
   try {
-    const user = await getUserProfile(token);
-    const country = user.country;
-    const topArtists = await getTopArtists(token, country, term);
-    const genreClusters = clusterGenres(topArtists);
-    const connections = await findConnections(token, topArtists);
-    const topTracks = (await getTopTracks(token, term)).items;
-    const explicit = getExplicit(topTracks);
-    const tracksAgesClusters = clusterTracksAges(topTracks);
-    const score = getScore(connections, genreClusters, tracksAgesClusters, topArtists);
-    saveToDB(user.product, user.birthdate, user.country, user.followers.total, score, term);
-    const eclectixPercentage = await getScorePercentage(score);
-
-    const response: IServerResponse = {
-      genreClusters,
-      topArtists,
-      connections,
-      topTracks,
-      explicit,
-      user,
-      tracksAgesClusters,
-      period: getPeriod(term),
-      score,
-      eclectixPercentage
-    };
-    res.status(200).json(response);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+    await skipToNextTrack(token);
+  } catch (error) {
+    res.status(500).json({ error: "error" });
+    logger.error("There was an error skipping to the next track", {error});
   }
 }
 

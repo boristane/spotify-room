@@ -8,19 +8,28 @@ async function getToken() {
   const refreshToken = localStorage.getItem("refreshToken");
   if (!refreshToken) {
     const { access_token: token, refresh_token: refreshToken } = (await axios.get(
-      `/get-token/?code=${code}&state=${state}`
+      `/spotify/get-token/?code=${code}&state=${state}`
     )).data;
     localStorage.setItem("refreshToken", refreshToken);
     return token;
   }
   const { access_token: token } = (await axios.get(
-    `/refresh-token/?refresh_token=${refreshToken}`
+    `/spotify/refresh-token/?refresh_token=${refreshToken}`
   )).data;
   return token;
 }
 
 let token: string;
 let user;
+
+document.getElementById("skip").addEventListener("click", async (e: MouseEvent) => {
+  try {
+    (await axios.post(`/spotify/skip/?token=${token}`));
+  } catch (error) {
+    console.log("There was problem skipping the track", error);
+  }
+});
+
 async function main() {
   try {
     token = await getToken();
@@ -29,12 +38,13 @@ async function main() {
   }
 
   try {
-    user = (await axios.get(`/me/?token=${token}`)).data;
+    user = (await axios.get(`/spotify/me/?token=${token}`)).data;
   } catch {
     return window.location.replace("/");
   }
   const username = user.display_name ? user.display_name.split(" ")[0] : "there";
   document.getElementById("user").textContent = username;
+
 }
 
 main();

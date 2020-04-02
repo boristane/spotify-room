@@ -1,18 +1,51 @@
 import axios from "axios";
-import {promisify} from "util";
-import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack } from "../../typings/spotify";
+import { promisify } from "util";
+import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState } from "../../typings/spotify";
 import { IArtistListDataItem } from "../../typings/front";
 
 const sleep = promisify(setTimeout);
 const axiosInstance = axios.create({ baseURL: "https://api.spotify.com/v1" });
 
 
+export async function getCurrentlyPalyingTrack(token: string) {
+  const response = await axiosInstance.get("/me/player/currently-playing", {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function skipToNextTrack(token: string) {
+  const response = await axios.post("https://api.spotify.com/v1/me/player/next", {}, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function setRepeatMode(token: string, state: ISpotifyRepeatModeState) {
+  const response = await axiosInstance.put(`/me/player/repeat?state=${state}`, {}, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function seek(token: string, time: number) {
+  const response = await axiosInstance.put(`/me/player/seek?position_ms=${time}`, {}, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+function getHeader(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+  }
+}
+
 export async function getTopArtists(
   token: string,
   country: string,
   term: string
 ): Promise<IArtistListDataItem[]> {
-  await sleep(500);
   const response = await axiosInstance.get(`/me/top/artists/?time_range=${term}&limit=50`, {
     headers: {
       Authorization: `Bearer ${token}`
@@ -46,7 +79,6 @@ async function getArtistTopTracks(
   artistID: string,
   country: string
 ): Promise<{ tracks: ISpotifyTrack[] }> {
-  await sleep(100);
   const response = await axiosInstance.get(`/artists/${artistID}/top-tracks?country=${country}`, {
     headers: {
       Authorization: `Bearer ${token}`
@@ -68,7 +100,6 @@ export async function getConnections(
   token: string,
   artist: IArtistListDataItem
 ): Promise<{ artist: IArtistListDataItem; connections: ISpotifyArtist[] }> {
-  await sleep(100);
   const response = await axiosInstance.get(`/artists/${artist.id}/related-artists`, {
     headers: {
       Authorization: `Bearer ${token}`
@@ -95,7 +126,6 @@ export async function createPlaylist(token: string, userId: string): Promise<str
 }
 
 export async function addTracksToPlaylist(token: string, playlistId: string, trackUris: string[]) {
-  await sleep(100);
   const response = await axiosInstance.post(
     `/playlists/${playlistId}/tracks`,
     {
@@ -111,7 +141,6 @@ export async function addTracksToPlaylist(token: string, playlistId: string, tra
 }
 
 export async function getUserProfile(token: string): Promise<ISpotifyUser> {
-  await sleep(1000);
   const response = await axiosInstance.get(`/me`, {
     headers: {
       Authorization: `Bearer ${token}`
