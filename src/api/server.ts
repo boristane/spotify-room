@@ -1,4 +1,5 @@
 import spotifyRouter from "./router/spotify";
+import roomRouter from "./router/room";
 
 import cookieParser from "cookie-parser";
 import express, { Response, Request, NextFunction } from "express";
@@ -46,8 +47,25 @@ function requestLogger(
   next();
 }
 
+function responseLogger(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  if (!suppressLoggingPaths.includes(req.url)) {
+    logger.info("RESPONSE", {
+      statusCode: res.statusCode,
+      locals: res.locals,
+      url: req.url,
+    });
+  }
+  next();
+}
+
 app.use(requestLogger);
 app.use("/spotify", spotifyRouter);
+app.use("/room", roomRouter);
+app.use(responseLogger);
 app.get("/you", (req: Request, res: Response) => {
   res.status(200).sendFile(path.join(__dirname + "/../../dist/me.html"));
 });

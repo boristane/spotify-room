@@ -21,6 +21,17 @@
       property="og:image"
       content="https://boristane-projects-data.s3.eu-west-2.amazonaws.com/eclectix/background.jpg"
     />
+    <script>function createDynamicURL()
+      {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        return `/spotify/login/?id=${id}`;
+      }
+      
+      function RedirectURL()
+      {
+          window.location = createDynamicURL();
+      }</script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -47,7 +58,7 @@
           </p>
         </div>
         <div class="button-container">
-          <a id="primaryButton" href="/spotify/login">LOG IN WITH SPOTIFY</a>
+          <a id="primaryButton" href="#" onclick="RedirectURL();return false;">LOG IN WITH SPOTIFY</a>
           <p class="info" style="position: absolute; bottom: 10px; left: 80px;">
             * We do not store any personal data.
           </p>

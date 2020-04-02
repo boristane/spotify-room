@@ -21,10 +21,19 @@ async function getToken() {
 
 let token: string;
 let user;
+let id: string;
 
 document.getElementById("skip").addEventListener("click", async (e: MouseEvent) => {
   try {
-    (await axios.post(`/spotify/skip/?token=${token}`));
+    await axios.post(`/spotify/skip/?token=${token}`);
+  } catch (error) {
+    console.log("There was problem skipping the track", error);
+  }
+});
+
+document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
+  try {
+    await axios.post(`/spotify/play/?token=${token}`);
   } catch (error) {
     console.log("There was problem skipping the track", error);
   }
@@ -42,9 +51,28 @@ async function main() {
   } catch {
     return window.location.replace("/");
   }
+
+  try {
+    id = getCookies()["rooom_id"];
+    console.log(id);
+    await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}`);
+  } catch (error) {
+    console.log("There was an error when joining a rooom", error);
+  }
+
   const username = user.display_name ? user.display_name.split(" ")[0] : "there";
   document.getElementById("user").textContent = username;
 
+}
+
+function getCookies(): Record<string, string> {
+  const pairs = document.cookie.split(";");
+  const cookies = {};
+  for (let i=0; i<pairs.length; i++){
+    const pair = pairs[i].split("=");
+    cookies[(pair[0]+'').trim()] = unescape(pair.slice(1).join('='));
+  }
+  return cookies;
 }
 
 main();
