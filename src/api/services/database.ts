@@ -38,7 +38,7 @@ export async function getRoom(id: string): Promise<IRoom> {
 export async function spawnRoom(master: IUser, token: string): Promise<IRoom> {
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
-    master: {id: master.id, token},
+    master: { id: master.id, token },
     members: [],
     songs: [],
   });
@@ -46,19 +46,54 @@ export async function spawnRoom(master: IUser, token: string): Promise<IRoom> {
   return await room.save();
 }
 
-export async function addRoomMember(room: IRoom, user: IUser, token: string) {
+export async function addRoomMember(room: IRoom, user: IUser, token: string): Promise<boolean> {
+  let isNewUser = false;
   const { members, master } = room;
-  if(master.id === user.id) {
-    if(master.token === token) return;
+  if (master.id === user.id) {
+    if (master.token === token) return;
     master.token = token;
-    return await room.save();
+    await room.save();
+    return isNewUser;
   }
   const member = members.find((m) => m.id === user.id);
-  if(member) {
-    if(member.token === token) return;
+  if (member) {
+    if (member.token === token) return;
     member.token = token;
     await room.save();
+    return isNewUser;
   }
-  members.push({id: user.id, token});
+  isNewUser = true;
+  members.push({ id: user.id, token });
   await room.save();
+  return isNewUser;
+}
+
+export async function setRoomCurrentTrack(room: IRoom, uri: string) {
+  const { tracks } = room;
+  const trackIndex = tracks.findIndex((t) => t.uri === uri);
+  if (trackIndex === -1) {
+    tracks.forEach((t) => { t.completed = true; t.current = false; });
+    tracks.push({
+      uri,
+      completed: false,
+      current: true,
+      approved: true,
+    });
+    return await room.save();
+  }
+  tracks.forEach((t, i) => {
+    if (i < trackIndex) {
+      t.completed = true;
+      t.current = false;
+      return;
+    }
+    if(i === trackIndex) {
+      t.completed = false;
+      t.current = true;
+      return;
+    }
+    t.completed = false;
+    t.current = false;
+  });
+  return await room.save();
 }

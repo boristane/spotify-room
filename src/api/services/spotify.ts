@@ -1,13 +1,13 @@
 import axios from "axios";
 import { promisify } from "util";
-import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState } from "../../typings/spotify";
+import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState, ICurrentTrackResponse } from "../../typings/spotify";
 import { IArtistListDataItem } from "../../typings/front";
 
 const sleep = promisify(setTimeout);
 const axiosInstance = axios.create({ baseURL: "https://api.spotify.com/v1" });
 
 
-export async function getCurrentlyPalyingTrack(token: string) {
+export async function getCurrentlyPalyingTrack(token: string): Promise<ICurrentTrackResponse> {
   const response = await axiosInstance.get("/me/player/currently-playing", {
     headers: getHeader(token),
   });
@@ -15,7 +15,14 @@ export async function getCurrentlyPalyingTrack(token: string) {
 }
 
 export async function skipToNextTrack(token: string) {
-  const response = await axios.post("https://api.spotify.com/v1/me/player/next", {}, {
+  const response = await axiosInstance.post("/me/player/next", {}, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function skipToPreviousTrack(token: string) {
+  const response = await axiosInstance.post("/me/player/previous", {}, {
     headers: getHeader(token),
   });
   return response.data;
@@ -23,6 +30,21 @@ export async function skipToNextTrack(token: string) {
 
 export async function setRepeatMode(token: string, state: ISpotifyRepeatModeState) {
   const response = await axiosInstance.put(`/me/player/repeat?state=${state}`, {}, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function play(token: string, uri: string, progression: number) {
+  const uris = [uri];
+  const response = await axiosInstance.put(`/me/player/play`, { uris, "position_ms": progression }, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function addTrackToPlaybackQueue(token: string, uri: string) {
+  const response = await axiosInstance.post(`/me/player/queue?uri=${uri}`, { }, {
     headers: getHeader(token),
   });
   return response.data;

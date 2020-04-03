@@ -23,17 +23,25 @@ let token: string;
 let user;
 let roomId: string;
 
-document.getElementById("skip").addEventListener("click", async (e: MouseEvent) => {
+document.getElementById("next").addEventListener("click", async (e: MouseEvent) => {
   try {
-    await axios.post(`/room/skip/${roomId}/?userId=${user.id}`);
+    await axios.post(`/room/next/${roomId}/?userId=${user.id}`);
   } catch (error) {
-    console.log("There was problem skipping the track", error);
+    console.log("There was problem skipping to the next the track", error);
+  }
+});
+
+document.getElementById("previous").addEventListener("click", async (e: MouseEvent) => {
+  try {
+    await axios.post(`/room/previous/${roomId}/?userId=${user.id}`);
+  } catch (error) {
+    console.log("There was problem skipping to the previous track", error);
   }
 });
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
   try {
-    await axios.post(`/spotify/play/?token=${token}`);
+    await axios.post(`/room/play/${roomId}/?userId=${user.id}`);
   } catch (error) {
     console.log("There was problem playing the track", error);
   }

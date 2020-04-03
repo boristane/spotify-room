@@ -4,18 +4,21 @@ const RoomSchema: Schema = new Schema({
   _id: mongoose.Types.ObjectId,
   master: { id: String, token: String },
   members: [{ id: String, token: String }],
-  songs: [{ id: String, completed: Boolean, approved: Boolean }],
+  duration: Number,
+  tracks: [{ uri: String, completed: Boolean, approved: Boolean, current: Boolean }],
 }, { timestamps: true });
 
 export interface IRoom extends Document {
   _id: string;
   master: { id: string; token: string };
   members: { id: string; token: string }[];
-  songs: {
-    id: string;
+  duration: number;
+  tracks: {
+    uri: string;
     completed: boolean;
     approved: boolean;
-  }
+    current: boolean;
+  }[]
 }
 
 export default mongoose.model<IRoom>("Room", RoomSchema);
