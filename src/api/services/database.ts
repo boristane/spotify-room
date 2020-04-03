@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
-import { ISpotifyUser } from "../../typings/spotify";
+import { ISpotifyUser, ISpotifyTrack } from "../../typings/spotify";
 import User, { IUser } from "../models/user";
 import Room, { IRoom } from "../models/room";
 
 export async function saveUser(spotifyUser: ISpotifyUser) {
   const user = await User.findOne({ id: spotifyUser.id });
-  console.log(spotifyUser);
   if (!user) {
     const user = new User({
       _id: mongoose.Types.ObjectId(),
@@ -38,7 +37,7 @@ export async function getRoom(id: string): Promise<IRoom> {
 export async function spawnRoom(master: IUser, token: string): Promise<IRoom> {
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
-    master: { id: master.id, token },
+    master: { id: master.id, token, name: master.display_name },
     members: [],
     songs: [],
   });
@@ -63,18 +62,21 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string): Pr
     return isNewUser;
   }
   isNewUser = true;
-  members.push({ id: user.id, token });
+  members.push({ id: user.id, token, name: user.display_name });
   await room.save();
   return isNewUser;
 }
 
-export async function setRoomCurrentTrack(room: IRoom, uri: string) {
+export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
   const { tracks } = room;
-  const trackIndex = tracks.findIndex((t) => t.uri === uri);
+  const trackIndex = tracks.findIndex((t) => t.uri === track.uri);
   if (trackIndex === -1) {
     tracks.forEach((t) => { t.completed = true; t.current = false; });
     tracks.push({
-      uri,
+      uri: track.uri,
+      name: track.name,
+      artist: track.artists[0].name,
+      image: track.album.images[0].url,
       completed: false,
       current: true,
       approved: true,
