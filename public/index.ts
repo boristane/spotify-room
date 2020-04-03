@@ -1,6 +1,7 @@
 import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../src/api/models/room";
+import { domainToASCII } from "url";
 
 async function getToken() {
   const params = new URLSearchParams(window.location.search);
@@ -42,10 +43,11 @@ export async function displayRoom(room: IRoom) {
 let token: string;
 let user;
 let roomId: string;
+let deviceId: string;
 
 document.getElementById("next").addEventListener("click", async (e: MouseEvent) => {
   try {
-    const room = (await axios.post(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
+    const room = (await axios.post(`/room/next/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
     displayRoom(room);
   } catch (error) {
     console.log("There was problem skipping to the next the track", error);
@@ -54,7 +56,7 @@ document.getElementById("next").addEventListener("click", async (e: MouseEvent) 
 
 document.getElementById("previous").addEventListener("click", async (e: MouseEvent) => {
   try {
-    const room = (await axios.post(`/room/previous/${roomId}/?userId=${user.id}`)).data.room;
+    const room = (await axios.post(`/room/previous/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
     displayRoom(room);
   } catch (error) {
     console.log("There was problem skipping to the previous track", error);
@@ -63,7 +65,7 @@ document.getElementById("previous").addEventListener("click", async (e: MouseEve
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
   try {
-    const room = (await axios.post(`/room/play/${roomId}/?userId=${user.id}`)).data.room;
+    const room = (await axios.post(`/room/play/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
     displayRoom(room);
   } catch (error) {
     console.log("There was problem playing the track", error);
@@ -72,7 +74,7 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
 
 document.getElementById("create").addEventListener("click", async (e: MouseEvent) => {
   try {
-    await axios.post(`/room/create/?token=${token}&userId=${user.id}`);
+    await axios.post(`/room/create/?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
     window.location.reload();
   } catch (error) {
     console.log("There was problem creating the room", error);
@@ -82,31 +84,10 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
 async function main() {
   try {
     token = await getToken();
+    console.log(token);
   } catch {
     return window.location.replace("/");
   }
-
-  try {
-    user = (await axios.get(`/spotify/me/?token=${token}`)).data;
-  } catch {
-    return window.location.replace("/");
-  }
-
-  roomId = getCookies()["rooom_id"];
-  if(roomId && roomId !== "null") {
-    try {
-      await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}`);
-    } catch (error) {
-      console.log("There was an error when joining a rooom", error);
-    }
-    const room = await getRoom(roomId, user.id);
-    displayRoom(room);
-  } else {
-    document.getElementById("create").style.display = "block";
-  }
-  const username = user.display_name ? user.display_name.split(" ")[0] : "there";
-  document.getElementById("user").textContent = username;
-
 }
 
 function getCookies(): Record<string, string> {
@@ -119,5 +100,57 @@ function getCookies(): Record<string, string> {
   }
   return cookies;
 }
+
+export async function doIt() {
+  try {
+    user = (await axios.get(`/spotify/me/?token=${token}`)).data;
+  } catch {
+    return window.location.replace("/");
+  }
+
+  roomId = getCookies()["rooom_id"];
+  if(roomId && roomId !== "null") {
+    try {
+      await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+    } catch (error) {
+      console.log("There was an error when joining a rooom", error);
+    }
+    const room = await getRoom(roomId, user.id);
+    displayRoom(room);
+  } else {
+    document.getElementById("create").style.display = "block";
+  }
+  const username = user.display_name ? user.display_name.split(" ")[0] : "there";
+  document.getElementById("user").textContent = username;
+}
+
+//@ts-ignore
+window.onSpotifyWebPlaybackSDKReady = () => {
+  //@ts-ignore
+  const player = new Spotify.Player({
+    name: 'Rooom',
+    getOAuthToken: cb => { cb(token); }
+  });
+  
+  player.addListener('initialization_error', ({ message }) => { console.error(message); });
+  player.addListener('authentication_error', ({ message }) => { console.error(message); });
+  player.addListener('account_error', ({ message }) => { console.error(message); });
+  player.addListener('playback_error', ({ message }) => { console.error(message); });
+  
+  player.addListener('player_state_changed', state => { console.log(state); });
+  
+  player.addListener('ready', ({ device_id }) => {
+    deviceId = device_id;
+    console.log('Ready with Device ID', device_id);
+    doIt();
+  });
+  
+  player.addListener('not_ready', ({ device_id }) => {
+    console.log('Device ID has gone offline', device_id);
+  });
+  
+  player.connect();
+};
+
 
 main();

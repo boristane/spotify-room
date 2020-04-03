@@ -22,7 +22,7 @@ export function login(req: Request, res: Response) {
   const { id } = req.query;
   res.cookie(stateKey, state);
   res.cookie("rooom_id", id);
-  const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state";
+  const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
     qs.stringify({
@@ -31,7 +31,7 @@ export function login(req: Request, res: Response) {
       scope: scope,
       redirect_uri: redirectUri,
       state: state,
-      show_dialog: dialog,
+      show_dialog: true,
     })
   );
 }
@@ -100,12 +100,14 @@ export async function refreshToken(req: Request, res: Response) {
   }
 }
 
-export async function getUser(req: Request, res: Response) {
+export async function getUser(req: Request, res: Response, next: NextFunction) {
+  console.log("wtf");
   const { token } = req.query;
   try {
     const user = await getUserProfile(token);
     await saveUser(user);
     res.status(200).json(user);
+    return next();
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Unexpected error.", err: err.stack });

@@ -2,16 +2,16 @@ import mongoose, { Document, Schema } from "mongoose";
 
 const RoomSchema: Schema = new Schema({
   _id: mongoose.Types.ObjectId,
-  master: { id: String, token: String, name: String },
-  members: [{ id: String, token: String, name: String }],
+  master: { id: String, token: String, name: String, deviceId: String },
+  members: [{ id: String, token: String, name: String, deviceId: String }],
   duration: Number,
-  tracks: [{ uri: String, completed: Boolean, approved: Boolean, current: Boolean, name: String, artist: String, image: String }],
+  tracks: [{ uri: String, completed: Boolean, approved: Boolean, current: Boolean, name: String, artist: String, image: String}],
 }, { timestamps: true });
 
 export interface IRoom extends Document {
   _id: string;
-  master: { id: string; token: string; name: string };
-  members: { id: string; token: string; name: string }[];
+  master: { id: string; token: string; name: string, deviceId: string };
+  members: { id: string; token: string; name: string, deviceId: string }[];
   duration: number;
   tracks: {
     uri: string;

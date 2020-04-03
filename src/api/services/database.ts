@@ -34,10 +34,10 @@ export async function getRoom(id: string): Promise<IRoom> {
   return await Room.findOne({ _id: id });
 }
 
-export async function spawnRoom(master: IUser, token: string): Promise<IRoom> {
+export async function spawnRoom(master: IUser, token: string, deviceId: string): Promise<IRoom> {
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
-    master: { id: master.id, token, name: master.display_name },
+    master: { id: master.id, token, name: master.display_name, deviceId },
     members: [],
     songs: [],
   });
@@ -45,7 +45,7 @@ export async function spawnRoom(master: IUser, token: string): Promise<IRoom> {
   return await room.save();
 }
 
-export async function addRoomMember(room: IRoom, user: IUser, token: string): Promise<boolean> {
+export async function addRoomMember(room: IRoom, user: IUser, token: string, deviceId: string): Promise<boolean> {
   let isNewUser = false;
   const { members, master } = room;
   if (master.id === user.id) {
@@ -62,7 +62,7 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string): Pr
     return isNewUser;
   }
   isNewUser = true;
-  members.push({ id: user.id, token, name: user.display_name });
+  members.push({ id: user.id, token, name: user.display_name, deviceId });
   await room.save();
   return isNewUser;
 }
