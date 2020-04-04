@@ -105,6 +105,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   try {
     const user = await getUserProfile(token);
     await saveUser(user);
+    res.locals.body = user;
     res.status(200).json(user);
     return next();
   } catch (err) {

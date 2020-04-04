@@ -37,31 +37,49 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
     return (await axios.get(`/room/${roomId}/?userId=${userId}`)).data.room as IRoom;
   } catch (err) {
     console.log("There was a problem getting the room", err);
+    if(err.response && err.response.status === 401) {
+      return null;
+    }
   }
 }
 
 export async function displayRoom(room: IRoom) {
+  if(room === null) {
+    console.log("waiting to be approved");
+    return
+  };
+  isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist");
-  const trackElts = room.tracks.map((track) => `<li class="track" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artist}" data-image="${track.image}">
-                                                  ${track.artist} - ${track.name} - ${track.approved}
+  const trackElts = room.tracks.map((track) => `<li class="track" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artist}" data-image="${track.image}" data-approved="${track.approved}">
+                                                  ${track.uri} - ${track.artist} - ${track.name} - Approved: ${track.approved} - Current: ${track.current} - Completed: ${track.completed}
                                                 </li>`);
   tracklistElt.innerHTML = trackElts.join("");
 
   const membersListElt = document.querySelector(".members");
-  const memberElts = room.members.map((member) => `<li>${member.name}</li>`);
+  const membersToAppoveListElt = document.querySelector(".members-to-approve");
+  const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li>${member.name} Current: ${member.currentTrack}</li>`);
+  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li>${member.name} Current: ${member.currentTrack}</li>`);
   const masterElt = `<li style="font-weight: bold">${room.master.name}</li>`;
-  membersListElt.innerHTML = masterElt + memberElts.join();
-
-  document.querySelectorAll(".master-controls").forEach((elt) => {
-    //@ts-ignore
-    elt.style.display = user.id === room.master.id ? "inherit" : "none";
-  });
+  membersListElt.innerHTML = masterElt + memberElts.join("");
+  membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
+  document.getElementById("room-name").textContent = room.name;
+  document.getElementById("room-id").textContent = room.id;
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
-      const { uri } = this.dataset;
-      const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
-      displayRoom(room);
+      if(!isMaster) return;
+      const { uri, approved } = this.dataset;
+      if(approved === "true") {
+        try {
+          const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+          displayRoom(room);
+        } catch(error) {
+          console.log("There was an error going to a track");
+        }
+      } else {
+        const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+        displayRoom(room);
+      }
     });
   });
 }
@@ -70,24 +88,7 @@ let token: string;
 let user;
 let roomId: string;
 let deviceId: string;
-
-document.getElementById("next").addEventListener("click", async (e: MouseEvent) => {
-  try {
-    const room = (await axios.post(`/room/next/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
-    displayRoom(room);
-  } catch (error) {
-    console.log("There was problem skipping to the next the track", error);
-  }
-});
-
-document.getElementById("previous").addEventListener("click", async (e: MouseEvent) => {
-  try {
-    const room = (await axios.post(`/room/previous/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
-    displayRoom(room);
-  } catch (error) {
-    console.log("There was problem skipping to the previous track", error);
-  }
-});
+let isMaster: boolean = false;
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
   try {
@@ -143,7 +144,13 @@ document.querySelectorAll(".track-search-result-item").forEach((elt) => {
 
 document.getElementById("create").addEventListener("click", async (e: MouseEvent) => {
   try {
-    await axios.post(`/room/create/?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+    const roomName = (document.getElementById("create-room-name") as HTMLInputElement).value;
+    await axios.post(`/room/create/`, {
+      token,
+      userId: user.id,
+      deviceId,
+      name: roomName,
+    });
     window.location.reload();
   } catch (error) {
     console.log("There was problem creating the room", error);
@@ -184,9 +191,13 @@ export async function doIt() {
       console.log("There was an error when joining a rooom", error);
     }
     const room = await getRoom(roomId, user.id);
-    displayRoom(room);
+    displayRoom(room); 
+    setInterval(async () => {
+      const room = await getRoom(roomId, user.id);
+      displayRoom(room);  
+    }, 30*1000);
   } else {
-    document.getElementById("create").style.display = "block";
+    document.getElementById("create-room").style.display = "block";
   }
   const username = user.display_name ? user.display_name.split(" ")[0] : "there";
   document.getElementById("user").textContent = username;

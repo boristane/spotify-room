@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember } from "../services/database";
 import { play, getCurrentlyPalyingTrack } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -11,7 +11,7 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
+    if (!room || !user || !room.isActive) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
@@ -20,11 +20,7 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
     await addRoomMember(room, user, token, deviceId);
     logger.info("User joined a room", { id, token, userId });
     res.status(200).json({
-      message: "All good", room: {
-        master: _.omit(room.master, ["token"]),
-        members: room.members.map((m) => _.omit(m, ["token"])),
-        tracks: room.tracks,
-      }
+      message: "All good", room: prepareRoomForResponse(room),
     });
     return next();
   } catch (error) {
@@ -37,7 +33,7 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
 
 export async function createRoom(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId, token, deviceId } = req.query;
+    const { userId, token, deviceId, name } = req.body;
     const user = await getUser(userId);
     if (!user) {
       const response = { message: "Not found" };
@@ -45,16 +41,12 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
       res.status(404).json(response);
       return next();
     }
-    const room = await spawnRoom(user, token, deviceId);
+    const room = await spawnRoom(name, user, token, deviceId);
     const id = room._id.toString();
     res.cookie("rooom_id", id);
     const response = {
       message: "Room succesfully created",
-      room: {
-        master: _.omit(room.master, ["token"]),
-        members: room.members.map((m) => _.omit(m, ["token"])),
-        tracks: room.tracks,
-      }
+      room: prepareRoomForResponse(room),
     };
     res.locals.body = response;
     res.status(201).json(response);
@@ -81,16 +73,16 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
     }
     let roomMember;
     const isMaster = room.master.id === userId
-    if (isMaster ) roomMember = room.master;
+    if (isMaster) roomMember = room.master;
     else roomMember = room.members.find(m => m.id === userId);
-    if(!roomMember) {
+    if (!roomMember) {
       const response = { message: "Unauthorized" };
       res.locals.body = response;
       res.status(401).json(response);
       return next();
     }
-    const currentTrack = await getNextTrack(room, isMaster);
-    if(!currentTrack) {
+    const currentTrack = await getNextTrack(room, roomMember.id, isMaster);
+    if (!currentTrack) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
@@ -130,18 +122,25 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
       return next();
     }
     const currentTrack = await getTrack(room, uri, true);
+    if (!currentTrack) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
     play(room.master.token, currentTrack.uri, 0, room.master.deviceId);
-      for (let i = 0; i < room.members.length; i += 1) {
-        const member = room.members[i];
-        try {
-          await play(member.token, currentTrack.uri, 0, member.deviceId);
-        } catch (error) {
-          logger.error("There was an error playing the track for a uuser", { error, member });
-          continue;
-        }
+    for (let i = 0; i < room.members.length; i += 1) {
+      const member = room.members[i];
+      if (!member.isActive || !member.isApproved) continue;
+      try {
+        await play(member.token, currentTrack.uri, 0, member.deviceId);
+      } catch (error) {
+        logger.error("There was an error playing the track for a uuser", { error, member });
+        continue;
       }
+    }
     const response = {
-      message: "Skipped to next track", room: prepareRoomForResponse(room),
+      message: "went to selected track", room: prepareRoomForResponse(room),
     };
     res.locals.body = response;
     res.status(200).json(response);
@@ -153,6 +152,73 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
     return next();
   }
 }
+
+export async function masterApproveTrack(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId, uri } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    if (room.master.id !== userId) {
+      const response = { message: "Unauthorized" };
+      res.locals.body = response;
+      res.status(401).json(response);
+      return next();
+    }
+    await approveTrack(room, uri);
+    const response = {
+      message: "Approved track", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem approving a track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function masterApproveMember(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId, memberId } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    if (room.master.id !== userId) {
+      const response = { message: "Unauthorized" };
+      res.locals.body = response;
+      res.status(401).json(response);
+      return next();
+    }
+    await approveMember(room, memberId);
+    const response = {
+      message: "Approved track", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem approving a member in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
 
 export async function getRooom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
@@ -166,14 +232,27 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
       res.status(404).json(response);
       return next();
     }
-    const response = {
-      message: "Got the room track",
-      room: {
-        master: _.omit(room.master, ["token"]),
-        members: room.members.map((m) => _.omit(m, ["token"])),
-        tracks: room.tracks,
+    const isMaster = room.master.id === user.id;
+    let response;
+    if (isMaster) {
+      response = {
+        message: "Got the room",
+        room: prepareRoomForResponse(room),
+      };
+    } else {
+      const member = room.members.find(m => m.id === userId);
+      if (!member || !member.isApproved) {
+        response = { message: "Unauthorised" }
+        res.locals.body = response;
+        res.status(401).json(response);
+        return next();
+      } else {
+        response = {
+          message: "Got the room",
+          room: prepareRoomForResponse(room),
+        };
       }
-    };
+    }
     res.locals.body = response;
     res.status(200).json(response);
     return next();
@@ -206,6 +285,8 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       if (roomCurrentTrack) {
         uri = roomCurrentTrack.uri;
         progress = 0;
+        room.members.forEach(m => m.currentTrack = roomCurrentTrack.uri);
+        await room.save();
       } else {
         const response = { message: "Not found" };
         res.locals.body = response;
@@ -215,6 +296,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       play(masterToken, uri, progress, deviceId);
       for (let i = 0; i < room.members.length; i += 1) {
         const member = room.members[i];
+        if (!member.isActive || !member.isApproved) continue;
         try {
           await play(member.token, uri, progress, member.deviceId);
         } catch (error) {
@@ -223,11 +305,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         }
       }
       const response = {
-        message: "Playing the track for all room members", room: {
-          master: _.omit(room.master, ["token"]),
-          members: room.members.map((m) => _.omit(m, ["token"])),
-          tracks: room.tracks,
-        }
+        message: "Playing the track for all room members", room: prepareRoomForResponse(room)
       };
       res.locals.body = response;
       res.status(200).json(response);
@@ -235,7 +313,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
 
     const roomMember = room.members.find((m) => m.id === user.id);
-    if (!roomMember) {
+    if (!roomMember || !roomMember.isApproved || !roomMember.isActive) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
@@ -250,7 +328,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       return next();
     }
     await play(roomMember.token, currentTrack.item.uri, currentTrack.progress_ms + networkDelay, roomMember.deviceId);
-
+    await setMemberCurrentTrack(room, user.id, currentTrack.item.uri);
     const response = {
       message: "Playing the track for room member", room: prepareRoomForResponse(room)
     };
@@ -312,5 +390,7 @@ export function prepareRoomForResponse(room: IRoom) {
     master: _.omit(room.master, ["token"]),
     members: room.members.map((m) => _.omit(m, ["token"])),
     tracks: room.tracks,
+    name: room.name,
+    id: room.id
   }
 }

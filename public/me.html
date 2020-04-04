@@ -6,18 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   
-  <title>rooom</title>
+  <title>Rooom</title>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="user"></div>
-  <button id="previous" class="master-controls">Previous</button>
+  <div id="room-name"></div>
+  <div id="room-id"></div>
   <button id="play">Play</button>
-  <button id="next" class="master-controls">Next</button>
-  <button id="create" style="display: none;">Create Room</button>
+  <div id="create-room" style="display: none;">
+    <input type="text" id="create-room-name">
+    <button id="create">Create Room</button>
+  </div>
   <div>
     <ul class="members">
+    </ul>
+  </div>
+  <div>
+    <ul class="members-to-approve">
+
     </ul>
   </div>
   <div>

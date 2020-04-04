@@ -34,12 +34,14 @@ export async function getRoom(id: string): Promise<IRoom> {
   return await Room.findOne({ _id: id });
 }
 
-export async function spawnRoom(master: IUser, token: string, deviceId: string): Promise<IRoom> {
+export async function spawnRoom(name: string, master: IUser, token: string, deviceId: string): Promise<IRoom> {
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
     master: { id: master.id, token, name: master.display_name, deviceId },
     members: [],
     songs: [],
+    name,
+    isActive: true,
   });
 
   return await room.save();
@@ -57,14 +59,17 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
   }
   const member = members.find((m) => m.id === user.id);
   if (member) {
-    if (member.token === token && member.deviceId === deviceId) return;
+    const currentTrack = room.tracks.find(t => t.current);
+    if (member.token === token && member.deviceId === deviceId && member.currentTrack === currentTrack.uri) return;
     member.token = token;
     member.deviceId = deviceId;
+    member.currentTrack = currentTrack.uri;
+    member.isActive = true;
     await room.save();
     return isNewUser;
   }
   isNewUser = true;
-  members.push({ id: user.id, token, name: user.display_name, deviceId, isActive: true });
+  members.push({ id: user.id, token, name: user.display_name, deviceId, isActive: false, isApproved: false, currentTrack: "" });
   await room.save();
   return isNewUser;
 }
@@ -117,31 +122,39 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
   return await room.save();
 }
 
-export async function getNextTrack(room: IRoom, shouldUpdate: boolean): Promise<{
+export async function getNextTrack(room: IRoom, userId: string, isMaster: boolean): Promise<{
   uri: string;
   completed: boolean;
   approved: boolean;
   current: boolean;
   name: string; artist: string; image: string;
 } | undefined> {
-  const currentTrack = room.tracks.find(t => t.current);
-  const index = room.tracks.findIndex(t => t.current);
-  currentTrack.completed = true;
-  currentTrack.current = false; 
-  if(index >= room.tracks.length - 1) {
-    if(shouldUpdate) {
+  if (isMaster) {
+    const currentTrack = room.tracks.find(t => t.current);
+    const index = room.tracks.findIndex(t => t.current);
+    currentTrack.completed = true;
+    currentTrack.current = false;
+    if (index >= room.tracks.length - 1) {
       await room.save();
+      return;
     }
-    return;
-  }
-  const newCurrentTrack = room.tracks.find((t, i) => t.approved && !t.completed && i > index);
-  if(!newCurrentTrack) return;
-  newCurrentTrack.current = true;
-  newCurrentTrack.completed = false;
-  if(shouldUpdate) {
+    const newCurrentTrack = room.tracks.find((t, i) => t.approved && !t.completed && i > index);
+    if (!newCurrentTrack) return;
+    newCurrentTrack.current = true;
+    newCurrentTrack.completed = false;
     await room.save();
+    return newCurrentTrack;
   }
-  return newCurrentTrack;
+  const member = room.members.find(m => m.id === userId);
+  if (!member) return;
+  const currentTrackUri = member.currentTrack;
+  const currentTrackIndex = room.tracks.findIndex(t => t.uri === currentTrackUri);
+  if (currentTrackIndex < 0) return;
+  const nextTrack = room.tracks.find((t, i) => i > currentTrackIndex && t.approved && !t.completed);
+  if (!nextTrack) return;
+  member.currentTrack = nextTrack.uri;
+  await room.save();
+  return nextTrack;
 }
 
 export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): Promise<{
@@ -150,15 +163,38 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
   approved: boolean;
   current: boolean;
   name: string; artist: string; image: string;
-} | undefined>  {
+} | undefined> {
   const trackIndex = room.tracks.findIndex((track) => track.uri === uri && track.approved);
-  if(trackIndex <= 0) return undefined;
+  if (trackIndex < 0) return undefined;
   room.tracks.forEach((track, i) => {
     track.completed = i < trackIndex;
     track.current = i === trackIndex;
   });
-  if(shoudlSave) {
+  const track = room.tracks[trackIndex];
+  room.members.forEach(m => m.currentTrack = track.uri);
+  if (shoudlSave) {
     await room.save();
   }
   return room.tracks[trackIndex];
+}
+
+export async function approveTrack(room: IRoom, uri: string) {
+  const track = room.tracks.find(track => track.uri === uri);
+  if (!track) return;
+  track.approved = true;
+  await room.save();
+}
+
+export async function approveMember(room: IRoom, memberId: string) {
+  const member = room.members.find(member => member.id === memberId);
+  if (!member) return;
+  member.isApproved = true;
+  await room.save();
+}
+
+export async function setMemberCurrentTrack(room: IRoom, userId: string, uri: string) {
+  const member = room.members.find(m => m.id === userId);
+  if (!member) return;
+  member.currentTrack = uri;
+  await room.save();
 }
