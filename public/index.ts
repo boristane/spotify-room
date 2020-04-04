@@ -42,7 +42,9 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
 
 export async function displayRoom(room: IRoom) {
   const tracklistElt = document.querySelector(".tracklist");
-  const trackElts = room.tracks.map((track) => `<li>${track.artist} - ${track.name} - ${track.approved}</li>`);
+  const trackElts = room.tracks.map((track) => `<li class="track" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artist}" data-image="${track.image}">
+                                                  ${track.artist} - ${track.name} - ${track.approved}
+                                                </li>`);
   tracklistElt.innerHTML = trackElts.join("");
 
   const membersListElt = document.querySelector(".members");
@@ -54,13 +56,20 @@ export async function displayRoom(room: IRoom) {
     //@ts-ignore
     elt.style.display = user.id === room.master.id ? "inherit" : "none";
   });
+
+  document.querySelectorAll(".track").forEach((elt) => {
+    elt.addEventListener("click", async function (e) {
+      const { uri } = this.dataset;
+      const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+      displayRoom(room);
+    });
+  });
 }
 
 let token: string;
 let user;
 let roomId: string;
 let deviceId: string;
-let numAlreadyPlayed: number = 0;
 
 document.getElementById("next").addEventListener("click", async (e: MouseEvent) => {
   try {

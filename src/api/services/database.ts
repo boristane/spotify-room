@@ -143,3 +143,22 @@ export async function getNextTrack(room: IRoom, shouldUpdate: boolean): Promise<
   }
   return newCurrentTrack;
 }
+
+export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): Promise<{
+  uri: string;
+  completed: boolean;
+  approved: boolean;
+  current: boolean;
+  name: string; artist: string; image: string;
+} | undefined>  {
+  const trackIndex = room.tracks.findIndex((track) => track.uri === uri && track.approved);
+  if(trackIndex <= 0) return undefined;
+  room.tracks.forEach((track, i) => {
+    track.completed = i < trackIndex;
+    track.current = i === trackIndex;
+  });
+  if(shoudlSave) {
+    await room.save();
+  }
+  return room.tracks[trackIndex];
+}

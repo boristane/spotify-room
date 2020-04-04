@@ -1,7 +1,7 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, setRoomCurrentTrack, addTrackToRoomInDb, getNextTrack } from "../services/database";
-import { skipToNextTrack, play, getCurrentlyPalyingTrack, addTrackToPlaybackQueue } from "../services/spotify";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack } from "../services/database";
+import { play, getCurrentlyPalyingTrack } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
 
@@ -113,7 +113,7 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
 
 export async function masterGoToTrack(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
-  const { userId } = req.query;
+  const { userId, uri } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -129,15 +129,19 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
       res.status(401).json(response);
       return next();
     }
-    const tokens = [room.master.token, ...room.members.map((m) => m.token)];
-    const promises = tokens.map((token) => skipToNextTrack(token));
-    await Promise.all(promises);
-    const response = {
-      message: "Skipped to next track", room: {
-        master: _.omit(room.master, ["token"]),
-        members: room.members.map((m) => _.omit(m, ["token"])),
-        tracks: room.tracks,
+    const currentTrack = await getTrack(room, uri, true);
+    play(room.master.token, currentTrack.uri, 0, room.master.deviceId);
+      for (let i = 0; i < room.members.length; i += 1) {
+        const member = room.members[i];
+        try {
+          await play(member.token, currentTrack.uri, 0, member.deviceId);
+        } catch (error) {
+          logger.error("There was an error playing the track for a uuser", { error, member });
+          continue;
+        }
       }
+    const response = {
+      message: "Skipped to next track", room: prepareRoomForResponse(room),
     };
     res.locals.body = response;
     res.status(200).json(response);
@@ -208,11 +212,11 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         res.status(404).json(response);
         return next();
       }
-      play(masterToken, uri, progress + networkDelay, deviceId);
+      play(masterToken, uri, progress, deviceId);
       for (let i = 0; i < room.members.length; i += 1) {
         const member = room.members[i];
         try {
-          await play(member.token, uri, progress + networkDelay, member.deviceId);
+          await play(member.token, uri, progress, member.deviceId);
         } catch (error) {
           logger.error("There was an error playing the track for a uuser", { error, member });
           continue;
