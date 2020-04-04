@@ -49,15 +49,17 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
   let isNewUser = false;
   const { members, master } = room;
   if (master.id === user.id) {
-    if (master.token === token) return;
+    if (master.token === token && master.deviceId === deviceId) return;
+    master.deviceId = deviceId;
     master.token = token;
     await room.save();
     return isNewUser;
   }
   const member = members.find((m) => m.id === user.id);
   if (member) {
-    if (member.token === token) return;
+    if (member.token === token && member.deviceId === deviceId) return;
     member.token = token;
+    member.deviceId = deviceId;
     await room.save();
     return isNewUser;
   }

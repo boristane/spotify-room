@@ -175,7 +175,8 @@ export async function skipPreviousTrack(req: Request, res: Response, next: NextF
   }
 }
 
-export async function playRoom(req: Request, res: Response, next: NextFunction) {  const { id } = req.params;
+export async function playRoom(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
   const { userId, deviceId } = req.query;
   try {
     const user = await getUser(userId);
@@ -209,9 +210,16 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         await setRoomCurrentTrack(room, currentTrack.item);
       }
       play(masterToken, uri, progress + networkDelay, deviceId);
-      room.members.forEach((member) => {
-        play(member.token, uri, progress + networkDelay, member.deviceId);
-      });
+      for (let i = 0; i < room.members.length; i += 1) {
+        const member = room.members[i];
+        try {
+
+          await play(member.token, uri, progress + networkDelay, member.deviceId);
+        } catch (error) {
+          logger.error("There was an error playing the track for a uuser", { error, member });
+          continue;
+        }
+      }
       const response = {
         message: "Playing the track for all room members", room: {
           master: _.omit(room.master, ["token"]),
@@ -252,7 +260,6 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     res.locals.body = response;
     res.status(200).json(response);
     return next();
-
   } catch (error) {
     const message = "There was a problem playing a track in a room"
     logger.error(message, { error });

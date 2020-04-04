@@ -37,8 +37,7 @@ export async function setRepeatMode(token: string, state: ISpotifyRepeatModeStat
 
 export async function play(token: string, uri: string, progression: number, deviceId: string) {
   const uris = [uri];
-  console.log(uri, token, progression, deviceId);
-  const response = await axiosInstance.put(`/me/player/play/?device_id=${deviceId}`, { uris, "position_ms": 0 }, {
+  const response = await axiosInstance.put(`/me/player/play/?device_id=${deviceId}`, { uris, "position_ms": progression }, {
     headers: getHeader(token),
   });
   return response.data;

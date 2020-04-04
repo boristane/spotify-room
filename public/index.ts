@@ -84,7 +84,6 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
 async function main() {
   try {
     token = await getToken();
-    console.log(token);
   } catch {
     return window.location.replace("/");
   }
