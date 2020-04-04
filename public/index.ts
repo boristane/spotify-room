@@ -58,7 +58,7 @@ export async function displayRoom(room: IRoom) {
   const membersListElt = document.querySelector(".members");
   const membersToAppoveListElt = document.querySelector(".members-to-approve");
   const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li>${member.name} Current: ${member.currentTrack}</li>`);
-  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li>${member.name} Current: ${member.currentTrack}</li>`);
+  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member-to-approve" data-id="${member.id}">${member.name} Current: ${member.currentTrack}</li>`);
   const masterElt = `<li style="font-weight: bold">${room.master.name}</li>`;
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
@@ -77,11 +77,28 @@ export async function displayRoom(room: IRoom) {
           console.log("There was an error going to a track");
         }
       } else {
-        const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
-        displayRoom(room);
+        try {
+          const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+          displayRoom(room);
+        } catch (err) {
+          console.log("There was an error approving to a track");
+        }
       }
     });
   });
+
+  document.querySelectorAll(".member-to-approve").forEach((elt) => {
+    elt.addEventListener("click", async function (e) {
+      if(!isMaster) return;
+      const { id } = this.dataset;
+      try {
+        const room = (await axios.get(`/room/approve-member/${roomId}?userId=${user.id}&memberId=${id}`)).data.room;
+        displayRoom(room);
+      } catch(err) {
+        console.log("There was an error approving a member");
+      }
+    });
+  })
 }
 
 let token: string;
