@@ -1,7 +1,7 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, setRoomCurrentTrack, addTrackToRoomInDb } from "../services/database";
-import { skipToNextTrack, skipToPreviousTrack, play, getCurrentlyPalyingTrack, addTrackToPlaybackQueue } from "../services/spotify";
+import { getUser, spawnRoom, getRoom, addRoomMember, setRoomCurrentTrack, addTrackToRoomInDb, getNextTrack } from "../services/database";
+import { skipToNextTrack, play, getCurrentlyPalyingTrack, addTrackToPlaybackQueue } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
 
@@ -67,7 +67,51 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function skipNextTrack(req: Request, res: Response, next: NextFunction) {
+export async function goToNextTrack(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    let roomMember;
+    const isMaster = room.master.id === userId
+    if (isMaster ) roomMember = room.master;
+    else roomMember = room.members.find(m => m.id === userId);
+    if(!roomMember) {
+      const response = { message: "Unauthorized" };
+      res.locals.body = response;
+      res.status(401).json(response);
+      return next();
+    }
+    const currentTrack = await getNextTrack(room, isMaster);
+    if(!currentTrack) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    await play(roomMember.token, currentTrack.uri, 0, roomMember.deviceId);
+    const response = {
+      message: "Went to next track", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem going to next track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function masterGoToTrack(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
   const { userId } = req.query;
   try {
@@ -137,45 +181,6 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-export async function skipPreviousTrack(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId } = req.query;
-  try {
-    const user = await getUser(userId);
-    const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
-      return next();
-    }
-    if (room.master.id !== userId) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
-      return next();
-    }
-    const tokens = [room.master.token, ...room.members.map((m) => m.token)];
-    tokens.forEach((token) => {
-      skipToPreviousTrack(token);
-    });
-    const response = {
-      message: "Skipped to previous track", room: {
-        master: _.omit(room.master, ["token"]),
-        members: room.members.map((m) => _.omit(m, ["token"])),
-        tracks: room.tracks,
-      }
-    };
-    res.locals.body = response;
-    res.status(200).json(response);
-  } catch (error) {
-    const message = "There was a problem skipping a track in a room"
-    logger.error(message, { error });
-    res.status(500).json({ message });
-    return next();
-  }
-}
-
 export async function playRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
   const { userId, deviceId } = req.query;
@@ -193,22 +198,15 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       let uri: string;
       let progress: number;
       const masterToken = room.master.token;
-      const currentTrack = await getCurrentlyPalyingTrack(masterToken);
-      if (!currentTrack.item) {
-        const roomCurrentTrack = room.tracks.find((t) => t.current) || room.tracks[0];
-        if (roomCurrentTrack) {
-          uri = roomCurrentTrack.uri;
-          progress = 0;
-        } else {
-          const response = { message: "Not found" };
-          res.locals.body = response;
-          res.status(404).json(response);
-          return next();
-        }
+      const roomCurrentTrack = room.tracks.find((t) => t.current);
+      if (roomCurrentTrack) {
+        uri = roomCurrentTrack.uri;
+        progress = 0;
       } else {
-        uri = currentTrack.item.uri;
-        progress = currentTrack.progress_ms
-        await setRoomCurrentTrack(room, currentTrack.item);
+        const response = { message: "Not found" };
+        res.locals.body = response;
+        res.status(404).json(response);
+        return next();
       }
       play(masterToken, uri, progress + networkDelay, deviceId);
       for (let i = 0; i < room.members.length; i += 1) {
@@ -241,20 +239,13 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
     const masterToken = room.master.token;
     const currentTrack = await getCurrentlyPalyingTrack(masterToken);
-    if (currentTrack.item.uri !== room.tracks.find((t) => t.current).uri) {
+    if (currentTrack?.item?.uri !== room.tracks.find((t) => t.current).uri) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
       return next();
     }
     await play(roomMember.token, currentTrack.item.uri, currentTrack.progress_ms + networkDelay, roomMember.deviceId);
-    const roomCurrentTrackIndex = room.tracks.findIndex((t) => t.uri === currentTrack.item.uri);
-    for (let i = 0; i < room.tracks.length; i += 1) {
-      if (i > roomCurrentTrackIndex) {
-        const track = room.tracks[i];
-        await addTrackToPlaybackQueue(roomMember.token, track.uri);
-      }
-    }
 
     const response = {
       message: "Playing the track for room member", room: prepareRoomForResponse(room)

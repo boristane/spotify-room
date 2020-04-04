@@ -64,24 +64,24 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     return isNewUser;
   }
   isNewUser = true;
-  members.push({ id: user.id, token, name: user.display_name, deviceId });
+  members.push({ id: user.id, token, name: user.display_name, deviceId, isActive: true });
   await room.save();
   return isNewUser;
 }
 
 export async function addTrackToRoomInDb(room: IRoom, uri: string, name: string, artist: string, image: string, approved: boolean) {
   const { tracks } = room;
-    tracks.forEach((t) => { t.completed = true; t.current = false; });
-    tracks.push({
-      uri: uri,
-      name: name,
-      artist: artist,
-      image: image,
-      completed: false,
-      current: false,
-      approved: approved,
-    });
-    return await room.save();  
+  const current = room.tracks.length === 0;
+  tracks.push({
+    uri: uri,
+    name: name,
+    artist: artist,
+    image: image,
+    completed: false,
+    current: current,
+    approved: approved,
+  });
+  return await room.save();
 }
 
 export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
@@ -106,7 +106,7 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
       t.current = false;
       return;
     }
-    if(i === trackIndex) {
+    if (i === trackIndex) {
       t.completed = false;
       t.current = true;
       return;
@@ -115,4 +115,31 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
     t.current = false;
   });
   return await room.save();
+}
+
+export async function getNextTrack(room: IRoom, shouldUpdate: boolean): Promise<{
+  uri: string;
+  completed: boolean;
+  approved: boolean;
+  current: boolean;
+  name: string; artist: string; image: string;
+} | undefined> {
+  const currentTrack = room.tracks.find(t => t.current);
+  const index = room.tracks.findIndex(t => t.current);
+  currentTrack.completed = true;
+  currentTrack.current = false; 
+  if(index >= room.tracks.length - 1) {
+    if(shouldUpdate) {
+      await room.save();
+    }
+    return;
+  }
+  const newCurrentTrack = room.tracks.find((t, i) => t.approved && !t.completed && i > index);
+  if(!newCurrentTrack) return;
+  newCurrentTrack.current = true;
+  newCurrentTrack.completed = false;
+  if(shouldUpdate) {
+    await room.save();
+  }
+  return newCurrentTrack;
 }

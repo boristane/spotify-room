@@ -1,9 +1,9 @@
 import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../src/api/models/room";
-import { ISpotifyTrack } from "../src/typings/spotify";
+import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../src/typings/spotify";
 
-const debounce = (func, delay) => {
+const debounce = (func: Function, delay: number) => {
   let debounceTimer
   return function () {
     const context = this
@@ -49,12 +49,18 @@ export async function displayRoom(room: IRoom) {
   const memberElts = room.members.map((member) => `<li>${member.name}</li>`);
   const masterElt = `<li style="font-weight: bold">${room.master.name}</li>`;
   membersListElt.innerHTML = masterElt + memberElts.join();
+
+  document.querySelectorAll(".master-controls").forEach((elt) => {
+    //@ts-ignore
+    elt.style.display = user.id === room.master.id ? "inherit" : "none";
+  });
 }
 
 let token: string;
 let user;
 let roomId: string;
 let deviceId: string;
+let numAlreadyPlayed: number = 0;
 
 document.getElementById("next").addEventListener("click", async (e: MouseEvent) => {
   try {
@@ -190,7 +196,17 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   player.addListener('account_error', ({ message }) => { console.error(message); });
   player.addListener('playback_error', ({ message }) => { console.error(message); });
 
-  player.addListener('player_state_changed', state => { console.log(state); });
+  player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
+    if (state.paused) {
+      try {
+        const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
+        displayRoom(room);
+      } catch (error) {
+        console.log("There was a problem moving to the next track");
+      }
+    }
+    console.log(state);
+  }, 2000));
 
   player.addListener('ready', ({ device_id }) => {
     deviceId = device_id;
