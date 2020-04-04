@@ -1,7 +1,18 @@
 import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../src/api/models/room";
-import { domainToASCII } from "url";
+import { ISpotifyTrack } from "../src/typings/spotify";
+
+const debounce = (func, delay) => {
+  let debounceTimer
+  return function () {
+    const context = this
+    const args = arguments
+    clearTimeout(debounceTimer)
+    debounceTimer
+      = setTimeout(() => func.apply(context, args), delay)
+  }
+}
 
 async function getToken() {
   const params = new URLSearchParams(window.location.search);
@@ -24,14 +35,14 @@ async function getToken() {
 export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   try {
     return (await axios.get(`/room/${roomId}/?userId=${userId}`)).data.room as IRoom;
-  } catch(err) {
+  } catch (err) {
     console.log("There was a problem getting the room", err);
   }
 }
 
 export async function displayRoom(room: IRoom) {
   const tracklistElt = document.querySelector(".tracklist");
-  const trackElts = room.tracks.map((track) => `<li>${track.artist} - ${track.name}</li>`);
+  const trackElts = room.tracks.map((track) => `<li>${track.artist} - ${track.name} - ${track.approved}</li>`);
   tracklistElt.innerHTML = trackElts.join("");
 
   const membersListElt = document.querySelector(".members");
@@ -72,6 +83,49 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
   }
 });
 
+document.getElementById("search").addEventListener('keyup', debounce(async (e: KeyboardEvent) => {
+  //@ts-ignore
+  const q = e.target.value;
+  const searchResultElt = document.getElementById("search-results");
+  if (!q) {
+    return searchResultElt.innerHTML = "";
+  }
+  try {
+    const result = (await axios.get(`/spotify/search?token=${token}&query=${q}`)).data as { tracks: { href: string; items: ISpotifyTrack[] } };
+    const resultElts = result.tracks.items.sort((a, b) => b.popularity - a.popularity).map((track) => {
+      return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists[0].name}" data-image="${track.album.images[0].url}">
+                <div>
+                  <img src="${track.album.images[0].url}" alt="cover">
+                </div>
+                <div>
+                  ${track.artists[0].name} - ${track.name}
+                </div>
+              </li>`
+    });
+    searchResultElt.innerHTML = resultElts.join("");
+    document.querySelectorAll(".track-search-result-item").forEach((elt) => {
+      elt.addEventListener("click", async function (e: MouseEvent) {
+        const { uri, name, artist, image } = this.dataset;
+        try {
+          const room = (await axios.post(`/room/add-track/${roomId}`, {
+            uri, name, artist, image, userId: user.id,
+          })).data.room;
+          displayRoom(room);
+        } catch (err) {
+          console.log("There was a problem adding a song to the room");
+        }
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    console.log("There was an error getting the search result from spotify");
+  }
+}, 2000));
+
+document.querySelectorAll(".track-search-result-item").forEach((elt) => {
+  elt.addEventListener
+});
+
 document.getElementById("create").addEventListener("click", async (e: MouseEvent) => {
   try {
     await axios.post(`/room/create/?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
@@ -93,9 +147,9 @@ function getCookies(): Record<string, string> {
   const pairs = document.cookie.split(";");
   console.log(pairs);
   const cookies = {};
-  for (let i=0; i<pairs.length; i++){
+  for (let i = 0; i < pairs.length; i++) {
     const pair = pairs[i].split("=");
-    cookies[(pair[0]+'').trim()] = unescape(pair.slice(1).join('='));
+    cookies[(pair[0] + '').trim()] = unescape(pair.slice(1).join('='));
   }
   return cookies;
 }
@@ -108,7 +162,7 @@ export async function doIt() {
   }
 
   roomId = getCookies()["rooom_id"];
-  if(roomId && roomId !== "null") {
+  if (roomId && roomId !== "null") {
     try {
       await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
     } catch (error) {
@@ -130,24 +184,24 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     name: 'Rooom',
     getOAuthToken: cb => { cb(token); }
   });
-  
+
   player.addListener('initialization_error', ({ message }) => { console.error(message); });
   player.addListener('authentication_error', ({ message }) => { console.error(message); });
   player.addListener('account_error', ({ message }) => { console.error(message); });
   player.addListener('playback_error', ({ message }) => { console.error(message); });
-  
+
   player.addListener('player_state_changed', state => { console.log(state); });
-  
+
   player.addListener('ready', ({ device_id }) => {
     deviceId = device_id;
     console.log('Ready with Device ID', device_id);
     doIt();
   });
-  
+
   player.addListener('not_ready', ({ device_id }) => {
     console.log('Device ID has gone offline', device_id);
   });
-  
+
   player.connect();
 };
 

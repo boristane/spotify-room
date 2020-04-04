@@ -1,8 +1,9 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, setRoomCurrentTrack } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, setRoomCurrentTrack, addTrackToRoomInDb } from "../services/database";
 import { skipToNextTrack, skipToPreviousTrack, play, getCurrentlyPalyingTrack, addTrackToPlaybackQueue } from "../services/spotify";
 import * as _ from "lodash";
+import { IRoom } from "../models/room";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
@@ -194,7 +195,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       const masterToken = room.master.token;
       const currentTrack = await getCurrentlyPalyingTrack(masterToken);
       if (!currentTrack.item) {
-        const roomCurrentTrack = room.tracks.find((t) => t.current);
+        const roomCurrentTrack = room.tracks.find((t) => t.current) || room.tracks[0];
         if (roomCurrentTrack) {
           uri = roomCurrentTrack.uri;
           progress = 0;
@@ -213,7 +214,6 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       for (let i = 0; i < room.members.length; i += 1) {
         const member = room.members[i];
         try {
-
           await play(member.token, uri, progress + networkDelay, member.deviceId);
         } catch (error) {
           logger.error("There was an error playing the track for a uuser", { error, member });
@@ -241,6 +241,12 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
     const masterToken = room.master.token;
     const currentTrack = await getCurrentlyPalyingTrack(masterToken);
+    if (currentTrack.item.uri !== room.tracks.find((t) => t.current).uri) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
     await play(roomMember.token, currentTrack.item.uri, currentTrack.progress_ms + networkDelay, roomMember.deviceId);
     const roomCurrentTrackIndex = room.tracks.findIndex((t) => t.uri === currentTrack.item.uri);
     for (let i = 0; i < room.tracks.length; i += 1) {
@@ -251,11 +257,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
 
     const response = {
-      message: "Playing the track for room member", room: {
-        master: _.omit(room.master, ["token"]),
-        members: room.members.map((m) => _.omit(m, ["token"])),
-        tracks: room.tracks,
-      }
+      message: "Playing the track for room member", room: prepareRoomForResponse(room)
     };
     res.locals.body = response;
     res.status(200).json(response);
@@ -265,5 +267,55 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     logger.error(message, { error });
     res.status(500).json({ message });
     return next();
+  }
+}
+
+export async function addTrackToRoom(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId, uri, artist, name, image } = req.body;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    const approved = room.master.id === userId;
+    if (approved) {
+      await addTrackToRoomInDb(room, uri, name, artist, image, approved);
+      const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
+      res.locals.body = response;
+      res.status(200).json(response);
+      return next();
+    }
+
+    const roomMember = room.members.find((m) => m.id === user.id);
+    if (!roomMember) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    await addTrackToRoomInDb(room, uri, name, artist, image, approved);
+    const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+
+  } catch (error) {
+    const message = "There was a problem adding a track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export function prepareRoomForResponse(room: IRoom) {
+  return {
+    master: _.omit(room.master, ["token"]),
+    members: room.members.map((m) => _.omit(m, ["token"])),
+    tracks: room.tracks,
   }
 }

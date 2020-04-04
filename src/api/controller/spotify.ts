@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import { createPlaylist, addTracksToPlaylist, getUserProfile, getTopArtists, getTopTracks, skipToNextTrack } from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, search } from "../services/spotify";
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
@@ -101,7 +101,6 @@ export async function refreshToken(req: Request, res: Response) {
 }
 
 export async function getUser(req: Request, res: Response, next: NextFunction) {
-  console.log("wtf");
   const { token } = req.query;
   try {
     const user = await getUserProfile(token);
@@ -111,6 +110,20 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Unexpected error.", err: err.stack });
+  }
+}
+
+export async function searchTrack(req: Request, res: Response, next: NextFunction) {
+  const { token, query } = req.query;
+  try {
+    const response = await search(token, query);
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (err) {
+    logger.error("There was an error searching fo a track");
+    res.status(500).json({ error: "Unexpected error." });
+    return next();
   }
 }
 

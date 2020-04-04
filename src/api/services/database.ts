@@ -69,6 +69,21 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
   return isNewUser;
 }
 
+export async function addTrackToRoomInDb(room: IRoom, uri: string, name: string, artist: string, image: string, approved: boolean) {
+  const { tracks } = room;
+    tracks.forEach((t) => { t.completed = true; t.current = false; });
+    tracks.push({
+      uri: uri,
+      name: name,
+      artist: artist,
+      image: image,
+      completed: false,
+      current: false,
+      approved: approved,
+    });
+    return await room.save();  
+}
+
 export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
   const { tracks } = room;
   const trackIndex = tracks.findIndex((t) => t.uri === track.uri);
