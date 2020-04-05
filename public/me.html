@@ -5,39 +5,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="stylesheet" href="./me.css" />
+  <link rel="stylesheet" href="./form.css" />
   
   <title>Rooom</title>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="user"></div>
-  <div id="room-name"></div>
-  <div id="room-id"></div>
-  <button id="play" style="display: none;" class="room-block">Play</button>
-  <div id="create-room"  style="display: none;">
-    <input type="text" id="create-room-name">
-    <button id="create">Create Room</button>
-  </div>
-  <button id="leave" class="room-block" style="display: none;">Leave</button>
-  <div>
-    <ul class="members">
-    </ul>
-  </div>
-  <div>
-    <ul class="members-to-approve">
+<section id="get-in-room" style="display: none;">
 
-    </ul>
+  <div >
+    <div class="form-inline">
+      <input type="text" placeholder="What's the name of your rooom?" id="create-room-name">
+      <button id="create">Create a Rooom</button>
+    </div>
+    <!-- <div>or</div>
+    <div class="form-inline">
+      <input type="text" placeholder="Paste the id your friends gave you!" id="join-room-id">
+      <button id="join">Join a Rooom</button>
+    </div> -->
   </div>
-  <div class="room-block" style="display:none">
-    <input type="text" id="search">
-    <ol id="search-results">
-    </ol>
+</section>
+
+<div id="user"></div>
+  <div id="room">
+
+    <div id="room-name"></div>
+    <div id="room-id"></div>
+    <button id="play" style="display: none;" class="room-block">Play</button>
+    <button id="leave" class="room-block" style="display: none;">Leave</button>
+    <div>
+      <ul class="members">
+      </ul>
+    </div>
+    <div>
+      <ul class="members-to-approve">
+  
+      </ul>
+    </div>
+    <div class="room-block" style="display:none">
+      <input type="text" id="search">
+      <ol id="search-results">
+      </ol>
+    </div>
+    <div>
+      <ul class="tracklist">
+      </ul>
+    </div>
   </div>
-  <div>
-    <ul class="tracklist">
-    </ul>
-  </div>
+
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <script src="index.ts"></script>
 </body>

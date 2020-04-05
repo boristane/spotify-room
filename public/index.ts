@@ -2,6 +2,7 @@ import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../src/api/models/room";
 import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../src/typings/spotify";
+import { userBuilder, masterBuilder, trackBuilder } from "./builders";
 
 const debounce = (func: Function, delay: number) => {
   let debounceTimer
@@ -43,27 +44,34 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   }
 }
 
+document.querySelector("body").addEventListener("click", () => {
+  document.querySelector("#search-results").innerHTML = "";
+});
+
 export async function displayRoom(room: IRoom) {
   if(room === null) {
     console.log("waiting to be approved");
     return
   };
+  if(JSON.stringify(room) === JSON.stringify(oldRoom)) {
+    return;
+  }
+  oldRoom = room;
   isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist");
-  const trackElts = room.tracks.map((track) => `<li class="track" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artist}" data-image="${track.image}" data-approved="${track.approved}">
-                                                  ${track.uri} - ${track.artist} - ${track.name} - Approved: ${track.approved} - Current: ${track.current} - Completed: ${track.completed}
-                                                </li>`);
+  const trackElts = room.tracks.map((track) => trackBuilder(track));
   tracklistElt.innerHTML = trackElts.join("");
+  tracklistElt.scrollTop = tracklistElt.scrollHeight * 2;
 
   const membersListElt = document.querySelector(".members");
   const membersToAppoveListElt = document.querySelector(".members-to-approve");
-  const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li>${member.name} Current: ${member.currentTrack}</li>`);
-  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member-to-approve" data-id="${member.id}">${member.name} Current: ${member.currentTrack}</li>`);
-  const masterElt = `<li style="font-weight: bold">${room.master.name}</li>`;
+  const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li class="member">${member.name}</li>`);
+  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member-to-approve" data-id="${member.id}">${member.name}</li>`);
+  const masterElt = masterBuilder(room.master);
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
   document.getElementById("room-name").textContent = room.name;
-  document.getElementById("room-id").textContent = room.id;
+  document.getElementById("room-id").textContent = `http://localhost:3333/?id=${room.id}`;
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
@@ -111,6 +119,7 @@ let user;
 let roomId: string;
 let deviceId: string;
 let isMaster: boolean = false;
+let oldRoom;
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
   try {
@@ -132,12 +141,14 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     const result = (await axios.get(`/spotify/search?token=${token}&query=${q}`)).data as { tracks: { href: string; items: ISpotifyTrack[] } };
     const resultElts = result.tracks.items.sort((a, b) => b.popularity - a.popularity).map((track) => {
       return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists[0].name}" data-image="${track.album.images[0].url}">
+                <div style="display: grid; grid-template-columns: 30px calc(100% - 30px);">
                 <div>
-                  <img src="${track.album.images[0].url}" alt="cover">
+                  <img src="${track.album.images[0].url}" alt="cover" style="width: 30px">
                 </div>
                 <div>
-                  ${track.artists[0].name} - ${track.name}
+                  ${track.name} - ${track.artists[0].name}
                 </div>
+                </div>          
               </li>`
     });
     searchResultElt.innerHTML = resultElts.join("");
@@ -223,15 +234,15 @@ export async function doIt() {
     }
     const room = await getRoom(roomId, user.id);
     displayRoom(room); 
+    document.getElementById("get-in-room").style.display = "none";
     setInterval(async () => {
       const room = await getRoom(roomId, user.id);
       displayRoom(room);  
     }, 30*1000);
   } else {
-    document.getElementById("create-room").style.display = "block";
+    document.getElementById("get-in-room").style.display = "block";
   }
-  const username = user.display_name ? user.display_name.split(" ")[0] : "there";
-  document.getElementById("user").textContent = username;
+  document.getElementById("user").innerHTML = userBuilder(user);
 }
 
 //@ts-ignore

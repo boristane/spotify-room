@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  color: white;
+  font-family: 'Raleway', sans-serif;
+  text-rendering: optimizeLegibility;
+  background: #191414;
+  overflow: hidden;
+}
+
+section {
+  text-align: center;
+  font-family: 'Raleway', sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  text-align: center;
+}
+
+#user-photo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: solid 1px grey;
+}
+
+#user {
+  position: absolute;
+  top: 20px;
+  right: 370px;
+  height: 30px;
+  border: solid 2px white;
+  border-radius: 50px;
+  padding-right: 5px;
+  background-color: #000;
+  display: grid;
+  grid-template-columns: 30px calc(100% - 30px);
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#room {
+  margin: 60px auto;
+  padding: 30px;
+}
+
+#room-name {
+  font-size: 70px;
+  font-family: 'Space Mono', monospace;
+}
+
+#room-id {
+  font-size: 13px;
+  color: lightgray;
+}
+
+#leave {
+  color: white;
+  font-weight: bold;
+  background-color: coral;
+  border-radius: 100px;
+  width: 80px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 0.9em;
+  text-align: center;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.2s ease-out;
+  border: none;
+  position: absolute;
+  top: 40px;
+  right: 370px;
+}
+
+#leave:hover {
+  background-color: red;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.members {
+  border-left: solid 1px grey;
+  width: 250px;
+  background-color: #000;
+}
+
+.member {
+  padding: 15px;
+  border-bottom: 1px #282828 solid;
+}
+
+.master {
+  font-weight: bold;
+}
+
+
+.tracklist {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  border-left: solid 1px grey;
+  width: 350px;
+  max-height: calc(100vh - 2px);
+  overflow: scroll;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 60px calc(100% - 60px);
+  padding: 8px 15px;
+  margin: 0;
+  border-bottom: 1px #303030 solid;
+  opacity: 0.2; 
+   -moz-opacity: 0.2;  
+   -webkit-opacity: 0.2;
+   filter: alpha(opacity=20);
+}
+
+.track.current {
+  background-color: #000;
+}
+
+.track.approved {
+  background-color: #282828;
+  opacity: 1; 
+   -moz-opacity: 1;  
+   -webkit-opacity: 1;
+   filter: alpha(opacity=100);
+}

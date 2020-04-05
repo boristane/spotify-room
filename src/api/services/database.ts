@@ -63,7 +63,7 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     if (member.token === token && member.deviceId === deviceId && member.currentTrack === currentTrack.uri) return;
     member.token = token;
     member.deviceId = deviceId;
-    member.currentTrack = currentTrack.uri;
+    member.currentTrack = currentTrack?.uri;
     member.isActive = true;
     await room.save();
     return isNewUser;
