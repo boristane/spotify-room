@@ -14,11 +14,12 @@
   <div id="user"></div>
   <div id="room-name"></div>
   <div id="room-id"></div>
-  <button id="play">Play</button>
-  <div id="create-room" style="display: none;">
+  <button id="play" style="display: none;" class="room-block">Play</button>
+  <div id="create-room"  style="display: none;">
     <input type="text" id="create-room-name">
     <button id="create">Create Room</button>
   </div>
+  <button id="leave" class="room-block" style="display: none;">Leave</button>
   <div>
     <ul class="members">
     </ul>
@@ -28,7 +29,7 @@
 
     </ul>
   </div>
-  <div>
+  <div class="room-block" style="display:none">
     <input type="text" id="search">
     <ol id="search-results">
     </ol>

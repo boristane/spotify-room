@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember } from "../services/database";
 import { play, getCurrentlyPalyingTrack } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -21,6 +21,33 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
     logger.info("User joined a room", { id, token, userId });
     res.status(200).json({
       message: "All good", room: prepareRoomForResponse(room),
+    });
+    return next();
+  } catch (error) {
+    const message = "There was a problem joining a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function leaveRoom(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user || !room.isActive) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    await removeRoomMember(room, user);
+    logger.info("User left a room", { id, userId });
+    res.clearCookie("rooom_id");
+    res.status(200).json({
+      message: "All good",
     });
     return next();
   } catch (error) {

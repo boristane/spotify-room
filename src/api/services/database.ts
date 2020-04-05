@@ -74,6 +74,22 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
   return isNewUser;
 }
 
+export async function removeRoomMember(room: IRoom, user: IUser): Promise<boolean> {
+  const { members, master } = room;
+  if (master.id === user.id) {
+    room.isActive = false;
+    await room.save();
+    return true;
+  }
+  const member = members.find((m) => m.id === user.id);
+  if (member) {
+    member.isActive = false;
+    await room.save();
+    return true;
+  }
+  return false;
+}
+
 export async function addTrackToRoomInDb(room: IRoom, uri: string, name: string, artist: string, image: string, approved: boolean) {
   const { tracks } = room;
   const current = room.tracks.length === 0;

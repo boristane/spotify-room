@@ -1,9 +1,10 @@
 import express from "express";
-import { joinRoom, createRoom, goToNextTrack, playRoom, getRooom, addTrackToRoom, masterGoToTrack, masterApproveTrack, masterApproveMember } from "../controller/room";
+import { joinRoom, createRoom, goToNextTrack, playRoom, getRooom, addTrackToRoom, masterGoToTrack, masterApproveTrack, masterApproveMember, leaveRoom } from "../controller/room";
 
 const router = express.Router();
 
 router.put("/join/:id", joinRoom);
+router.put("/leave/:id", leaveRoom);
 router.post("/create", createRoom);
 router.post("/play/:id", playRoom);
 router.get("/next/:id", goToNextTrack);

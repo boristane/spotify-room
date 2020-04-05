@@ -98,7 +98,12 @@ export async function displayRoom(room: IRoom) {
         console.log("There was an error approving a member");
       }
     });
-  })
+  });
+
+  document.querySelectorAll(".room-block").forEach((elt) => {
+    //@ts-ignore
+    elt.style.display = "block";
+  });
 }
 
 let token: string;
@@ -171,6 +176,15 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
     window.location.reload();
   } catch (error) {
     console.log("There was problem creating the room", error);
+  }
+});
+
+document.getElementById("leave").addEventListener("click", async (e: MouseEvent) => {
+  try {
+    await axios.put(`/room/leave/${roomId}?&userId=${user.id}`);
+    window.location.reload();
+  } catch (error) {
+    console.log("There was problem leaving the room", error);
   }
 });
 
