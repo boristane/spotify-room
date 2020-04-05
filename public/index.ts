@@ -51,11 +51,15 @@ document.querySelector("body").addEventListener("click", () => {
 export async function displayRoom(room: IRoom) {
   if(room === null) {
     console.log("waiting to be approved");
+    document.getElementById("waiting").style.display = "block";
+    document.querySelector("section").style.display = "none";
     return
   };
   if(JSON.stringify(room) === JSON.stringify(oldRoom)) {
     return;
   }
+  document.getElementById("waiting").style.display = "none";
+  document.getElementById("room").style.display = "block";
   oldRoom = room;
   isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist");
