@@ -7,48 +7,60 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <link rel="stylesheet" href="./me.css" />
   <link rel="stylesheet" href="./form.css" />
-  
+  <link rel="stylesheet" href="./loader.css" />
+
   <title>Rooom</title>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-<section id="get-in-room" style="display: none;">
+  <div class="loader"></div>
+  <section id="get-in-room" style="display: none;">
 
-  <div >
-    <div class="form-inline">
-      <input type="text" placeholder="What's the name of your rooom?" id="create-room-name">
-      <button id="create">Create a Rooom</button>
+    <div>
+      <div class="form-inline">
+        <input type="text" placeholder="What's the name of your rooom?" id="create-room-name">
+        <button id="create">Create a Rooom</button>
+      </div>
     </div>
-    <!-- <div>or</div>
-    <div class="form-inline">
-      <input type="text" placeholder="Paste the id your friends gave you!" id="join-room-id">
-      <button id="join">Join a Rooom</button>
-    </div> -->
+  </section>
+
+  <div class="user-container">
+    <div id="user"></div>
+    <button id="leave" class="room-block">Leave</button>
   </div>
-</section>
+  <div id="room">
+    <div class="small-room">
+      <div class="left-panel">
+        <div>
+          <ul class="members">
+          </ul>
+        </div>
+        <div>
+          <ul class="members-to-approve">
 
-<div id="user"></div>
-  <div id="room" style="display: none;">
+          </ul>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div id="room-name"></div>
+        <div id="room-id"></div>
+        <div class="room-block" style="display:none; width: 80%; margin: auto; margin-top: 50px;">
+          <div class="form-inline">
+            <input type="text" id="search" placeholder="Search">
+          </div>
+          <div class="search-results-container">
+            <ol id="search-results">
+          </div>
+          </ol>
+        </div>
+        <div class="play-container">
+          <button id="play" style="display: none;" class="room-block">play</button>
+        </div>
+      </div>
 
-    <div id="room-name"></div>
-    <div id="room-id"></div>
-    <button id="play" style="display: none;" class="room-block">Play</button>
-    <button id="leave" class="room-block" style="display: none;">Leave</button>
-    <div>
-      <ul class="members">
-      </ul>
     </div>
-    <div>
-      <ul class="members-to-approve">
-  
-      </ul>
-    </div>
-    <div class="room-block" style="display:none">
-      <input type="text" id="search">
-      <ol id="search-results">
-      </ol>
-    </div>
+
     <div>
       <ul class="tracklist">
       </ul>
@@ -58,7 +70,7 @@
   <div id="waiting" style="display: none;">Waiting to be added to the Rooom by the rooom master...</div>
 
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script src="index.ts"></script>
+  <script src="index.ts"></script>
 </body>
 
 </html>

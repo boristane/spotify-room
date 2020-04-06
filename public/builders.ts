@@ -31,9 +31,9 @@ export function trackBuilder(track: {
             <div>
               <img src="${track.image}" style="width: 60px"/>
             </div>
-            <div style="padding-top: 20px; padding-left: 10px;">
+            <div style="padding-left: 10px;">
 
-              <span style="font-weight: bold">${track.name}</span> - <span>${track.artist}</span>
+              <div class="track-name">${track.name}</div><div class="artist-name">${track.artist}</div>
 
             </div>
           </li>`

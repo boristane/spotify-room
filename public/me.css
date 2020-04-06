@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
 
 * {
   margin: 0;
@@ -30,9 +31,6 @@ section {
 }
 
 #user {
-  position: absolute;
-  top: 20px;
-  right: 370px;
   height: 30px;
   border: solid 2px white;
   border-radius: 50px;
@@ -44,19 +42,36 @@ section {
   font-weight: bold;
 }
 
+.user-container{
+  transition: all 0.2s ease-out;
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  visibility: hidden;
+  display: grid;
+  grid-template-columns: calc(100% - 80px) 80px;
+}
+
 #room {
-  margin: 60px auto;
-  padding: 30px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  visibility: hidden;
+  display: grid;
+  grid-template-columns: calc(100% - 350px) 350px ;
 }
 
 #room-name {
   font-size: 70px;
+  padding: 0 30px; 
   font-family: 'Space Mono', monospace;
 }
 
 #room-id {
+  padding: 0 30px; 
   font-size: 13px;
   color: lightgray;
+  margin-top: -20px;
 }
 
 #leave {
@@ -65,42 +80,61 @@ section {
   background-color: coral;
   border-radius: 100px;
   width: 80px;
-  height: 30px;
+  height: 35px;
   padding: 0 10px;
   font-size: 0.9em;
   text-align: center;
   cursor: pointer;
-  margin-top: 20px;
+  margin-left: 10px;
   transition: all 0.2s ease-out;
   border: none;
-  position: absolute;
-  top: 40px;
-  right: 370px;
 }
 
 #leave:hover {
   background-color: red;
 }
 
-#room {
-  width: 100%;
+#play {
+  color: white;
+  font-weight: bold;
+  border: #505050 5px solid;
+  background-color: transparent;
+  padding: 15px;
+  border-radius: 100%;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  max-width: 100px;
+  margin: auto;
 }
 
-ul {
+.play-container {
+  width: 100%;
+  margin: 50vh auto;
+}
+
+
+#play:hover {
+  border: #1db91d 5px solid;
+}
+
+ol, ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
-.members {
-  border-left: solid 1px grey;
-  width: 250px;
+.left-panel {
+  transition: all 0.2s ease-out;
+  width: 0px;
+  height: 100%;
   background-color: #000;
+  visibility: hidden;
 }
 
 .member {
+  cursor: pointer;
   padding: 15px;
-  border-bottom: 1px #282828 solid;
 }
 
 .master {
@@ -110,26 +144,31 @@ ul {
 
 .tracklist {
   position: absolute;
-  top: 2px;
   right: 0;
-  border-left: solid 1px grey;
-  width: 350px;
   height: calc(100vh - 2px);
-  overflow: scroll;
+  overflow-y: scroll;
   padding-bottom: 0;
   padding-top: 0;
+  width: 0;
+  transition: all 0.2s ease-out;
 }
 
 .track {
+  cursor: pointer;
   display: grid;
   grid-template-columns: 60px calc(100% - 60px);
-  padding: 8px 15px;
+  padding: 8px 15px 6px 15px;
   margin: 0;
   border-bottom: 1px #303030 solid;
   opacity: 0.2; 
    -moz-opacity: 0.2;  
    -webkit-opacity: 0.2;
    filter: alpha(opacity=20);
+   transition: all 0.2s ease-out;
+   position: relative;
+}
+.track:hover {
+  background-color: #191414 !important;
 }
 
 .track.current {
@@ -142,4 +181,39 @@ ul {
    -moz-opacity: 1;  
    -webkit-opacity: 1;
    filter: alpha(opacity=100);
+}
+
+.track-name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.artist-name {
+  font-size: 12px;
+  color: grey;
+}
+
+.small-room {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 250px calc(100% - 250px);
+}
+
+
+.search-results-container {
+  padding: 15px;
+  margin-top: -20px;
+}
+
+.track-search-result-item {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 7.5px 15px;
+  cursor: pointer;
+}
+
+.track-search-result-item:hover {
+  background-color: #19141479;
+  transition: all 0.2s ease-out;
+  padding: 7.5px 15px;
+  cursor: pointer;
 }

@@ -46,6 +46,7 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
 
 document.querySelector("body").addEventListener("click", () => {
   document.querySelector("#search-results").innerHTML = "";
+  (document.getElementById("search") as HTMLInputElement).value = "";
 });
 
 export async function displayRoom(room: IRoom) {
@@ -59,18 +60,18 @@ export async function displayRoom(room: IRoom) {
     return;
   }
   document.getElementById("waiting").style.display = "none";
-  document.getElementById("room").style.display = "block";
+  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+  document.getElementById("room").style.visibility = "visible";
   oldRoom = room;
   isMaster = room.master.id === user.id;
-  const tracklistElt = document.querySelector(".tracklist");
-  const trackElts = room.tracks.map((track) => trackBuilder(track));
+  const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
+  const trackElts = room.tracks.filter(t => !t.completed).map((track) => trackBuilder(track));
   tracklistElt.innerHTML = trackElts.join("");
-  tracklistElt.scrollTop = tracklistElt.scrollHeight * 2;
 
-  const membersListElt = document.querySelector(".members");
-  const membersToAppoveListElt = document.querySelector(".members-to-approve");
+  const membersListElt = document.querySelector(".members") as HTMLDivElement;
+  const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
   const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li class="member">${member.name}</li>`);
-  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member-to-approve" data-id="${member.id}">${member.name}</li>`);
+  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member member-to-approve" data-id="${member.id}">${member.name}</li>`);
   const masterElt = masterBuilder(room.master);
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
@@ -112,10 +113,19 @@ export async function displayRoom(room: IRoom) {
     });
   });
 
-  document.querySelectorAll(".room-block").forEach((elt) => {
-    //@ts-ignore
+  document.querySelectorAll(".room-block").forEach((elt: HTMLDivElement) => {
     elt.style.display = "block";
   });
+
+  setTimeout(() => {
+    const userElt = (document.querySelector(".user-container") as HTMLDivElement);
+    const lesftPanel = (document.querySelector(".left-panel") as HTMLDivElement)
+    userElt.style.right = "370px";
+    userElt.style.visibility = "visible";
+    tracklistElt.style.width = "350px";
+    lesftPanel.style.width = "250px";
+    lesftPanel.style.visibility = "visible";
+  }, 1000);
 }
 
 let token: string;
@@ -132,6 +142,10 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
   } catch (error) {
     console.log("There was problem playing the track", error);
   }
+});
+
+document.getElementById("search").addEventListener("click", (e: MouseEvent) => {
+  e.stopPropagation();
 });
 
 document.getElementById("search").addEventListener('keyup', debounce(async (e: KeyboardEvent) => {
@@ -158,6 +172,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     searchResultElt.innerHTML = resultElts.join("");
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
+      e.stopPropagation();
         const { uri, name, artist, image } = this.dataset;
         try {
           const room = (await axios.post(`/room/add-track/${roomId}`, {
@@ -173,7 +188,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     console.log(err);
     console.log("There was an error getting the search result from spotify");
   }
-}, 2000));
+}, 500));
 
 document.querySelectorAll(".track-search-result-item").forEach((elt) => {
   elt.addEventListener
@@ -289,3 +304,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
 
 main();
+
+setInterval(() => {
+  main();
+}, 30 * 60 * 1000);
