@@ -6,7 +6,7 @@ export function userBuilder(user: ISpotifyUser): string {
   return `<div>
             <img src="${imageUrl}" alt="your avatar" id="user-photo"/>
           </div>
-          <div style="padding-left: 5px; padding-top: 6px;">
+          <div style="padding-left: 10px; padding-top: 6px;">
             ${username}
           </div>`;
 }
@@ -34,6 +34,24 @@ export function trackBuilder(track: {
             <div style="padding-left: 10px;">
 
               <div class="track-name">${track.name}</div><div class="artist-name">${track.artist}</div>
+
+            </div>
+          </li>`
+}
+
+export function searchResultBuilder(track: {
+  uri: string;
+  name: string;
+  artists: any[];
+  image: string;
+}): string {
+  return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.image}">
+            <div>
+              <img src="${track.image}" style="width: 60px"/>
+            </div>
+            <div style="padding-left: 10px;">
+
+              <div class="track-name">${track.name}</div><div class="artist-name">${track.artists.map(a => a.name).join(", ")}</div>
 
             </div>
           </li>`

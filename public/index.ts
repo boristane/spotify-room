@@ -2,7 +2,7 @@ import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../src/api/models/room";
 import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../src/typings/spotify";
-import { userBuilder, masterBuilder, trackBuilder } from "./builders";
+import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder } from "./builders";
 
 const debounce = (func: Function, delay: number) => {
   let debounceTimer
@@ -51,7 +51,6 @@ document.querySelector("body").addEventListener("click", () => {
 
 export async function displayRoom(room: IRoom) {
   if(room === null) {
-    console.log("waiting to be approved");
     document.getElementById("waiting").style.display = "block";
     document.querySelector("section").style.display = "none";
     return
@@ -65,8 +64,11 @@ export async function displayRoom(room: IRoom) {
   oldRoom = room;
   isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
-  const trackElts = room.tracks.filter(t => !t.completed).map((track) => trackBuilder(track));
+  const trackElts = room.tracks.map((track) => trackBuilder(track));
   tracklistElt.innerHTML = trackElts.join("");
+
+  const currentEltIndex = room.tracks.findIndex(t => t.current);
+  tracklistElt.scrollTo({top: 79*currentEltIndex, behavior: 'smooth'});
 
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
@@ -119,12 +121,7 @@ export async function displayRoom(room: IRoom) {
 
   setTimeout(() => {
     const userElt = (document.querySelector(".user-container") as HTMLDivElement);
-    const lesftPanel = (document.querySelector(".left-panel") as HTMLDivElement)
-    userElt.style.right = "370px";
     userElt.style.visibility = "visible";
-    tracklistElt.style.width = "350px";
-    lesftPanel.style.width = "250px";
-    lesftPanel.style.visibility = "visible";
   }, 1000);
 }
 
@@ -158,6 +155,12 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
   try {
     const result = (await axios.get(`/spotify/search?token=${token}&query=${q}`)).data as { tracks: { href: string; items: ISpotifyTrack[] } };
     const resultElts = result.tracks.items.sort((a, b) => b.popularity - a.popularity).map((track) => {
+      return searchResultBuilder({
+        uri: track.uri,
+        name: track.name,
+        artists: track.artists,
+        image: track.album.images[0].url
+      });
       return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists[0].name}" data-image="${track.album.images[0].url}">
                 <div style="display: grid; grid-template-columns: 30px calc(100% - 30px);">
                 <div>
@@ -260,6 +263,7 @@ export async function doIt() {
     }, 30*1000);
   } else {
     document.getElementById("get-in-room").style.display = "block";
+    (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
   }
   document.getElementById("user").innerHTML = userBuilder(user);
 }

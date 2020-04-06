@@ -16,18 +16,15 @@
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div class="loader"></div>
   <section id="get-in-room" style="display: none;">
-
-    <div>
       <div class="form-inline">
         <input type="text" placeholder="What's the name of your rooom?" id="create-room-name">
         <button id="create">Create a Rooom</button>
       </div>
-    </div>
   </section>
 
   <div class="user-container">
     <div id="user"></div>
-    <button id="leave" class="room-block">Leave</button>
+    <button id="leave" class="room-block">leave</button>
   </div>
   <div id="room">
     <div class="small-room">
@@ -45,31 +42,31 @@
       <div class="right-panel">
         <div id="room-name"></div>
         <div id="room-id"></div>
-        <div class="room-block" style="display:none; width: 80%; margin: auto; margin-top: 50px;">
-          <div class="form-inline">
-            <input type="text" id="search" placeholder="Search">
-          </div>
-          <div class="search-results-container">
-            <ol id="search-results">
-          </div>
-          </ol>
-        </div>
-        <div class="play-container">
-          <button id="play" style="display: none;" class="room-block">play</button>
-        </div>
+
+        <button id="play" style="display: none;" class="room-block noselect">play</button>
+        <ul class="tracklist">
+        </ul>
+
+
       </div>
 
     </div>
 
-    <div>
-      <ul class="tracklist">
-      </ul>
+    <div class="room-block search-results-container" style="display:none;">
+      <div class="form-inline">
+        <input type="text" id="search" placeholder="Search">
+      </div>
+      <div class="">
+        <ol id="search-results">
+        </ol>
+      </div>
     </div>
+
   </div>
 
   <div id="waiting" style="display: none;">Waiting to be added to the Rooom by the rooom master...</div>
 
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script src="https://sdk.scdn.co/spotify-player.js" crossorigin="anonymous"></script></script>
   <script src="index.ts"></script>
 </body>
 

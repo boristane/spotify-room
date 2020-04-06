@@ -30,7 +30,7 @@
   margin: auto;
   color: white;
   font-weight: bold;
-  background-color: #1db91d;
+  border: #1DB954 1px solid;
   border-radius: 100px;
   width: 238px;
   padding: 10px;
@@ -40,10 +40,10 @@
   cursor: pointer;
   margin-top: 20px;
   transition: all 0.2s ease-out;
-  border: none;
+  background: transparent;  
 }
 
 .form-inline button:hover {
-  background-color: #fa6b52;
+  background-color: #1DB954;
 }
 
