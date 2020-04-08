@@ -1,36 +1,30 @@
-@import url("https://fonts.googleapis.com/css?family=Dosis&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
 
 body {
   margin: 0;
+  font-family: 'Raleway', sans-serif;
+  background-color: black;
+  color: white;
+  text-align: center;
 }
 
-.main-container {
-  display: grid;
-  grid-template-columns: 50% 50%;
+.logo-container {
+  width: 150px;
+  margin: auto;
+  padding-top: 15px;
 }
 
-#logo {
-  width: 30px;
-  border-radius: 50%;
-  position: absolute;
-  top: 185px;
-  left: 60px;
+.logo {
+  width: 150px;
+  margin: auto;
 }
 
 .left {
-  font-family: "Dosis", sans-serif;
   font-size: 1.2em;
   height: 100vh;
   box-sizing: border-box;
   padding: 100px;
   padding-top: 150px;
-}
-
-.right {
-  height: 100vh;
-  background-image: url("./background.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
 }
 
 .button-container {
@@ -39,15 +33,16 @@ body {
 
 .info {
   font-size: 0.8em;
-  color: grey;
+  color: lightgray;
   margin-top: 10px;
 }
 
 #primaryButton {
-  font-family: "Dosis", sans-serif;
+  font-family: 'Raleway', sans-serif;
   color: white;
   font-weight: bold;
-  background-color: #1DB954;
+  border: #1DB954 1px solid;
+  background-color: transparent;
   border-radius: 100px;
   width: 238px;
   padding: 5px;
@@ -60,14 +55,14 @@ body {
 }
 
 #primaryButton:hover {
-  background-color: #fa6b52;
+  background-color: #1DB954;
 }
 
 .me {
-  color: black;
+  color: grey;
 }
 .me:hover {
-  color: rgb(250, 90, 95);
+  color: #1DB954;
 }
 a:link {
   text-decoration: none;
@@ -90,39 +85,14 @@ a:active {
 }
 
 @media only screen and (max-width: 1200px) {
-  .main-container {
-    display: block;
-  }
-
-  .right {
-    display: none;
-  }
-
   .button-container {
     display: none;
   }
 
   .mobile {
     display: block;
-    margin-top: 50px;
+    margin: 50px 0;
+    font-size: 18px;
   }
 
-  .mobile-input {
-    border: 1px solid #fa6b52;
-    border-radius: 2px;
-    width: 100%;
-    box-sizing: border-box;
-    max-width: 300px;
-    padding: 10px;
-  }
-
-  .left {
-    padding: 20px;
-    padding-left: 70px;
-  }
-
-  #logo {
-    top: 55px;
-    left: 30px;
-  }
 }
