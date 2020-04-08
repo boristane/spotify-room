@@ -15,7 +15,6 @@ package:
     - .cache/**
     - .env
 
-
 functions:
   server:
     handler: .build/serverless.server

@@ -1,7 +1,7 @@
 import axios from "axios";
 import "babel-polyfill";
-import { IRoom } from "../src/api/models/room";
-import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../src/typings/spotify";
+import { IRoom } from "../models/room";
+import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../typings/spotify";
 import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder } from "./builders";
 
 const debounce = (func: Function, delay: number) => {
@@ -65,9 +65,10 @@ export async function displayRoom(room: IRoom) {
   isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
   const trackElts = room.tracks.map((track) => trackBuilder(track));
+  (document.getElementById("add-songs") as HTMLDivElement).style.display = "none";
   tracklistElt.innerHTML = trackElts.join("");
   if(tracklistElt.innerHTML === "") {
-    tracklistElt.innerHTML = "start by adding songs to the room. use the search bar.";
+    (document.getElementById("add-songs") as HTMLDivElement).style.display = "block";
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);

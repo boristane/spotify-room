@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ISpotifyUser, ISpotifyTrack } from "../../typings/spotify";
+import { ISpotifyUser, ISpotifyTrack } from "../typings/spotify";
 import User, { IUser } from "../models/user";
 import Room, { IRoom } from "../models/room";
 

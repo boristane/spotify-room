@@ -1,4 +1,4 @@
-import app from "./src/api/server";
+import app from "./src/server";
 import logger from "logger";
 import serverless from "serverless-http";
 

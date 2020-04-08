@@ -8,7 +8,7 @@ import logger from "logger";
 import { connectToDb } from "./helpers/database";
 
 const app = express()
-  .use(express.static(__dirname + "/../../dist"))
+  .use(express.static(__dirname + "/../dist"))
   .use(express.json())
   .use(cookieParser());
 
@@ -66,7 +66,7 @@ app.use("/spotify", spotifyRouter);
 app.use("/room", roomRouter);
 app.use(responseLogger);
 app.get("/you", (req: Request, res: Response) => {
-  res.status(200).sendFile(path.join(__dirname + "/../../dist/me.html"));
+  res.status(200).sendFile(path.join(__dirname + "/../dist/me.html"));
 });
 
 export default app;

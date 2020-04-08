@@ -1,7 +1,7 @@
 import axios from "axios";
 import { promisify } from "util";
-import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState, ICurrentTrackResponse } from "../../typings/spotify";
-import { IArtistListDataItem } from "../../typings/front";
+import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState, ICurrentTrackResponse } from "../typings/spotify";
+import { IArtistListDataItem } from "../typings/front";
 
 const sleep = promisify(setTimeout);
 const axiosInstance = axios.create({ baseURL: "https://api.spotify.com/v1" });

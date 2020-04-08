@@ -4,8 +4,8 @@
   "description": "A spotify room to chill out with your friends.",
   "main": "index.js",
   "scripts": {
-    "build-front": "npx parcel build ./public/*.html",
-    "watch": "npx parcel watch ./public/*.html",
+    "build-front": "npx parcel build ./src/public/*.html",
+    "watch": "npx parcel watch ./src/public/*.html",
     "start": "npx nodemon index.ts",
     "build": "npx tsc",
     "deploy:dev": "npm run build && npm run build-front && sls deploy --stage dev"

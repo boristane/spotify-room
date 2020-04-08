@@ -1,4 +1,4 @@
-import { ISpotifyUser } from "../src/typings/spotify";
+import { ISpotifyUser } from "../typings/spotify";
 
 export function userBuilder(user: ISpotifyUser): string {
   const username = user.display_name ?? "You";

@@ -1,5 +1,5 @@
-import { ISpotifyTrack } from "../../typings/spotify";
-import { IArtistListDataItem, INode } from "../../typings/front";
+import { ISpotifyTrack } from "../typings/spotify";
+import { IArtistListDataItem, INode } from "../typings/front";
 import { getConnections } from "../services/spotify";
 
 export function getScore(connections, genreClusters, tracksAgesClusters, topArtists) {
