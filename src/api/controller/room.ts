@@ -155,14 +155,14 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
       res.status(404).json(response);
       return next();
     }
-    play(room.master.token, currentTrack.uri, 0, room.master.deviceId);
+    await play(room.master.token, currentTrack.uri, 0, room.master.deviceId);
     for (let i = 0; i < room.members.length; i += 1) {
       const member = room.members[i];
       if (!member.isActive || !member.isApproved) continue;
       try {
         await play(member.token, currentTrack.uri, 0, member.deviceId);
       } catch (error) {
-        logger.error("There was an error playing the track for a uuser", { error, member });
+        logger.error("There was an error playing the track for a user", { error, member });
         continue;
       }
     }
@@ -372,7 +372,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
 
 export async function addTrackToRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
-  const { userId, uri, artist, name, image } = req.body;
+  const { userId, uri, artists, name, image } = req.body;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -384,7 +384,7 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
     }
     const approved = room.master.id === userId;
     if (approved) {
-      await addTrackToRoomInDb(room, uri, name, artist, image, approved);
+      await addTrackToRoomInDb(room, uri, name, artists, image, approved, room.master.name);
       const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
       res.locals.body = response;
       res.status(200).json(response);
@@ -398,7 +398,7 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
       res.status(404).json(response);
       return next();
     }
-    await addTrackToRoomInDb(room, uri, name, artist, image, approved);
+    await addTrackToRoomInDb(room, uri, name, artists, image, approved, roomMember.name);
     const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
     res.locals.body = response;
     res.status(200).json(response);

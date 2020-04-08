@@ -66,6 +66,9 @@ export async function displayRoom(room: IRoom) {
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
   const trackElts = room.tracks.map((track) => trackBuilder(track));
   tracklistElt.innerHTML = trackElts.join("");
+  if(tracklistElt.innerHTML === "") {
+    tracklistElt.innerHTML = "start by adding songs to the room. use the search bar.";
+  }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);
   tracklistElt.scrollTo({top: 79*currentEltIndex, behavior: 'smooth'});
@@ -78,7 +81,7 @@ export async function displayRoom(room: IRoom) {
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
   document.getElementById("room-name").textContent = room.name;
-  document.getElementById("room-id").textContent = `http://localhost:3333/?id=${room.id}`;
+  document.getElementById("room-id").textContent = `https://rooom.mx/?id=${room.id}`;
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
@@ -161,25 +164,15 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
         artists: track.artists,
         image: track.album.images[0].url
       });
-      return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists[0].name}" data-image="${track.album.images[0].url}">
-                <div style="display: grid; grid-template-columns: 30px calc(100% - 30px);">
-                <div>
-                  <img src="${track.album.images[0].url}" alt="cover" style="width: 30px">
-                </div>
-                <div>
-                  ${track.name} - ${track.artists[0].name}
-                </div>
-                </div>          
-              </li>`
     });
     searchResultElt.innerHTML = resultElts.join("");
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
       e.stopPropagation();
-        const { uri, name, artist, image } = this.dataset;
+        const { uri, name, artists, image } = this.dataset;
         try {
           const room = (await axios.post(`/room/add-track/${roomId}`, {
-            uri, name, artist, image, userId: user.id,
+            uri, name, artists: artists.split(","), image, userId: user.id,
           })).data.room;
           displayRoom(room);
         } catch (err) {
@@ -253,6 +246,7 @@ export async function doIt() {
       await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
     } catch (error) {
       console.log("There was an error when joining a rooom", error);
+      return;
     }
     const room = await getRoom(roomId, user.id);
     displayRoom(room); 

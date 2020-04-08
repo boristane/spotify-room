@@ -7,7 +7,15 @@ const RoomSchema: Schema = new Schema({
   members: [{ id: String, token: String, name: String, deviceId: String, isActive: Boolean, currentTrack: String, isApproved: Boolean }],
   duration: Number,
   isActive: Boolean,
-  tracks: [{ uri: String, completed: Boolean, approved: Boolean, current: Boolean, name: String, artist: String, image: String}],
+  tracks: [{ uri: String,
+    completed: Boolean,
+    approved: Boolean,
+    current: Boolean,
+    name: String,
+    artists: [String],
+    image: String,
+    addedBy: String,
+  }],
 }, { timestamps: true });
 
 export interface IRoom extends Document {
@@ -22,7 +30,8 @@ export interface IRoom extends Document {
     completed: boolean;
     approved: boolean;
     current: boolean;
-    name: string; artist: string; image: string;
+    name: string; artists: string[]; image: string;
+    addedBy: string;
   }[]
 }
 

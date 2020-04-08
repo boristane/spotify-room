@@ -90,17 +90,18 @@ export async function removeRoomMember(room: IRoom, user: IUser): Promise<boolea
   return false;
 }
 
-export async function addTrackToRoomInDb(room: IRoom, uri: string, name: string, artist: string, image: string, approved: boolean) {
+export async function addTrackToRoomInDb(room: IRoom, uri: string, name: string, artists: string[], image: string, approved: boolean, addedBy: string) {
   const { tracks } = room;
   const current = room.tracks.length === 0;
   tracks.push({
     uri: uri,
     name: name,
-    artist: artist,
+    artists: artists,
     image: image,
     completed: false,
     current: current,
     approved: approved,
+    addedBy,
   });
   return await room.save();
 }
@@ -113,11 +114,12 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
     tracks.push({
       uri: track.uri,
       name: track.name,
-      artist: track.artists[0].name,
+      artists: track.artists.map(a => a.name),
       image: track.album.images[0].url,
       completed: false,
       current: true,
       approved: true,
+      addedBy: room.master.name,
     });
     return await room.save();
   }
@@ -143,7 +145,7 @@ export async function getNextTrack(room: IRoom, userId: string, isMaster: boolea
   completed: boolean;
   approved: boolean;
   current: boolean;
-  name: string; artist: string; image: string;
+  name: string; artists: string[]; image: string;
 } | undefined> {
   if (isMaster) {
     const currentTrack = room.tracks.find(t => t.current);
@@ -178,7 +180,7 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
   completed: boolean;
   approved: boolean;
   current: boolean;
-  name: string; artist: string; image: string;
+  name: string; artists: string[]; image: string;
 } | undefined> {
   const trackIndex = room.tracks.findIndex((track) => track.uri === uri && track.approved);
   if (trackIndex < 0) return undefined;

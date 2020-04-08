@@ -23,17 +23,20 @@ export function trackBuilder(track: {
   approved: boolean;
   current: boolean;
   name: string;
-  artist: string;
+  artists: string[];
   image: string;
+  addedBy: string;
 }): string {
   const classes = ["track", track.current ? "current" : "", track.completed ? "completed" : "", track.approved ? "approved" : ""].join(" ");
-  return `<li class="${classes}" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artist}" data-image="${track.image}" data-approved="${track.approved}">
+  return `<li class="${classes}" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists}" data-image="${track.image}" data-approved="${track.approved}">
             <div>
               <img src="${track.image}" style="width: 60px"/>
             </div>
             <div style="padding-left: 10px;">
 
-              <div class="track-name">${track.name}</div><div class="artist-name">${track.artist}</div>
+              <div class="track-name">${track.name}</div>
+              <div class="artist-name">${track.artists.join(", ")}</div>
+              <div class="added-by">added by ${track.addedBy || "*****"}</div>
 
             </div>
           </li>`
@@ -45,13 +48,14 @@ export function searchResultBuilder(track: {
   artists: any[];
   image: string;
 }): string {
-  return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.image}">
+  const artistNames = track.artists.map(a => a.name);
+  return `<li class="track-search-result-item" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.image}" data-artists="${artistNames}">
             <div>
               <img src="${track.image}" style="width: 60px"/>
             </div>
             <div style="padding-left: 10px;">
 
-              <div class="track-name">${track.name}</div><div class="artist-name">${track.artists.map(a => a.name).join(", ")}</div>
+              <div class="track-name">${track.name}</div><div class="artist-name">${artistNames.join(", ")}</div>
 
             </div>
           </li>`
