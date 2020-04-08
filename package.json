@@ -7,8 +7,7 @@
     "build-front": "npx parcel build ./src/public/*.html",
     "watch": "npx parcel watch ./src/public/*.html",
     "start": "npx nodemon index.ts",
-    "build": "npx tsc",
-    "deploy:dev": "npm run build && npm run build-front && sls deploy --stage dev"
+    "build": "npx tsc"
   },
   "repository": {
     "type": "git",
@@ -28,7 +27,6 @@
     "logger": "git+https://26328bfaa6c47bfcb459e4aa14973ae162dd12b9:x-oauth-basic@github.com/boristane/logger.git",
     "mongoose": "^5.6.3",
     "qs": "^6.7.0",
-    "serverless-http": "^2.3.2",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.2",
     "uuid": "^7.0.3"

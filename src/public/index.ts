@@ -82,7 +82,7 @@ export async function displayRoom(room: IRoom) {
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
   document.getElementById("room-name").textContent = room.name;
-  document.getElementById("room-id").textContent = `https://rooom.mx/?id=${room.id}`;
+  document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
