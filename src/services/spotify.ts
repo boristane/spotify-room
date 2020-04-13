@@ -44,7 +44,7 @@ export async function play(token: string, uri: string, progression: number, devi
 }
 
 export async function pause(token: string, deviceId: string) {
-  const response = await axiosInstance.put(`/me/player/plause/?device_id=${deviceId}`, {
+  const response = await axiosInstance.put(`/me/player/pause/?device_id=${deviceId}`, {}, {
     headers: getHeader(token),
   });
   return response.data;

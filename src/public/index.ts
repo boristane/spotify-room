@@ -291,7 +291,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   player.addListener('playback_error', ({ message }) => { console.error(message); });
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
-    if (state.paused) {
+    if (state.paused && isPlaying) {
       try {
         const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
         displayRoom(room);
