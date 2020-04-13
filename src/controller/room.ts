@@ -1,7 +1,7 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
 import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember } from "../services/database";
-import { play, getCurrentlyPalyingTrack } from "../services/spotify";
+import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
 
@@ -364,6 +364,68 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     return next();
   } catch (error) {
     const message = "There was a problem playing a track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function pauseRoom(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId, deviceId } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    if (room.master.id === userId) {
+      const masterToken = room.master.token;
+      const roomCurrentTrack = room.tracks.find((t) => t.current);
+      if (!roomCurrentTrack) {
+        const response = { message: "Not found" };
+        res.locals.body = response;
+        res.status(404).json(response);
+        return next();
+      }
+      pause(masterToken, deviceId);
+      for (let i = 0; i < room.members.length; i += 1) {
+        const member = room.members[i];
+        if (!member.isActive || !member.isApproved) continue;
+        try {
+          await pause(member.token, member.deviceId);
+        } catch (error) {
+          logger.error("There was an error pausing the track for a uuser", { error, member });
+          continue;
+        }
+      }
+      const response = {
+        message: "Paused the track for all room members", room: prepareRoomForResponse(room)
+      };
+      res.locals.body = response;
+      res.status(200).json(response);
+      return next();
+    }
+
+    const roomMember = room.members.find((m) => m.id === user.id);
+    if (!roomMember || !roomMember.isApproved || !roomMember.isActive) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    await pause(roomMember.token, roomMember.deviceId);
+    const response = {
+      message: "Pausing the track for room member", room: prepareRoomForResponse(room)
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem pausing a track in a room"
     logger.error(message, { error });
     res.status(500).json({ message });
     return next();

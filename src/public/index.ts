@@ -72,7 +72,7 @@ export async function displayRoom(room: IRoom) {
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);
-  tracklistElt.scrollTo({top: 79*currentEltIndex, behavior: 'smooth'});
+  tracklistElt.scrollTo({top: 79*currentEltIndex - 2, behavior: 'smooth'});
 
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
@@ -123,6 +123,9 @@ export async function displayRoom(room: IRoom) {
     elt.style.display = "block";
   });
 
+  const currentTrack = room.tracks[currentEltIndex]
+  document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
+
   setTimeout(() => {
     const userElt = (document.querySelector(".user-container") as HTMLDivElement);
     userElt.style.visibility = "visible";
@@ -135,11 +138,22 @@ let roomId: string;
 let deviceId: string;
 let isMaster: boolean = false;
 let oldRoom;
+let isPlaying = false;
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
   try {
-    const room = (await axios.post(`/room/play/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
-    displayRoom(room);
+    let r;
+    if(isPlaying) {
+      r = (await axios.post(`/room/pause/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
+      //@ts-ignore
+      e.target.innerHTML = "play";
+    } else {
+      r = (await axios.post(`/room/play/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
+      //@ts-ignore
+      e.target.innerHTML = "pause";
+    }
+    isPlaying = !isPlaying;
+    displayRoom(r);
   } catch (error) {
     console.log("There was problem playing the track", error);
   }
@@ -255,7 +269,7 @@ export async function doIt() {
     setInterval(async () => {
       const room = await getRoom(roomId, user.id);
       displayRoom(room);  
-    }, 30*1000);
+    }, 10*1000);
   } else {
     document.getElementById("get-in-room").style.display = "block";
     (document.querySelector(".loader") as HTMLDivElement).style.display = "none";

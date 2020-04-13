@@ -43,6 +43,13 @@ export async function play(token: string, uri: string, progression: number, devi
   return response.data;
 }
 
+export async function pause(token: string, deviceId: string) {
+  const response = await axiosInstance.put(`/me/player/plause/?device_id=${deviceId}`, {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
 export async function search(token: string, query: string): Promise<{ tracks: {href: string; items: ISpotifyTrack[]} }> {
   const response = await axiosInstance.get(`search/?q=${query}&type=track&market=from_token&limit=10`, {
     headers: getHeader(token),
