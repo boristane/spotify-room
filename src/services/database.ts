@@ -207,6 +207,7 @@ export async function approveMember(room: IRoom, memberId: string) {
   const member = room.members.find(member => member.id === memberId);
   if (!member) return;
   member.isApproved = true;
+  member.isActive = true;
   await room.save();
 }
 
