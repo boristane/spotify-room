@@ -124,7 +124,9 @@ export async function displayRoom(room: IRoom) {
   });
 
   const currentTrack = room.tracks[currentEltIndex]
-  document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
+  if(currentTrack) {
+    document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
+  }
 
   setTimeout(() => {
     const userElt = (document.querySelector(".user-container") as HTMLDivElement);
