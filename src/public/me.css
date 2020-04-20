@@ -87,7 +87,7 @@ html, body {
   background-color: coral;
 }
 
-#play {
+.green-button {
   color: white;
   font-weight: bold;
   border: #1DB954 1px solid;
@@ -98,6 +98,13 @@ html, body {
   transition: all 0.2s ease-out;
   width: 100px;
   height: 35px;
+  margin: auto;
+}
+
+#buttons-container{
+  max-width: 300px;
+  display: grid;
+  grid-template-columns: 50% 50%;
   margin: auto;
 }
 

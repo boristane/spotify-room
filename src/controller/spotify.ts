@@ -22,7 +22,7 @@ export function login(req: Request, res: Response) {
   const { id } = req.query;
   res.cookie(stateKey, state);
   res.cookie("rooom_id", id);
-  const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming";
+  const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
     qs.stringify({
@@ -129,10 +129,10 @@ export async function searchTrack(req: Request, res: Response, next: NextFunctio
 }
 
 export async function generatePlaylist(req: Request, res: Response) {
-  const { uris, userId } = req.body;
+  const { uris, userId, name } = req.body;
   const { token } = req.query;
   try {
-    const playlistId = await createPlaylist(token, userId);
+    const playlistId = await createPlaylist(token, userId, name);
     const playlistSnapshot = await addTracksToPlaylist(token, playlistId, uris);
     res.status(200).json({ playlistId, playlistSnapshot });
   } catch (err) {

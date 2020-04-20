@@ -144,13 +144,13 @@ export async function getConnections(
   return { artist, connections: response.data.artists };
 }
 
-export async function createPlaylist(token: string, userId: string): Promise<string> {
+export async function createPlaylist(token: string, userId: string, name: string): Promise<string> {
   const response = await axiosInstance.post(
     `/users/${userId}/playlists`,
     {
-      name: "eclectix",
+      name: name,
       public: true,
-      description: `Your music taste, your favourite songs, created on ${new Date().toDateString()}`
+      description: `From https://rooom.click, created on ${new Date().toDateString()}`
     },
     {
       headers: {

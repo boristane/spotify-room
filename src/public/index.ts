@@ -38,7 +38,7 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
     return (await axios.get(`/room/${roomId}/?userId=${userId}`)).data.room as IRoom;
   } catch (err) {
     console.log("There was a problem getting the room", err);
-    if(err.response && err.response.status === 401) {
+    if (err.response && err.response.status === 401) {
       return null;
     }
   }
@@ -50,12 +50,12 @@ document.querySelector("body").addEventListener("click", () => {
 });
 
 export async function displayRoom(room: IRoom) {
-  if(room === null) {
+  if (room === null) {
     document.getElementById("waiting").style.display = "block";
     document.querySelector("section").style.display = "none";
     return
   };
-  if(JSON.stringify(room) === JSON.stringify(oldRoom)) {
+  if (JSON.stringify(room) === JSON.stringify(oldRoom)) {
     return;
   }
   document.getElementById("waiting").style.display = "none";
@@ -67,12 +67,12 @@ export async function displayRoom(room: IRoom) {
   const trackElts = room.tracks.map((track) => trackBuilder(track));
   (document.getElementById("add-songs") as HTMLDivElement).style.display = "none";
   tracklistElt.innerHTML = trackElts.join("");
-  if(tracklistElt.innerHTML === "") {
+  if (tracklistElt.innerHTML === "") {
     (document.getElementById("add-songs") as HTMLDivElement).style.display = "block";
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);
-  tracklistElt.scrollTo({top: 79*currentEltIndex - 2, behavior: 'smooth'});
+  tracklistElt.scrollTo({ top: 79 * currentEltIndex - 2, behavior: 'smooth' });
 
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
@@ -86,13 +86,13 @@ export async function displayRoom(room: IRoom) {
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
-      if(!isMaster) return;
+      if (!isMaster) return;
       const { uri, approved } = this.dataset;
-      if(approved === "true") {
+      if (approved === "true") {
         try {
           const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
           displayRoom(room);
-        } catch(error) {
+        } catch (error) {
           console.log("There was an error going to a track");
         }
       } else {
@@ -108,12 +108,12 @@ export async function displayRoom(room: IRoom) {
 
   document.querySelectorAll(".member-to-approve").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
-      if(!isMaster) return;
+      if (!isMaster) return;
       const { id } = this.dataset;
       try {
         const room = (await axios.get(`/room/approve-member/${roomId}?userId=${user.id}&memberId=${id}`)).data.room;
         displayRoom(room);
-      } catch(err) {
+      } catch (err) {
         console.log("There was an error approving a member");
       }
     });
@@ -124,7 +124,7 @@ export async function displayRoom(room: IRoom) {
   });
 
   const currentTrack = room.tracks[currentEltIndex]
-  if(currentTrack) {
+  if (currentTrack) {
     document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
   }
 
@@ -145,7 +145,7 @@ let isPlaying = false;
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
   try {
     let r;
-    if(isPlaying) {
+    if (isPlaying) {
       r = (await axios.post(`/room/pause/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
       //@ts-ignore
       e.target.innerHTML = "play";
@@ -158,6 +158,19 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
     displayRoom(r);
   } catch (error) {
     console.log("There was problem playing the track", error);
+  }
+});
+
+document.getElementById("playlist").addEventListener("click", async (e: MouseEvent) => {
+  try {
+    const room = await getRoom(roomId, user.id);
+    const uris = room.tracks.map(t => t.uri);
+    const name = room.name;
+    await axios.post(`/spotify/generate-playlist/?token=${token}`, { uris, userId: user.id, name });
+
+    displayRoom(room);
+  } catch (error) {
+    console.log("There was problemcreating the playlist", error);
   }
 });
 
@@ -185,7 +198,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     searchResultElt.innerHTML = resultElts.join("");
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
-      e.stopPropagation();
+        e.stopPropagation();
         const { uri, name, artists, image } = this.dataset;
         try {
           const room = (await axios.post(`/room/add-track/${roomId}`, {
@@ -266,12 +279,12 @@ export async function doIt() {
       return;
     }
     const room = await getRoom(roomId, user.id);
-    displayRoom(room); 
+    displayRoom(room);
     document.getElementById("get-in-room").style.display = "none";
     setInterval(async () => {
       const room = await getRoom(roomId, user.id);
-      displayRoom(room);  
-    }, 10*1000);
+      displayRoom(room);
+    }, 10 * 1000);
   } else {
     document.getElementById("get-in-room").style.display = "block";
     (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
