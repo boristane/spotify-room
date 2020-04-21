@@ -37,10 +37,11 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   try {
     return (await axios.get(`/room/${roomId}/?userId=${userId}`)).data.room as IRoom;
   } catch (err) {
-    console.log("There was a problem getting the room", err);
     if (err.response && err.response.status === 401) {
       return null;
     }
+    displayMessage("There was a problem getting the rooom");
+    console.log("There was a problem getting the room", err);
   }
 }
 
@@ -77,7 +78,7 @@ export async function displayRoom(room: IRoom) {
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
   const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li class="member">${member.name}</li>`);
-  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member member-to-approve" data-id="${member.id}">${member.name}</li>`);
+  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member member-to-approve" data-id="${member.id}" data-name="${member.name}">${member.name}</li>`);
   const masterElt = masterBuilder(room.master);
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
@@ -86,7 +87,10 @@ export async function displayRoom(room: IRoom) {
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
-      if (!isMaster) return;
+      if (!isMaster) {
+        displayMessage("Only the rooom master can skip tracks 😅");
+        return;
+      };
       const { uri, approved } = this.dataset;
       if (approved === "true") {
         try {
@@ -95,13 +99,16 @@ export async function displayRoom(room: IRoom) {
           document.getElementById("play").textContent = "pause";
           displayRoom(room);
         } catch (error) {
+          displayMessage("There was an error going to this track");
           console.log("There was an error going to a track");
         }
       } else {
         try {
           const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+          displayMessage("This track has been approved in the rooom");
           displayRoom(room);
         } catch (err) {
+          displayMessage("There was an error approving to this track");
           console.log("There was an error approving to a track");
         }
       }
@@ -115,8 +122,10 @@ export async function displayRoom(room: IRoom) {
       try {
         const { uri } = this.dataset;
         const room = (await axios.delete(`/room/remove/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+        displayMessage("This track has been removed from the rooom");
         displayRoom(room);
       } catch (error) {
+        displayMessage("There was an error removing this track");
         console.log("There was an error removing a track");
       }
     });
@@ -125,11 +134,13 @@ export async function displayRoom(room: IRoom) {
   document.querySelectorAll(".member-to-approve").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
       if (!isMaster) return;
-      const { id } = this.dataset;
+      const { id, name } = this.dataset;
       try {
         const room = (await axios.get(`/room/approve-member/${roomId}?userId=${user.id}&memberId=${id}`)).data.room;
+        displayMessage(`Lest's welcome ${name} to the rooom! 🎉`);
         displayRoom(room);
       } catch (err) {
+        displayMessage("There was an error approving this member");
         console.log("There was an error approving a member");
       }
     });
@@ -142,6 +153,10 @@ export async function displayRoom(room: IRoom) {
   const currentTrack = room.tracks[currentEltIndex]
   if (currentTrack) {
     document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
+  }
+
+  if(isMaster && room.members.filter(m => !m.isApproved).length > 0) {
+    displayMessage("There are member in the queue waiting for your approval");
   }
 
   setTimeout(() => {
@@ -173,6 +188,7 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
     isPlaying = !isPlaying;
     displayRoom(r);
   } catch (error) {
+    displayMessage("There was problem playing the track");
     console.log("There was problem playing the track", error);
   }
 });
@@ -183,10 +199,11 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
     const uris = room.tracks.filter(t => t.approved).map(t => t.uri);
     const name = room.name;
     await axios.post(`/spotify/generate-playlist/?token=${token}`, { uris, userId: user.id, name });
-
+    displayMessage("Playlist succesfully created 🥳");
     displayRoom(room);
   } catch (error) {
-    console.log("There was problemcreating the playlist", error);
+    displayMessage("There was problem creating the playlist");
+    console.log("There was problem creating the playlist", error);
   }
 });
 
@@ -220,15 +237,17 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
           const room = (await axios.post(`/room/add-track/${roomId}`, {
             uri, name, artists: artists.split(","), image, userId: user.id,
           })).data.room;
+          displayMessage("Track added to the room!");
           displayRoom(room);
         } catch (err) {
+          displayMessage("There was a problem adding a song to the room");
           console.log("There was a problem adding a song to the room");
         }
       });
     });
   } catch (err) {
-    console.log(err);
-    console.log("There was an error getting the search result from spotify");
+    displayMessage("There was a problem getting your search results");
+    console.log("There was an error getting the search result from spotify", err);
   }
 }, 500));
 
@@ -247,6 +266,7 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
     });
     window.location.reload();
   } catch (error) {
+    displayMessage("There was a problem creating the rooom 😥");
     console.log("There was problem creating the room", error);
   }
 });
@@ -256,6 +276,7 @@ document.getElementById("leave").addEventListener("click", async (e: MouseEvent)
     await axios.put(`/room/leave/${roomId}?&userId=${user.id}`);
     window.location.reload();
   } catch (error) {
+    displayMessage("There was problem leaving the room");
     console.log("There was problem leaving the room", error);
   }
 });
@@ -270,7 +291,6 @@ async function main() {
 
 function getCookies(): Record<string, string> {
   const pairs = document.cookie.split(";");
-  console.log(pairs);
   const cookies = {};
   for (let i = 0; i < pairs.length; i++) {
     const pair = pairs[i].split("=");
@@ -281,7 +301,14 @@ function getCookies(): Record<string, string> {
 
 export async function doIt() {
   try {
-    user = (await axios.get(`/spotify/me/?token=${token}`)).data;
+    user = (await axios.get(`/spotify/me/?token=${token}`)).data.user;
+    if (user.product !== "premium") {
+      displayMessage("unfortunately rooom is available only for premium users");
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 4000);
+      return;
+    }
   } catch {
     return window.location.replace("/");
   }
@@ -291,6 +318,7 @@ export async function doIt() {
     try {
       await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
     } catch (error) {
+      displayMessage("There was an error when joining the rooom");
       console.log("There was an error when joining a rooom", error);
       return;
     }
@@ -316,10 +344,10 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     getOAuthToken: cb => { cb(token); }
   });
 
-  player.addListener('initialization_error', ({ message }) => { console.error(message); });
+  player.addListener('initialization_error', ({ message }) => { displayMessage("rooom is not available on your browser"); console.error(message); });
   player.addListener('authentication_error', ({ message }) => { console.error(message); });
   player.addListener('account_error', ({ message }) => { console.error(message); });
-  player.addListener('playback_error', ({ message }) => { console.error(message); });
+  player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the playback"); console.error(message); });
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
     if (state.paused && isPlaying) {
@@ -327,6 +355,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
         const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
         displayRoom(room);
       } catch (error) {
+        displayMessage("There was a problem moving to the next track");
         console.log("There was a problem moving to the next track");
       }
     }
@@ -352,3 +381,12 @@ main();
 setInterval(() => {
   main();
 }, 30 * 60 * 1000);
+
+function displayMessage(message: string) {
+  const messageElt = document.getElementById("message") as HTMLDivElement;
+  messageElt.textContent = message;
+  messageElt.style.bottom = `100px`;
+  setTimeout(() => {
+    messageElt.style.bottom = `-300px`;
+  }, 2000);
+}

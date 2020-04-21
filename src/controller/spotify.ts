@@ -7,6 +7,7 @@ import { createPlaylist, addTracksToPlaylist, getUserProfile, search } from "../
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
+import * as _ from "lodash";
 
 require("dotenv").config();
 
@@ -106,7 +107,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
     const user = await getUserProfile(token);
     await saveUser(user);
     res.locals.body = user;
-    res.status(200).json(user);
+    res.status(200).json({ user: _.omit(user, ["email", "birthdate"]) });
     return next();
   } catch (err) {
     console.log(err);

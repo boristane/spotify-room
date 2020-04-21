@@ -16,6 +16,7 @@
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div class="loader"></div>
+  <div id="message"></div>
   <section id="get-in-room" style="display: none;">
     <div class="logo-container">
       <a href="/">
@@ -54,15 +55,15 @@
           <ul class="members-to-approve">
           </ul>
         </div>
+        <div style="margin-top: 50px;">
+          <button id="playlist" style="display: none;" class="room-block noselect green-button">create playlist</button>
+        </div>
       </div>
       <div class="right-panel">
         <div id="room-name"></div>
         <div id="room-id"></div>
 
-        <div id="buttons-container">
-          <button id="play" style="display: none;" class="room-block noselect green-button">play</button>
-          <button id="playlist" style="display: none;" class="room-block noselect green-button">playlist</button>
-        </div>
+          <button id="play" style="display: none; margin-top: 30px;" class="room-block noselect green-button">play</button>
         <div style="display: none; text-align: center; margin-top: 30px;" id="add-songs">start by adding songs to the
           room. use the search bar.</div>
         <ul class="tracklist">
