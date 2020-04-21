@@ -160,7 +160,7 @@ ol, ul {
 
 .tracklist {
   margin-top: 50px;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 230px);
   overflow-y: scroll;
   padding-bottom: 0;
   padding-top: 0;
