@@ -117,6 +117,7 @@ html, body {
   background-color: #fff;
   padding: 15px;
   transition: all 0.5s ease-out;
+  z-index: 999999;
 }
 
 ol, ul {
@@ -182,6 +183,7 @@ ol, ul {
    filter: alpha(opacity=20);
    transition: all 0.2s ease-out;
    position: relative;
+   z-index: 1;
 }
 .track:hover {
   background-color: #191414 !important;

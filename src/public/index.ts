@@ -156,7 +156,7 @@ export async function displayRoom(room: IRoom) {
   }
 
   if(isMaster && room.members.filter(m => !m.isApproved).length > 0) {
-    displayMessage("There are member in the queue waiting for your approval");
+    displayMessage("There are members in the queue waiting for your approval");
   }
 
   setTimeout(() => {
@@ -382,11 +382,13 @@ setInterval(() => {
   main();
 }, 30 * 60 * 1000);
 
+let timeoutId;
 function displayMessage(message: string) {
   const messageElt = document.getElementById("message") as HTMLDivElement;
   messageElt.textContent = message;
   messageElt.style.bottom = `100px`;
-  setTimeout(() => {
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => {
     messageElt.style.bottom = `-300px`;
   }, 2000);
 }
