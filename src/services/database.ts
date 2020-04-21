@@ -101,6 +101,7 @@ export async function addTrackToRoomInDb(room: IRoom, uri: string, name: string,
     completed: false,
     current: current,
     approved: approved,
+    removed: false,
     addedBy,
   });
   return await room.save();
@@ -119,6 +120,7 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
       completed: false,
       current: true,
       approved: true,
+      removed: false,
       addedBy: room.master.name,
     });
     return await room.save();
@@ -194,6 +196,14 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
     await room.save();
   }
   return room.tracks[trackIndex];
+}
+
+export async function removeTrack(room: IRoom, uri: string): Promise<boolean> {
+  const track = room.tracks.find(a => a.uri === uri);
+  if(!track) return false;
+  track.removed = true;
+  await room.save();
+  return true;
 }
 
 export async function approveTrack(room: IRoom, uri: string) {

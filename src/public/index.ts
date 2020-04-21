@@ -91,6 +91,8 @@ export async function displayRoom(room: IRoom) {
       if (approved === "true") {
         try {
           const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+          isPlaying = true;
+          document.getElementById("play").textContent = "pause";
           displayRoom(room);
         } catch (error) {
           console.log("There was an error going to a track");
@@ -105,6 +107,20 @@ export async function displayRoom(room: IRoom) {
       }
     });
   });
+
+  document.querySelectorAll(".remove-track").forEach((elt) => {
+    elt.addEventListener("click", async function (e) {
+      e.stopPropagation();
+      if (!isMaster) return;
+      try {
+        const { uri } = this.dataset;
+        const room = (await axios.delete(`/room/remove/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+        displayRoom(room);
+      } catch (error) {
+        console.log("There was an error removing a track");
+      }
+    });
+  })
 
   document.querySelectorAll(".member-to-approve").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
@@ -164,7 +180,7 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
 document.getElementById("playlist").addEventListener("click", async (e: MouseEvent) => {
   try {
     const room = await getRoom(roomId, user.id);
-    const uris = room.tracks.map(t => t.uri);
+    const uris = room.tracks.filter(t => t.approved).map(t => t.uri);
     const name = room.name;
     await axios.post(`/spotify/generate-playlist/?token=${token}`, { uris, userId: user.id, name });
 

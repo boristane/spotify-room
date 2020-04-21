@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember, removeTrack } from "../services/database";
 import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -168,6 +168,45 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
     }
     const response = {
       message: "went to selected track", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem skipping a track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function masterRemoveTrack(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { userId, uri } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    if (room.master.id !== userId) {
+      const response = { message: "Unauthorized" };
+      res.locals.body = response;
+      res.status(401).json(response);
+      return next();
+    }
+    const removed = await removeTrack(room, uri);
+    if (!removed) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    const response = {
+      message: "removed selected track", room: prepareRoomForResponse(room),
     };
     res.locals.body = response;
     res.status(200).json(response);
@@ -478,7 +517,7 @@ export function prepareRoomForResponse(room: IRoom) {
   return {
     master: _.omit(room.master, ["token"]),
     members: room.members.map((m) => _.omit(m, ["token"])),
-    tracks: room.tracks,
+    tracks: room.tracks.filter(t => !t.removed),
     name: room.name,
     id: room.id
   }

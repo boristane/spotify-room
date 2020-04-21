@@ -39,6 +39,9 @@ export function trackBuilder(track: {
               <div class="added-by">added by ${track.addedBy || "*****"}</div>
 
             </div>
+            <div>
+              <button class="noselect red-button remove-track" data-uri="${track.uri}">remove</button>
+            </div>
           </li>`
 }
 

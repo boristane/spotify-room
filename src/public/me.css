@@ -67,7 +67,7 @@ html, body {
   margin-top: -15px;
 }
 
-#leave {
+.red-button {
   color: white;
   font-weight: bold;
   border: coral 1px solid;
@@ -83,7 +83,7 @@ html, body {
   transition: all 0.2s ease-out;
 }
 
-#leave:hover {
+.red-button:hover {
   background-color: coral;
 }
 
@@ -101,17 +101,15 @@ html, body {
   margin: auto;
 }
 
+.green-button:hover {
+  background-color: #1DB954;
+}
+
 #buttons-container{
   max-width: 300px;
   display: grid;
   grid-template-columns: 50% 50%;
   margin: auto;
-}
-
-
-
-#play:hover {
-  background-color: #1DB954;
 }
 
 ol, ul {
@@ -167,7 +165,7 @@ ol, ul {
   cursor: pointer;
   display: grid;
   text-align: left !important;
-  grid-template-columns: 60px calc(100% - 60px);
+  grid-template-columns: 60px calc(100% - 150px) 60px;
   padding: 8px 15px 6px 15px;
   margin: 0;
   border-bottom: 1px #303030 solid;
@@ -184,6 +182,10 @@ ol, ul {
 
 .track.current {
   background-color: #000 !important;
+}
+
+.remove-track{
+  margin-top: 15px;
 }
 
 .track.approved {

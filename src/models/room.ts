@@ -11,6 +11,7 @@ const RoomSchema: Schema = new Schema({
     completed: Boolean,
     approved: Boolean,
     current: Boolean,
+    removed: Boolean,
     name: String,
     artists: [String],
     image: String,
@@ -30,6 +31,7 @@ export interface IRoom extends Document {
     completed: boolean;
     approved: boolean;
     current: boolean;
+    removed: boolean;
     name: string; artists: string[]; image: string;
     addedBy: string;
   }[]
