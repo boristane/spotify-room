@@ -64,7 +64,7 @@ export async function displayRoom(room: IRoom) {
   oldRoom = room;
   isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
-  const trackElts = room.tracks.map((track) => trackBuilder(track));
+  const trackElts = room.tracks.map((track) => trackBuilder(track, isMaster));
   (document.getElementById("add-songs") as HTMLDivElement).style.display = "none";
   tracklistElt.innerHTML = trackElts.join("");
   if (tracklistElt.innerHTML === "") {
