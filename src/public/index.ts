@@ -84,6 +84,14 @@ export async function displayRoom(room: IRoom) {
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
   document.getElementById("room-name").textContent = room.name;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
+  document.getElementById("room-id").addEventListener("click", () => {
+    const inputElt = document.getElementById("text-to-copy") as HTMLInputElement;
+    inputElt.value = document.getElementById("room-id").textContent;
+    inputElt.select();
+    inputElt.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    displayMessage("Room url copied to clipboard");
+  });
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
@@ -155,7 +163,7 @@ export async function displayRoom(room: IRoom) {
     document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
   }
 
-  if(isMaster && room.members.filter(m => !m.isApproved).length > 0) {
+  if (isMaster && room.members.filter(m => !m.isApproved).length > 0) {
     displayMessage("There are members in the queue waiting for your approval");
   }
 
@@ -170,7 +178,7 @@ let user;
 let roomId: string;
 let deviceId: string;
 let isMaster: boolean = false;
-let oldRoom;
+let oldRoom: IRoom;
 let isPlaying = false;
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
@@ -233,6 +241,11 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
       elt.addEventListener("click", async function (e: MouseEvent) {
         e.stopPropagation();
         const { uri, name, artists, image } = this.dataset;
+        const uris = oldRoom.tracks.map(t => t.uri);
+        if (uris.indexOf(uri) >= 0) {
+          displayMessage("This track is already in the rooom");
+          return;
+        }
         try {
           const room = (await axios.post(`/room/add-track/${roomId}`, {
             uri, name, artists: artists.split(","), image, userId: user.id,

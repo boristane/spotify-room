@@ -50,7 +50,7 @@ export async function pause(token: string, deviceId: string) {
   return response.data;
 }
 
-export async function search(token: string, query: string): Promise<{ tracks: {href: string; items: ISpotifyTrack[]} }> {
+export async function search(token: string, query: string): Promise<{ tracks: { href: string; items: ISpotifyTrack[] } }> {
   const response = await axiosInstance.get(`search/?q=${query}&type=track&market=from_token&limit=10`, {
     headers: getHeader(token),
   });
@@ -162,18 +162,24 @@ export async function createPlaylist(token: string, userId: string, name: string
 }
 
 export async function addTracksToPlaylist(token: string, playlistId: string, trackUris: string[]) {
-  const response = await axiosInstance.post(
-    `/playlists/${playlistId}/tracks`,
-    {
-      uris: trackUris
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
+  const res = chunck(trackUris, 100);
+  const result = [];
+  for(let i= 0; i < res.length; i+= 1) {
+    const elt = res[i];
+    const response = await axiosInstance.post(
+      `/playlists/${playlistId}/tracks`,
+      {
+        uris: elt
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    }
-  );
-  return response.data.snapshot_id;
+    );
+    result.push(response.data.snapshot_id);
+  }
+  return result;
 }
 
 export async function getUserProfile(token: string): Promise<ISpotifyUser> {
@@ -183,4 +189,14 @@ export async function getUserProfile(token: string): Promise<ISpotifyUser> {
     }
   });
   return response.data;
+}
+
+function chunck(arr: any[], length: number) {
+  const result = [];
+  const numChuncks = Math.ceil(arr.length / length)
+  for (let i = 0; i < numChuncks; i += 1) {
+    const temp = arr.slice(i * length, (i + 1) * length);
+    result.push(temp);
+  }
+  return result;
 }

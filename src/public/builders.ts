@@ -40,7 +40,7 @@ export function trackBuilder(track: {
 
             </div>
             <div>
-              <button class="noselect red-button remove-track" style="display: ${isMaster ? "block" : "none"}" data-uri="${track.uri}">remove</button>
+              <button class="noselect red-button remove-track" style="display: ${isMaster ? "block" : "none"}; width: 40px; font-size: 20px;" data-uri="${track.uri}">-</button>
             </div>
           </li>`
 }
