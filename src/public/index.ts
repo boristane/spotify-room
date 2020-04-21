@@ -393,7 +393,7 @@ main();
 
 setInterval(() => {
   main();
-}, 30 * 60 * 1000);
+}, 15 * 60 * 1000);
 
 let timeoutId;
 function displayMessage(message: string) {

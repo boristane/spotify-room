@@ -66,6 +66,7 @@ html, body {
   color: #1DB954;
   margin-top: -15px;
   cursor: pointer;
+  max-width: 320px;
 }
 
 .red-button {
