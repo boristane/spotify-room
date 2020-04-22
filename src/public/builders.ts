@@ -30,7 +30,7 @@ export function trackBuilder(track: {
   const classes = ["track", track.current ? "current" : "", track.completed ? "completed" : "", track.approved ? "approved" : ""].join(" ");
   return `<li class="${classes}" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists}" data-image="${track.image}" data-approved="${track.approved}">
             <div>
-              <img src="${track.image}" style="width: 60px"/>
+              <img src="${track.image}" style="width: ${track.current ? "148px" : "60px"}"/>
             </div>
             <div style="padding-left: 10px;">
 
@@ -40,7 +40,7 @@ export function trackBuilder(track: {
 
             </div>
             <div>
-              <button class="noselect red-button remove-track" style="display: ${isMaster ? "block" : "none"}; width: 40px; font-size: 20px;" data-uri="${track.uri}">-</button>
+              <button class="noselect red-button remove-track" style="display: ${isMaster && !track.current? "block" : "none"}; width: 40px; font-size: 20px;" data-uri="${track.uri}">-</button>
             </div>
           </li>`
 }

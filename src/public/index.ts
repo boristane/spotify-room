@@ -285,6 +285,10 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
 });
 
 document.getElementById("leave").addEventListener("click", async (e: MouseEvent) => {
+  await leaveRoom();
+});
+
+async function leaveRoom() {
   try {
     await axios.put(`/room/leave/${roomId}?&userId=${user.id}`);
     window.location.reload();
@@ -292,7 +296,7 @@ document.getElementById("leave").addEventListener("click", async (e: MouseEvent)
     displayMessage("There was problem leaving the room");
     console.log("There was problem leaving the room", error);
   }
-});
+}
 
 async function main() {
   try {
