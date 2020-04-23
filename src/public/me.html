@@ -52,11 +52,6 @@
   <div id="room">
     <div class="small-room">
       <div class="left-panel">
-        <div class="logo-container">
-          <a href="/">
-            <img src="./logo.png" alt="logo" class="logo" />
-          </a>
-        </div>
         <div>
           <ul class="members">
           </ul>
@@ -65,16 +60,25 @@
           <ul class="members-to-approve">
           </ul>
         </div>
-        <div style="margin-top: 50px;">
-          <button id="playlist" style="display: none;" class="room-block noselect green-button">create playlist</button>
-        </div>
       </div>
       <div class="right-panel">
-        <div id="room-name"></div>
-        <div id="room-id"></div>
+        <div id="cont">
+          <div class="logo-container">
+            <a href="/">
+              <img src="./logo.png" alt="logo" class="logo" />
+            </a>
+          </div>
+          <div id="room-description">
+            <div id="room-name"></div>
+            <div id="mastered-by"></div>
+            <div id="room-id"></div>
+            <div class="button-container">
+              <button id="play" style="display: none;" class="room-block noselect green-button">play</button>
+              <button id="playlist" style="display: none;" class="room-block noselect green-button">create playlist</button>
+            </div>
+          </div>
+        </div>
 
-        <button id="play" style="display: none; margin-top: 30px;"
-          class="room-block noselect green-button">play</button>
         <div style="display: none; text-align: center; margin-top: 30px;" id="add-songs">start by adding songs to the
           room. use the search bar.</div>
         <ul class="tracklist">

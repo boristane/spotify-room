@@ -55,16 +55,29 @@ html, body {
   grid-template-columns: calc(100% - 350px) 350px ;
 }
 
+#cont {
+  display: grid;
+  grid-template-columns: 200px calc(100% - 200px);
+}
+
+#room-description {
+  padding-top: 20px;
+}
+
 #room-name {
-  font-size: 70px;
-  padding: 15px; 
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.button-container {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 110px 150px;
 }
 
 #room-id {
-  padding: 0 15px; 
   font-size: 13px;
   color: #1DB954;
-  margin-top: -15px;
   cursor: pointer;
   max-width: 400px;
 }
@@ -108,7 +121,7 @@ html, body {
   transition: all 0.2s ease-out;
   min-width: 100px;
   height: 35px;
-  margin: auto;
+  margin-right: auto;
   padding: 0 20px;
 }
 
@@ -138,7 +151,7 @@ ol, ul {
 
 .left-panel {
   transition: all 0.2s ease-out;
-  width: 350px;
+  width: 250px;
   height: 100%;
   background-color: #000;
 }
@@ -170,7 +183,6 @@ ol, ul {
 
 
 .tracklist {
-  margin-top: 50px;
   height: calc(100vh - 230px);
   overflow-y: scroll;
   padding-bottom: 0;
@@ -268,7 +280,7 @@ ol, ul {
 .small-room {
   width: 100%;
   display: grid;
-  grid-template-columns: 350px calc(100% - 350px);
+  grid-template-columns: 250px calc(100% - 250px);
 }
 
 
@@ -300,13 +312,12 @@ ol, ul {
 }
 
 .logo-container {
-  width: 150px;
+  width: 200px;
   margin: auto;
-  padding-top: 15px;
 }
 
 .logo {
-  width: 150px;
+  width: 200px;
   margin: auto;
 }
 
