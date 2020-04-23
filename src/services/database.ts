@@ -158,7 +158,7 @@ export async function getNextTrack(room: IRoom, userId: string, isMaster: boolea
       await room.save();
       return;
     }
-    const newCurrentTrack = room.tracks.find((t, i) => t.approved && !t.completed && i > index);
+    const newCurrentTrack = room.tracks.find((t, i) => t.approved && !t.removed && !t.completed && i > index);
     if (!newCurrentTrack) return;
     newCurrentTrack.current = true;
     newCurrentTrack.completed = false;
@@ -170,7 +170,7 @@ export async function getNextTrack(room: IRoom, userId: string, isMaster: boolea
   const currentTrackUri = member.currentTrack;
   const currentTrackIndex = room.tracks.findIndex(t => t.uri === currentTrackUri);
   if (currentTrackIndex < 0) return;
-  const nextTrack = room.tracks.find((t, i) => i > currentTrackIndex && t.approved && !t.completed);
+  const nextTrack = room.tracks.find((t, i) => i > currentTrackIndex && t.approved && !t.removed && !t.completed);
   if (!nextTrack) return;
   member.currentTrack = nextTrack.uri;
   await room.save();
@@ -184,7 +184,7 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
   current: boolean;
   name: string; artists: string[]; image: string;
 } | undefined> {
-  const trackIndex = room.tracks.findIndex((track) => track.uri === uri && track.approved);
+  const trackIndex = room.tracks.findIndex((track) => track.uri === uri && track.approved && !track.removed);
   if (trackIndex < 0) return undefined;
   room.tracks.forEach((track, i) => {
     track.completed = i < trackIndex;
