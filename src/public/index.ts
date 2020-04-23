@@ -84,7 +84,7 @@ export async function displayRoom(room: IRoom) {
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
   document.getElementById("room-name").textContent = room.name;
   const numTracks = room.tracks.filter(t => t.approved).length;
-  document.getElementById("mastered-by").innerHTML = `<span style="color: grey;">created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
+  document.getElementById("mastered-by").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
   document.getElementById("room-id").addEventListener("click", () => {
     const inputElt = document.getElementById("text-to-copy") as HTMLInputElement;
