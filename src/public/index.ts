@@ -33,6 +33,16 @@ async function getToken() {
   return token;
 }
 
+async function refreshRoomToken() {
+  token = await getToken();
+  try {
+    await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+  } catch (error) {
+    displayMessage("There was an error when refreshing the token of the rooom");
+    return;
+  }
+}
+
 export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   try {
     return (await axios.get(`/room/${roomId}/?userId=${userId}`)).data.room as IRoom;
@@ -103,14 +113,24 @@ export async function displayRoom(room: IRoom) {
       };
       const { uri, approved } = this.dataset;
       if (approved === "true") {
-        try {
-          const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
-          isPlaying = true;
-          document.getElementById("play").textContent = "pause";
-          displayRoom(room);
-        } catch (error) {
+        let success = false;
+        const maxNumAttempts = 5;
+        let numAttempts = 0;
+        while(!success && numAttempts < maxNumAttempts) {
+          try {
+            const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+            isPlaying = true;
+            document.getElementById("play").textContent = "pause";
+            displayRoom(room);
+            success = true;
+          } catch (error) {
+            console.log("There was an error going to a track");
+            await refreshRoomToken();
+          }
+          numAttempts += 1;
+        } 
+        if(!success) {
           displayMessage("There was an error going to this track");
-          console.log("There was an error going to a track");
         }
       } else {
         try {
@@ -209,7 +229,7 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
     const uris = room.tracks.filter(t => t.approved).map(t => t.uri);
     const name = room.name;
     await axios.post(`/spotify/generate-playlist/?token=${token}`, { uris, userId: user.id, name });
-    displayMessage("Playlist succesfully created 🥳");
+    displayMessage("Playlist succesfully created 🥳 ! Check your Spotify account !");
     displayRoom(room);
   } catch (error) {
     displayMessage("There was problem creating the playlist");
@@ -370,12 +390,22 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
     if (state.paused && isPlaying) {
-      try {
-        const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
-        displayRoom(room);
-      } catch (error) {
+      let success = false;
+      let numAttempts = 0;
+      const maxNumAttempts = 5;
+      while(!success && numAttempts < maxNumAttempts) {
+        try {
+          const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
+          displayRoom(room);
+          success = true;
+        } catch (error) {
+          console.log("There was a problem moving to the next track");
+          await refreshRoomToken();
+        }
+        numAttempts += 1;
+      }
+      if(!success) {
         displayMessage("There was a problem moving to the next track");
-        console.log("There was a problem moving to the next track");
       }
     }
     console.log(state);

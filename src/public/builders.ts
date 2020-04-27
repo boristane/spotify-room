@@ -6,14 +6,14 @@ export function userBuilder(user: ISpotifyUser): string {
   return `<div>
             <img src="${imageUrl}" alt="your avatar" id="user-photo"/>
           </div>
-          <div style="padding-left: 10px; padding-top: 6px;">
+          <div style="padding-left: 6px; padding-top: 8px;">
             ${username}
           </div>`;
 }
 
 export function masterBuilder(master): string {
   return `<li class="master member">
-                ${master.name} <spam style="font-size: 8px;">M</span>     
+                ${master.name} <spam style="font-size: 8px;">MASTER</span>     
            </li>`
 }
 

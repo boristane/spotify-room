@@ -17,10 +17,10 @@ html, body {
 }
 
 #user-photo {
-  width: 30px;
-  height: 30px;
+  width: 27px;
+  height: 27px;
   border-radius: 50%;
-  border: solid 1px grey;
+  border: solid 1px black;
 }
 
 #user {
@@ -59,19 +59,21 @@ html, body {
   display: grid;
   grid-template-columns: 200px calc(100% - 200px);
   margin-bottom: 20px;
+  background: rgb(60,57,57);
+  background: linear-gradient(180deg, rgba(60,57,57,1) 0%, rgba(0,0,0,1) 100%);
 }
 
 #room-description {
-  padding-top: 20px;
+  padding-top: 30px;
 }
 
 #room-name {
-  font-size: 40px;
+  font-size: 60px;
   font-weight: bold;
 }
 
 .button-container {
-  margin-top: 20px;
+  margin-top: 10px;
   display: grid;
   grid-template-columns: 110px 150px;
 }
@@ -79,7 +81,7 @@ html, body {
 #mastered-by {
   color: grey;
   font-size: 13px;
-  margin-top: 10px;
+  margin-top: -5px;
 }
 
 #room-id {
