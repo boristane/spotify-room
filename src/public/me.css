@@ -58,13 +58,13 @@ html, body {
 #cont {
   display: grid;
   grid-template-columns: 200px calc(100% - 200px);
-  margin-bottom: 20px;
+  padding-bottom: 20px;
   background: rgb(60,57,57);
   background: linear-gradient(180deg, rgba(60,57,57,1) 0%, rgba(0,0,0,1) 100%);
 }
 
 #room-description {
-  padding-top: 30px;
+  padding-top: 20px;
 }
 
 #room-name {
@@ -81,7 +81,7 @@ html, body {
 #mastered-by {
   color: grey;
   font-size: 13px;
-  margin-top: -5px;
+  margin-top: 0px;
 }
 
 #room-id {

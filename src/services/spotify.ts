@@ -161,10 +161,22 @@ export async function createPlaylist(token: string, userId: string, name: string
   return response.data.id;
 }
 
+export async function getRecommendations(token: string, trackUris: string[]):Promise<ISpotifyTrack[]> {
+  const t = trackUris.slice(0, 5).map(o => { const [, a] = o.split("spotify:track:"); return a; });
+  // Get recommendations for a Highest in the room lmao
+  if (t.length === 0) t.push("3eekarcy7kvN4yt5ZFzltW");
+  const response = await axiosInstance.get(`/recommendations`, {
+    params: { seed_tracks: t.join(","), limit: 5, min_popularity: 50}, headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return response.data.tracks;
+}
+
 export async function addTracksToPlaylist(token: string, playlistId: string, trackUris: string[]) {
   const res = chunck(trackUris, 100);
   const result = [];
-  for(let i= 0; i < res.length; i+= 1) {
+  for (let i = 0; i < res.length; i += 1) {
     const elt = res[i];
     const response = await axiosInstance.post(
       `/playlists/${playlistId}/tracks`,

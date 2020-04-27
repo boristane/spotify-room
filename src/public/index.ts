@@ -83,7 +83,7 @@ export async function displayRoom(room: IRoom) {
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);
-  tracklistElt.scrollTo({ top: 79 * currentEltIndex - 2, behavior: 'smooth' });
+  tracklistElt.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
 
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
@@ -338,6 +338,17 @@ function getCookies(): Record<string, string> {
   return cookies;
 }
 
+async function getRecommendations(room: IRoom) {
+  try {
+    const tracks = (await axios.put(`/spotify/recommendations/?token=${token}`, {uris: room.tracks.slice(0, 5)} )).data;
+    console.log(tracks);
+    return tracks;
+  } catch(err) {
+    console.log("Error getting the recommendations", err);
+    displayMessage("There was an issue getting the track recommendations");
+  }
+}
+
 export async function doIt() {
   try {
     user = (await axios.get(`/spotify/me/?token=${token}`)).data.user;
@@ -364,6 +375,8 @@ export async function doIt() {
     const room = await getRoom(roomId, user.id);
     displayRoom(room);
     document.getElementById("get-in-room").style.display = "none";
+    // TODO 
+    // await getRecommendations(room);
     setInterval(async () => {
       const room = await getRoom(roomId, user.id);
       displayRoom(room);
@@ -428,8 +441,8 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 main();
 
 setInterval(() => {
-  main();
-}, 15 * 60 * 1000);
+  refreshRoomToken();
+}, 30 * 60 * 1000);
 
 let timeoutId;
 function displayMessage(message: string) {

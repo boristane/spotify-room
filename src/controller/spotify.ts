@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import { createPlaylist, addTracksToPlaylist, getUserProfile, search } from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations } from "../services/spotify";
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
@@ -142,4 +142,14 @@ export async function generatePlaylist(req: Request, res: Response) {
   }
 }
 
-
+export async function getRecommendation(req: Request, res: Response) {
+  const { uris } = req.body;
+  const { token } = req.query;
+  try {
+    const tracks = await getRecommendations(token, uris);
+    res.status(200).json(tracks);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+  }
+}
