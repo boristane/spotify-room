@@ -387,7 +387,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
     const masterToken = room.master.token;
     const currentTrack = await getCurrentlyPalyingTrack(masterToken);
-    if (currentTrack?.item?.uri !== room.tracks.find((t) => t.current).uri) {
+    if (!currentTrack?.is_playing || currentTrack?.item?.uri !== room.tracks.find((t) => t.current).uri) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
