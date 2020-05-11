@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember, removeTrack } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember, removeTrack, getRoomsByUser } from "../services/database";
 import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -328,6 +328,29 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
     res.status(500).json({ message });
     return next();
   }
+}
+
+export async function getRoomUser(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const user = await getUser(id);
+  if (!user) {
+    const response = { message: "Not found" };
+    res.locals.body = response;
+    res.status(404).json(response);
+    return next();
+  }
+  const rooms = (await getRoomsByUser(id)).reverse();
+  const response = {
+    message: "User found",
+    user: {
+      rooms: rooms.map(prepareRoomForResponse),
+      info: user.id,
+    }
+  };
+
+  res.locals.body = response;
+  res.status(200).json(response);
+  return next();
 }
 
 export async function playRoom(req: Request, res: Response, next: NextFunction) {

@@ -34,6 +34,13 @@ export async function getRoom(id: string): Promise<IRoom> {
   return await Room.findOne({ _id: id });
 }
 
+export async function getRoomsByUser(id: string): Promise<IRoom[]> {
+  return await Room.find().or([
+    { members: { $elemMatch: { id: id } } },
+    { "master.id": id },
+  ]);
+}
+
 export async function spawnRoom(name: string, master: IUser, token: string, deviceId: string): Promise<IRoom> {
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
@@ -200,7 +207,7 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
 
 export async function removeTrack(room: IRoom, uri: string): Promise<boolean> {
   const track = room.tracks.find(a => a.uri === uri);
-  if(!track) return false;
+  if (!track) return false;
   track.removed = true;
   await room.save();
   return true;

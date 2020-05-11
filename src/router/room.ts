@@ -12,11 +12,13 @@ import {
   leaveRoom,
   pauseRoom,
   masterRemoveTrack,
+  getRoomUser,
 } from "../controller/room";
 
 const router = express.Router();
 
 router.put("/join/:id", joinRoom);
+router.get("/user/:id", getRoomUser);
 router.put("/leave/:id", leaveRoom);
 router.post("/create", createRoom);
 router.post("/play/:id", playRoom);

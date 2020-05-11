@@ -32,7 +32,7 @@ export function login(req: Request, res: Response) {
       scope: scope,
       redirect_uri: redirectUri,
       state: state,
-      show_dialog: true,
+      show_dialog: false,
     })
   );
 }

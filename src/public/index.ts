@@ -116,7 +116,7 @@ export async function displayRoom(room: IRoom) {
         let success = false;
         const maxNumAttempts = 5;
         let numAttempts = 0;
-        while(!success && numAttempts < maxNumAttempts) {
+        while (!success && numAttempts < maxNumAttempts) {
           try {
             const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
             isPlaying = true;
@@ -128,8 +128,8 @@ export async function displayRoom(room: IRoom) {
             await refreshRoomToken();
           }
           numAttempts += 1;
-        } 
-        if(!success) {
+        }
+        if (!success) {
           displayMessage("There was an error going to this track");
         }
       } else {
@@ -340,14 +340,58 @@ function getCookies(): Record<string, string> {
 
 async function getRecommendations(room: IRoom) {
   try {
-    const tracks = (await axios.put(`/spotify/recommendations/?token=${token}`, {uris: room.tracks.slice(0, 5)} )).data;
+    const tracks = (await axios.put(`/spotify/recommendations/?token=${token}`, { uris: room.tracks.slice(0, 5) })).data;
     console.log(tracks);
     return tracks;
-  } catch(err) {
+  } catch (err) {
     console.log("Error getting the recommendations", err);
     displayMessage("There was an issue getting the track recommendations");
   }
 }
+
+function displayExistingRooms(rooms: IRoom[]) {
+  const roomElts = rooms.slice(0, 5).map(room => {
+    return `
+    <div class="existing-room" data-id=${room.id}>
+    <div class="room-image-container">
+      <img class="room-image" src="https://boristane-projects-data.s3.eu-west-2.amazonaws.com/lyrically.png"/>
+    </div>
+      <div class="room-name">
+        ${room.name}
+      </div>
+      <div class="room-details">
+        <p>by ${room.master.name} - ${room.tracks.filter(track => track.approved && !track.removed).length} tracks(s)</p>
+      </div>
+    </div>
+    `;
+  }).join("");
+  document.getElementById("existing-rooms").innerHTML = roomElts;
+  document.querySelectorAll(".existing-room").forEach((elt => {
+    elt.addEventListener("click", async function (e) {
+      const { id } = this.dataset;
+      document.cookie = `rooom_id=${id}`;
+      await getInRoom(id);
+    });
+  }));
+}
+
+async function getInRoom(id: string) {
+  try {
+    await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+  } catch (error) {
+    displayMessage("There was an error when joining the rooom");
+    console.log("There was an error when joining a rooom", error);
+    return;
+  }
+  const room = await getRoom(id, user.id);
+  displayRoom(room);
+  document.getElementById("get-in-room").style.display = "none";
+  setInterval(async () => {
+    const room = await getRoom(id, user.id);
+    displayRoom(room);
+  }, 10 * 1000);
+}
+
 
 export async function doIt() {
   try {
@@ -365,25 +409,18 @@ export async function doIt() {
 
   roomId = getCookies()["rooom_id"];
   if (roomId && roomId !== "null") {
-    try {
-      await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
-    } catch (error) {
-      displayMessage("There was an error when joining the rooom");
-      console.log("There was an error when joining a rooom", error);
-      return;
-    }
-    const room = await getRoom(roomId, user.id);
-    displayRoom(room);
-    document.getElementById("get-in-room").style.display = "none";
-    // TODO 
-    // await getRecommendations(room);
-    setInterval(async () => {
-      const room = await getRoom(roomId, user.id);
-      displayRoom(room);
-    }, 10 * 1000);
+    await getInRoom(roomId);
   } else {
-    document.getElementById("get-in-room").style.display = "block";
-    (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+    let roomUser;
+    try {
+      roomUser = (await axios.get(`/room/user/${user.id}`)).data.user as { rooms: IRoom[] };
+    } catch (error) {
+      console.log("There was an issue loading your existing rooms");
+    } finally {
+      displayExistingRooms(roomUser.rooms);
+      document.getElementById("get-in-room").style.display = "block";
+      (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+    }
   }
   document.getElementById("user").innerHTML = userBuilder(user);
 }
@@ -406,7 +443,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       let success = false;
       let numAttempts = 0;
       const maxNumAttempts = 5;
-      while(!success && numAttempts < maxNumAttempts) {
+      while (!success && numAttempts < maxNumAttempts) {
         try {
           const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
           displayRoom(room);
@@ -417,7 +454,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
         }
         numAttempts += 1;
       }
-      if(!success) {
+      if (!success) {
         displayMessage("There was a problem moving to the next track");
       }
     }
