@@ -369,6 +369,7 @@ function displayExistingRooms(rooms: IRoom[]) {
   document.querySelectorAll(".existing-room").forEach((elt => {
     elt.addEventListener("click", async function (e) {
       const { id } = this.dataset;
+      roomId = id;
       document.cookie = `rooom_id=${id}`;
       await getInRoom(id);
     });
