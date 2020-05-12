@@ -190,7 +190,7 @@ ol, ul {
   font-weight: bold;
 }
 
-.tracklist {
+.tracklist-container {
   height: calc(100vh - 230px);
   overflow-y: scroll;
   padding-bottom: 0;
@@ -211,6 +211,22 @@ ol, ul {
    -moz-opacity: 0.2;  
    -webkit-opacity: 0.2;
    filter: alpha(opacity=20);
+   transition: all 0.2s ease-out;
+   position: relative;
+   z-index: 1;
+}
+
+.recommendations {
+  margin-top: 20px;
+}
+
+.recommendation {
+  display: grid;
+  text-align: left !important;
+  grid-template-columns: calc(100% - 112px) 112px;
+  padding: 8px;
+  margin: 0;
+  border-bottom: 1px #303030 solid;
    transition: all 0.2s ease-out;
    position: relative;
    z-index: 1;

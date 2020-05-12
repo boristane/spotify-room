@@ -1,4 +1,4 @@
-import { ISpotifyUser } from "../typings/spotify";
+import { ISpotifyUser, ISpotifyTrack } from "../typings/spotify";
 
 export function userBuilder(user: ISpotifyUser): string {
   const username = user.display_name ?? "You";
@@ -41,6 +41,22 @@ export function trackBuilder(track: {
             </div>
             <div>
               <button class="noselect red-button remove-track" style="display: ${isMaster && !track.current? "block" : "none"}; width: 40px; font-size: 20px;" data-uri="${track.uri}">-</button>
+            </div>
+          </li>`
+}
+
+export function recommendationBuilder(track: ISpotifyTrack): string {
+  const classes = ["recommendation"].join(" ");
+  const artistNames = track.artists.map(a => a.name);
+  return `<li class="${classes}">
+            <div style="padding-left: 10px;">
+
+              <div class="track-name">${track.name}</div>
+              <div class="artist-name">${track.artists.map(a => a.name).join(", ")}</div>
+
+            </div>
+            <div>
+              <button class="noselect green-button add-track" style="width: 40px; font-size: 10px;" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.album.images[0].url}" data-artists="${artistNames}">ADD</button>
             </div>
           </li>`
 }

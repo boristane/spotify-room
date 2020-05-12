@@ -2,7 +2,7 @@ import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../models/room";
 import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../typings/spotify";
-import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder } from "./builders";
+import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
 
 const debounce = (func: Function, delay: number) => {
   let debounceTimer
@@ -60,14 +60,14 @@ document.querySelector("body").addEventListener("click", () => {
   (document.getElementById("search") as HTMLInputElement).value = "";
 });
 
-export async function displayRoom(room: IRoom) {
+export function displayRoom(room: IRoom): boolean {
   if (room === null) {
     document.getElementById("waiting").style.display = "block";
     document.querySelector("section").style.display = "none";
     return
   };
   if (JSON.stringify(room) === JSON.stringify(oldRoom)) {
-    return;
+    return false;
   }
   document.getElementById("waiting").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
@@ -83,7 +83,7 @@ export async function displayRoom(room: IRoom) {
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);
-  tracklistElt.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
+  tracklistElt.parentElement.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
 
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
@@ -137,6 +137,8 @@ export async function displayRoom(room: IRoom) {
           const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
           displayMessage("This track has been approved in the rooom");
           displayRoom(room);
+          const recommendations = await getRecommendations(room);
+          displayRecommendations(recommendations);
         } catch (err) {
           displayMessage("There was an error approving to this track");
           console.log("There was an error approving to a track");
@@ -154,6 +156,8 @@ export async function displayRoom(room: IRoom) {
         const room = (await axios.delete(`/room/remove/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
         displayMessage("This track has been removed from the rooom");
         displayRoom(room);
+        const recommendations = await getRecommendations(room);
+        displayRecommendations(recommendations);
       } catch (error) {
         displayMessage("There was an error removing this track");
         console.log("There was an error removing a track");
@@ -193,6 +197,30 @@ export async function displayRoom(room: IRoom) {
     const userElt = (document.querySelector(".user-container") as HTMLDivElement);
     userElt.style.visibility = "visible";
   }, 1000);
+
+  return true;
+}
+
+function displayRecommendations(recommendations: ISpotifyTrack[]) {
+  const tracklistElt = document.querySelector(".recommendations") as HTMLDivElement;
+  const trackElts = recommendations.map((track) => recommendationBuilder(track));
+  tracklistElt.innerHTML = trackElts.join("");
+  addEventsToRecommendations();
+}
+
+function addEventsToRecommendations() {
+  document.querySelectorAll(".add-track").forEach((elt, index) => {
+    elt.addEventListener("click", async function (e: MouseEvent) {
+      e.stopPropagation();
+      const room = await addTrackToRoom(this);
+      const recommendations = await getRecommendations(room);
+      const li = this.parentElement.parentElement;
+      const parent = li.parentElement
+      parent.removeChild(parent.childNodes[index]);
+      parent.innerHTML += recommendationBuilder(recommendations[0]);
+      addEventsToRecommendations();
+    });
+  });
 }
 
 let token: string;
@@ -262,22 +290,9 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
         e.stopPropagation();
-        const { uri, name, artists, image } = this.dataset;
-        const uris = oldRoom.tracks.map(t => t.uri);
-        if (uris.indexOf(uri) >= 0) {
-          displayMessage("This track is already in the rooom");
-          return;
-        }
-        try {
-          const room = (await axios.post(`/room/add-track/${roomId}`, {
-            uri, name, artists: artists.split(","), image, userId: user.id,
-          })).data.room;
-          displayMessage("Track added to the room!");
-          displayRoom(room);
-        } catch (err) {
-          displayMessage("There was a problem adding a song to the room");
-          console.log("There was a problem adding a song to the room");
-        }
+        const room = await addTrackToRoom(this);
+        const recommendations = await getRecommendations(room);
+        displayRecommendations(recommendations);
       });
     });
   } catch (err) {
@@ -338,14 +353,35 @@ function getCookies(): Record<string, string> {
   return cookies;
 }
 
-async function getRecommendations(room: IRoom) {
+async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
   try {
-    const tracks = (await axios.put(`/spotify/recommendations/?token=${token}`, { uris: room.tracks.slice(0, 5) })).data;
-    console.log(tracks);
+    const indices = [0, 1, 2, 3, 4].map((_) => Math.floor(Math.random() * room.tracks.length));
+    const uris = room.tracks.filter((a, index, arr) => indices.indexOf(index) > -1).map(t => t.uri);
+    const tracks = (await axios.put(`/spotify/recommendations/?token=${token}`, { uris })).data;
     return tracks;
   } catch (err) {
     console.log("Error getting the recommendations", err);
     displayMessage("There was an issue getting the track recommendations");
+  }
+}
+
+async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
+  const { uri, name, artists, image } = elt.dataset;
+  const uris = oldRoom.tracks.map(t => t.uri);
+  if (uris.indexOf(uri) >= 0) {
+    displayMessage("This track is already in the rooom");
+    return;
+  }
+  try {
+    const room = (await axios.post(`/room/add-track/${roomId}`, {
+      uri, name, artists: artists.split(","), image, userId: user.id,
+    })).data.room;
+    displayMessage("Track added to the room!");
+    displayRoom(room);
+    return room;
+  } catch (err) {
+    displayMessage("There was a problem adding a song to the room");
+    console.log("There was a problem adding a song to the room");
   }
 }
 
@@ -360,7 +396,7 @@ function displayExistingRooms(rooms: IRoom[]) {
         ${room.name}
       </div>
       <div class="room-details">
-        <p>by ${room.master.name} - ${room.tracks.filter(track => track.approved && !track.removed).length} tracks(s)</p>
+        <p>by ${room.master.name} - ${room.tracks.filter(track => track.approved && !track.removed).length} track(s)</p>
       </div>
     </div>
     `;
@@ -386,6 +422,8 @@ async function getInRoom(id: string) {
   }
   const room = await getRoom(id, user.id);
   displayRoom(room);
+  const recommendations = await getRecommendations(room);
+  displayRecommendations(recommendations);
   document.getElementById("get-in-room").style.display = "none";
   setInterval(async () => {
     const room = await getRoom(id, user.id);
