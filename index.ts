@@ -1,4 +1,3 @@
-require('appmetrics-dash').attach();
 import app from "./src/server";
 const port = process.env.PORT;
 

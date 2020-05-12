@@ -1,3 +1,6 @@
+require("dotenv").config();
+require('spm-agent-nodejs');
+
 import spotifyRouter from "./router/spotify";
 import roomRouter from "./router/room";
 
@@ -11,6 +14,34 @@ const app = express()
   .use(express.static(__dirname + "/../dist"))
   .use(express.json())
   .use(cookieParser());
+// Todo change this
+const winston = require('winston')
+const morgan = require('morgan')
+const json = require('morgan-json')
+const format = json({
+  method: ':method',
+  url: ':url',
+  status: ':status',
+  contentLength: ':res[content-length]',
+  responseTime: ':response-time'
+})
+const Logsene = require('winston-logsene')
+const l = winston.createLogger({
+  transports: [new Logsene({
+    token: process.env.LOGS_TOKEN, // token
+    level: 'info',
+    type: 'api_logs',
+    url: 'https://logsene-receiver.sematext.com/_bulk'
+  })]
+})
+const httpLogger = morgan(format, {
+  stream: {
+    write: (message) => l.info('HTTP LOG', JSON.parse(message))
+  }
+});
+if(process.env.ENV === "prod") {
+  app.use(httpLogger)
+}
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");

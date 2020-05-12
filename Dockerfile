@@ -3,7 +3,7 @@ RUN apt update
 
 WORKDIR /var/rooom
 COPY package*.json /var/rooom/
-RUN npm i
+RUN npm ci
 
 COPY . /var/rooom
 
