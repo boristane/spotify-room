@@ -6,8 +6,7 @@ import * as _ from "lodash";
 import { IRoom } from "../models/room";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { token, userId, deviceId } = req.query;
+  const { id, token, userId, deviceId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -32,12 +31,11 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
 }
 
 export async function leaveRoom(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId } = req.query;
+  const { id, userId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user || !room.isActive) {
+    if (!room || !user) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
@@ -87,8 +85,7 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
 }
 
 export async function goToNextTrack(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId } = req.query;
+  const { id, userId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -131,8 +128,7 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
 }
 
 export async function masterGoToTrack(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId, uri } = req.query;
+  const { id, userId, uri } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -181,8 +177,7 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
 }
 
 export async function masterRemoveTrack(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId, uri } = req.query;
+  const { id, userId, uri } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -220,8 +215,7 @@ export async function masterRemoveTrack(req: Request, res: Response, next: NextF
 }
 
 export async function masterApproveTrack(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId, uri } = req.query;
+  const { id, userId, uri } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -253,8 +247,7 @@ export async function masterApproveTrack(req: Request, res: Response, next: Next
 }
 
 export async function masterApproveMember(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId, memberId } = req.query;
+  const { id, userId, memberId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -293,8 +286,7 @@ export async function masterApproveMember(req: Request, res: Response, next: Nex
 
 
 export async function getRooom(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId } = req.query;
+  const { id, userId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -337,7 +329,7 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
 }
 
 export async function getRoomUser(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
+  const { id } = req.query;
   const user = await getUser(id);
   if (!user) {
     const response = { message: "Not found" };
@@ -360,8 +352,7 @@ export async function getRoomUser(req: Request, res: Response, next: NextFunctio
 }
 
 export async function playRoom(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId, deviceId } = req.query;
+  const { id, userId, deviceId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -439,8 +430,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
 }
 
 export async function pauseRoom(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { userId, deviceId } = req.query;
+  const { id, userId, deviceId } = req.query;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -501,7 +491,7 @@ export async function pauseRoom(req: Request, res: Response, next: NextFunction)
 }
 
 export async function addTrackToRoom(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
+  const { id } = req.query;
   const { userId, uri, artists, name, image } = req.body;
   try {
     const user = await getUser(userId);
@@ -548,6 +538,7 @@ export function prepareRoomForResponse(room: IRoom) {
     members: room.members.map((m) => _.omit(m, ["token"])),
     tracks: room.tracks.filter(t => !t.removed),
     name: room.name,
-    id: room.id
+    id: room.id,
+    isActive: room.isActive,
   }
 }

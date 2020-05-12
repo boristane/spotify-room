@@ -36,7 +36,7 @@ export async function getRoom(id: string): Promise<IRoom> {
 
 export async function getRoomsByUser(id: string): Promise<IRoom[]> {
   return await Room.find().or([
-    { members: { $elemMatch: { id: id } } },
+    { members: { $elemMatch: { id: id } }, isActive: true },
     { "master.id": id },
   ]);
 }

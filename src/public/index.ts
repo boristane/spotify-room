@@ -36,7 +36,7 @@ async function getToken() {
 async function refreshRoomToken() {
   token = await getToken();
   try {
-    await axios.put(`/room/join/${roomId}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+    await axios.put(`/room/join/?id=${roomId}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
     displayMessage("There was an error when refreshing the token of the rooom");
     return;
@@ -45,7 +45,7 @@ async function refreshRoomToken() {
 
 export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   try {
-    return (await axios.get(`/room/${roomId}/?userId=${userId}`)).data.room as IRoom;
+    return (await axios.get(`/room/?id=${roomId}&userId=${userId}`)).data.room as IRoom;
   } catch (err) {
     if (err.response && err.response.status === 401) {
       return null;
@@ -150,7 +150,7 @@ export function displayRoom(room: IRoom): boolean {
         let numAttempts = 0;
         while (!success && numAttempts < maxNumAttempts) {
           try {
-            const room = (await axios.get(`/room/go-to/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+            const room = (await axios.get(`/room/go-to/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
             isPlaying = true;
             document.getElementById("play").textContent = "pause";
             displayRoom(room);
@@ -170,7 +170,7 @@ export function displayRoom(room: IRoom): boolean {
           event_category: "track",
         });
         try {
-          const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+          const room = (await axios.get(`/room/approve/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
           displayMessage("This track has been approved in the rooom");
           displayRoom(room);
           const recommendations = await getRecommendations(room);
@@ -193,7 +193,7 @@ export function displayRoom(room: IRoom): boolean {
       if (!isMaster) return;
       try {
         const { uri } = this.dataset;
-        const room = (await axios.delete(`/room/remove/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
+        const room = (await axios.delete(`/room/remove/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
         displayMessage("This track has been removed from the rooom");
         displayRoom(room);
         const recommendations = await getRecommendations(room);
@@ -215,7 +215,7 @@ export function displayRoom(room: IRoom): boolean {
       if (!isMaster) return;
       const { id, name } = this.dataset;
       try {
-        const room = (await axios.get(`/room/approve-member/${roomId}?userId=${user.id}&memberId=${id}`)).data.room;
+        const room = (await axios.get(`/room/approve-member/?id=${roomId}&userId=${user.id}&memberId=${id}`)).data.room;
         displayMessage(`Lest's welcome ${name} to the rooom! 🎉`);
         displayRoom(room);
       } catch (err) {
@@ -296,11 +296,11 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
   try {
     let r: IRoom;
     if (isPlaying) {
-      r = (await axios.post(`/room/pause/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
+      r = (await axios.post(`/room/pause/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
       //@ts-ignore
       e.target.innerHTML = "play";
     } else {
-      r = (await axios.post(`/room/play/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
+      r = (await axios.post(`/room/play/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
       //@ts-ignore
       e.target.innerHTML = "pause";
     }
@@ -406,7 +406,7 @@ document.getElementById("leave").addEventListener("click", async (e: MouseEvent)
 
 async function leaveRoom() {
   try {
-    await axios.put(`/room/leave/${roomId}?&userId=${user.id}`);
+    await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
     window.location.reload();
   } catch (error) {
     displayMessage("There was problem leaving the room");
@@ -460,15 +460,15 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
     return;
   }
   try {
-    const room = (await axios.post(`/room/add-track/${roomId}`, {
+    const room = (await axios.post(`/room/add-track/?id=${roomId}`, {
       uri, name, artists: artists.split(","), image, userId: user.id,
     })).data.room;
     displayMessage("Track added to the room!");
     displayRoom(room);
     return room;
   } catch (err) {
-    displayMessage("There was a problem adding a song to the room");
-    console.log("There was a problem adding a song to the room");
+    displayMessage("There was a problem adding a track to the room");
+    console.log("There was a problem adding a track to the room", err);
   }
 }
 
@@ -507,7 +507,7 @@ async function getInRoom(id: string) {
   document.getElementById("get-in-room").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
   try {
-    await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+    await axios.put(`/room/join/?id=${id}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
     displayMessage("There was an error when joining the rooom");
     console.log("There was an error when joining a rooom", error);
@@ -555,7 +555,7 @@ export async function doIt() {
   } else {
     let roomUser = { rooms: [] };
     try {
-      roomUser = (await axios.get(`/room/user/${user.id}`)).data.user as { rooms: IRoom[] };
+      roomUser = (await axios.get(`/room/user/?id=${user.id}`)).data.user as { rooms: IRoom[] };
     } catch (error) {
       console.log("There was an issue loading your existing rooms");
     } finally {
@@ -587,7 +587,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       const maxNumAttempts = 5;
       while (!success && numAttempts < maxNumAttempts) {
         try {
-          const room = (await axios.get(`/room/next/${roomId}/?userId=${user.id}`)).data.room;
+          const room = (await axios.get(`/room/next/?id=${roomId}&userId=${user.id}`)).data.room;
           displayRoom(room);
           success = true;
         } catch (error) {

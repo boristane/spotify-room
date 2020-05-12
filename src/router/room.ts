@@ -17,18 +17,18 @@ import {
 
 const router = express.Router();
 
-router.put("/join/:id", joinRoom);
-router.get("/user/:id", getRoomUser);
-router.put("/leave/:id", leaveRoom);
+router.put("/join/", joinRoom);
+router.get("/user/", getRoomUser);
+router.put("/leave/", leaveRoom);
 router.post("/create", createRoom);
-router.post("/play/:id", playRoom);
-router.post("/pause/:id", pauseRoom);
-router.get("/next/:id", goToNextTrack);
-router.get("/go-to/:id", masterGoToTrack);
-router.delete("/remove/:id", masterRemoveTrack);
-router.get("/approve/:id", masterApproveTrack);
-router.get("/approve-member/:id", masterApproveMember);
-router.get("/:id", getRooom);
-router.post("/add-track/:id", addTrackToRoom);
+router.post("/play/", playRoom);
+router.post("/pause/", pauseRoom);
+router.get("/next/", goToNextTrack);
+router.get("/go-to/", masterGoToTrack);
+router.delete("/remove/", masterRemoveTrack);
+router.get("/approve/", masterApproveTrack);
+router.get("/approve-member/", masterApproveMember);
+router.get("/", getRooom);
+router.post("/add-track/", addTrackToRoom);
 
 export default router;
