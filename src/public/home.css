@@ -87,14 +87,20 @@ a:active {
 }
 
 @media only screen and (max-width: 800px) {
-  .button-container {
+  #primaryButton {
     display: none;
+  }
+
+  #get-in-room {
+    max-width: 300px;
+    margin: 50px auto;
   }
 
   .mobile {
     display: block;
-    margin: 50px 0;
     font-size: 18px;
+    max-width: 300px;
+    margin: 50px auto;
   }
 
 }
