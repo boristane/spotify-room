@@ -39,7 +39,7 @@ html, body {
 .user-container{
   transition: all 0.2s ease-out;
   position: absolute;
-  top: 20px;
+  top: 10px;
   right: 370px;
   visibility: hidden;
   display: grid;
@@ -58,6 +58,7 @@ html, body {
 #cont {
   display: grid;
   grid-template-columns: 200px calc(100% - 200px);
+  padding-top: 20px;
   padding-bottom: 20px;
   background: rgb(60,57,57);
   background: linear-gradient(180deg, rgba(60,57,57,1) 0%, rgba(0,0,0,1) 100%);
@@ -191,7 +192,7 @@ ol, ul {
 }
 
 .tracklist-container {
-  height: calc(100vh - 230px);
+  height: calc(100vh - 250px);
   overflow-y: scroll;
   padding-bottom: 0;
   padding-top: 0;
@@ -203,7 +204,7 @@ ol, ul {
   cursor: pointer;
   display: grid;
   text-align: left !important;
-  grid-template-columns: 60px calc(100% - 120px) 60px;
+  grid-template-columns: 60px calc(100% - 147px) 60px;
   padding: 8px 15px 6px 15px;
   margin: 0;
   border-bottom: 1px #303030 solid;

@@ -96,7 +96,13 @@ export function displayRoom(room: IRoom): boolean {
   const numTracks = room.tracks.filter(t => t.approved).length;
   document.getElementById("mastered-by").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
+  
   document.getElementById("room-id").addEventListener("click", () => {
+    // @ts-ignore
+    gtag('event', "share-room", {
+      event_category: "room",
+      event_label: "room-id"
+    });
     const inputElt = document.getElementById("text-to-copy") as HTMLInputElement;
     inputElt.value = document.getElementById("room-id").textContent;
     inputElt.select();
@@ -108,11 +114,21 @@ export function displayRoom(room: IRoom): boolean {
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
       if (!isMaster) {
+        // @ts-ignore
+        gtag('event', "play-track", {
+          event_category: "track",
+          event_label: "non-master"
+        });
         displayMessage("Only the rooom master can skip tracks 😅");
         return;
       };
       const { uri, approved } = this.dataset;
       if (approved === "true") {
+        // @ts-ignore
+        gtag('event', "play-track", {
+          event_category: "track",
+          event_label: "master"
+        });
         let success = false;
         const maxNumAttempts = 5;
         let numAttempts = 0;
@@ -133,6 +149,10 @@ export function displayRoom(room: IRoom): boolean {
           displayMessage("There was an error going to this track");
         }
       } else {
+        // @ts-ignore
+        gtag('event', "approve-track", {
+          event_category: "track",
+        });
         try {
           const room = (await axios.get(`/room/approve/${roomId}?userId=${user.id}&uri=${uri}`)).data.room;
           displayMessage("This track has been approved in the rooom");
@@ -150,6 +170,10 @@ export function displayRoom(room: IRoom): boolean {
   document.querySelectorAll(".remove-track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
       e.stopPropagation();
+      // @ts-ignore
+      gtag('event', "remove-track", {
+        event_category: "track",
+      });
       if (!isMaster) return;
       try {
         const { uri } = this.dataset;
@@ -167,6 +191,11 @@ export function displayRoom(room: IRoom): boolean {
 
   document.querySelectorAll(".member-to-approve").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
+      // @ts-ignore
+      gtag('event', "approve", {
+        event_category: "user",
+        event_label: isMaster ? "master" : "non-master",
+      });
       if (!isMaster) return;
       const { id, name } = this.dataset;
       try {
@@ -212,6 +241,11 @@ function addEventsToRecommendations() {
   document.querySelectorAll(".add-track").forEach((elt, index) => {
     elt.addEventListener("click", async function (e: MouseEvent) {
       e.stopPropagation();
+      // @ts-ignore
+      gtag('event', "add-track", {
+        event_category: "track",
+        event_label: "recommendations",
+      });
       const room = await addTrackToRoom(this);
       const recommendations = await getRecommendations(room);
       const li = this.parentElement.parentElement;
@@ -232,8 +266,15 @@ let oldRoom: IRoom;
 let isPlaying = false;
 
 document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
+  const analyticsLabel = isPlaying ? "pause-button" : "play-button"
+  // @ts-ignore
+  gtag('event', analyticsLabel, {
+    event_category: "player",
+    value: isPlaying ? 1 : 0,
+  });
+
   try {
-    let r;
+    let r: IRoom;
     if (isPlaying) {
       r = (await axios.post(`/room/pause/${roomId}/?userId=${user.id}&deviceId=${deviceId}`)).data.room;
       //@ts-ignore
@@ -252,6 +293,11 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
 });
 
 document.getElementById("playlist").addEventListener("click", async (e: MouseEvent) => {
+  // @ts-ignore
+  gtag('event', "create-playlist", {
+    event_category: "player",
+    value: 1,
+  });
   try {
     const room = await getRoom(roomId, user.id);
     const uris = room.tracks.filter(t => t.approved).map(t => t.uri);
@@ -290,6 +336,11 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
         e.stopPropagation();
+        // @ts-ignore
+        gtag('event', "add-track", {
+          event_category: "track",
+          event_label: "search",
+        });
         const room = await addTrackToRoom(this);
         const recommendations = await getRecommendations(room);
         displayRecommendations(recommendations);
@@ -306,6 +357,10 @@ document.querySelectorAll(".track-search-result-item").forEach((elt) => {
 });
 
 document.getElementById("create").addEventListener("click", async (e: MouseEvent) => {
+  // @ts-ignore
+  gtag('event', "create-room", {
+    event_category: "room",
+  });
   try {
     const roomName = (document.getElementById("create-room-name") as HTMLInputElement).value;
     await axios.post(`/room/create/`, {
@@ -322,6 +377,10 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
 });
 
 document.getElementById("leave").addEventListener("click", async (e: MouseEvent) => {
+  // @ts-ignore
+  gtag('event', "logout", {
+    event_category: "user",
+  });
   await leaveRoom();
 });
 
@@ -404,6 +463,10 @@ function displayExistingRooms(rooms: IRoom[]) {
   document.getElementById("existing-rooms").innerHTML = roomElts;
   document.querySelectorAll(".existing-room").forEach((elt => {
     elt.addEventListener("click", async function (e) {
+      // @ts-ignore
+      gtag('event', "join-existing-room", {
+        event_category: "room",
+      });
       const { id } = this.dataset;
       roomId = id;
       document.cookie = `rooom_id=${id}`;
