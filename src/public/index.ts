@@ -440,6 +440,7 @@ function getCookies(): Record<string, string> {
 }
 
 async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
+  if(!room) return [];
   try {
     const indices = [0, 1, 2, 3, 4].map((_) => Math.floor(Math.random() * room.tracks.length));
     const uris = room.tracks.filter((a, index, arr) => indices.indexOf(index) > -1).map(t => t.uri);
@@ -526,6 +527,7 @@ async function getInRoom(id: string) {
     const recommendations = await getRecommendations(room);
     displayRecommendations(recommendations);
   });
+  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
   setInterval(async () => {
     const room = await getRoom(id, user.id);
     displayRoom(room);
