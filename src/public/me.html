@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="./me.css" />
   <link rel="stylesheet" href="./form.css" />
   <link rel="stylesheet" href="./loader.css" />
+  <link rel="stylesheet" href="./modal.css" />
 
   <title>rooom</title>
 </head>
@@ -68,6 +69,9 @@
         <div>
           <ul class="members-to-approve">
           </ul>
+        </div>
+        <div >
+          <button id="invite-friends" class="green-button" style="display: block; margin: auto; margin-top: 15px;">invite friends</button>
         </div>
       </div>
       <div class="right-panel">
@@ -120,6 +124,28 @@
   <input type="text" value="" id="text-to-copy" style="display:block;position: absolute; top: -500px; left: -500px">
 
   <div id="waiting" style="display: none;">waiting to be added to the rooom by the master...</div>
+
+  <div id="modal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: grid; grid-template-columns: 55px 100%">
+          <img class="logo" src="./logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+          <h2 style="padding: 10px;">invite your friends</h2>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div style="color: rgb(80, 80, 80); margin: 30px 0;">
+          <p>It' simple, share the link below with your friends and they can join the rooom!</p>
+          <form action="" class="form-inline" style="margin-top: 15px">
+            <input type="text" id="text-to-copy-2">
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <script src="https://sdk.scdn.co/spotify-player.js" crossorigin="anonymous"></script>
   <script src="index.ts"></script>

@@ -108,7 +108,23 @@ export function displayRoom(room: IRoom): boolean {
     inputElt.select();
     inputElt.setSelectionRange(0, 99999);
     document.execCommand("copy");
-    displayMessage("Room url copied to clipboard");
+    displayMessage("rooom url copied to clipboard");
+  });
+
+  document.getElementById("invite-friends").addEventListener("click", () => {
+    // @ts-ignore
+    gtag('event', "share-room", {
+      event_category: "room",
+      event_label: "invite"
+    });
+    const inputElt = document.getElementById("text-to-copy-2") as HTMLInputElement;
+    inputElt.value = document.getElementById("room-id").textContent;
+    inputElt.select();
+    inputElt.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    displayMessage("rooom url copied to clipboard");
+    const modal = document.getElementById("modal");
+    modal.style.display = "flex";
   });
 
   document.querySelectorAll(".track").forEach((elt) => {
@@ -399,6 +415,13 @@ async function main() {
     token = await getToken();
   } catch {
     return window.location.replace("/");
+  }
+
+  const modal = document.getElementById("modal");
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
   }
 }
 
