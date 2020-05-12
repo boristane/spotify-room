@@ -270,6 +270,12 @@ export async function masterApproveMember(req: Request, res: Response, next: Nex
       res.status(401).json(response);
       return next();
     }
+    if (room.members.length >= 20) {
+      const response = { message: "Too many members" };
+      res.locals.body = response;
+      res.status(422).json(response);
+      return next();
+    }
     await approveMember(room, memberId);
     const response = {
       message: "Approved track", room: prepareRoomForResponse(room),

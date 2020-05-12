@@ -219,6 +219,10 @@ export function displayRoom(room: IRoom): boolean {
         displayMessage(`Lest's welcome ${name} to the rooom! 🎉`);
         displayRoom(room);
       } catch (err) {
+        if (err.response && err.response.status === 422) {
+          displayMessage("Too many members in the rooom");
+          return console.log("Too many members in the rooom");
+        }
         displayMessage("There was an error approving this member");
         console.log("There was an error approving a member");
       }
