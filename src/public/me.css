@@ -376,6 +376,7 @@ margin: 40px 10px;
   border: 1px solid rgb(60,57,57);
   transition: all 0.2s ease-out;
   min-width: 100px;
+  max-width: 100px;
 }
 
 .existing-room:hover {

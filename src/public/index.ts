@@ -486,7 +486,7 @@ function displayExistingRooms(rooms: IRoom[]) {
       </div>
     </div>
     `;
-  }).join("") : "";
+  }).join("") : "<div></div><div></div><div style='text-aling: center'>none found</div><div></div><div></div>";
   document.getElementById("existing-rooms").innerHTML = roomElts;
   document.querySelectorAll(".existing-room").forEach((elt => {
     elt.addEventListener("click", async function (e) {
