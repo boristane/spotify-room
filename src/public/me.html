@@ -93,9 +93,10 @@
         <div class="tracklist-container">
           <ul class="tracklist">
           </ul>
-          <p style="margin-top: 50px; padding: 0 18px; font-weight: bolder;">
-            Recommendations
-          </p>
+          <div style="margin-top: 50px; padding: 0 18px; font-weight: bolder; display: grid; grid-template-columns: calc(100% - 102px) 102px;">
+            <div> Recommendations </div>
+            <button id="refresh-recommendations" class="green-button" style="font-size: 10px;">refresh</button>
+          </div>
           <ul class="recommendations">
           </ul>
         </div>

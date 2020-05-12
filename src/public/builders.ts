@@ -40,7 +40,7 @@ export function trackBuilder(track: {
 
             </div>
             <div>
-              <button class="noselect red-button remove-track" style="display: ${isMaster && !track.current? "block" : "none"}; width: 40px; font-size: 20px;" data-uri="${track.uri}">-</button>
+              <button class="noselect red-button remove-track" style="display: ${isMaster && !track.current? "block" : "none"}; font-size: 10px;" data-uri="${track.uri}">remove</button>
             </div>
           </li>`
 }
@@ -56,7 +56,7 @@ export function recommendationBuilder(track: ISpotifyTrack): string {
 
             </div>
             <div>
-              <button class="noselect green-button add-track" style="width: 40px; font-size: 10px;" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.album.images[0].url}" data-artists="${artistNames}">ADD</button>
+              <button class="noselect green-button add-track" style="width: 40px; font-size: 10px;" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.album.images[0].url}" data-artists="${artistNames}">add</button>
             </div>
           </li>`
 }

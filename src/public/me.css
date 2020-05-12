@@ -204,7 +204,7 @@ ol, ul {
   cursor: pointer;
   display: grid;
   text-align: left !important;
-  grid-template-columns: 60px calc(100% - 147px) 60px;
+  grid-template-columns: 60px calc(100% - 155px) 60px;
   padding: 8px 15px 6px 15px;
   margin: 0;
   border-bottom: 1px #303030 solid;

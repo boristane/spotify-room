@@ -96,7 +96,7 @@ export function displayRoom(room: IRoom): boolean {
   const numTracks = room.tracks.filter(t => t.approved).length;
   document.getElementById("mastered-by").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
-  
+
   document.getElementById("room-id").addEventListener("click", () => {
     // @ts-ignore
     gtag('event', "share-room", {
@@ -445,7 +445,7 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
 }
 
 function displayExistingRooms(rooms: IRoom[]) {
-  const roomElts = rooms.slice(0, 5).map(room => {
+  const roomElts = rooms.length > 0 ? rooms.slice(0, 5).map(room => {
     return `
     <div class="existing-room" data-id=${room.id}>
     <div class="room-image-container">
@@ -459,7 +459,7 @@ function displayExistingRooms(rooms: IRoom[]) {
       </div>
     </div>
     `;
-  }).join("");
+  }).join("") : "";
   document.getElementById("existing-rooms").innerHTML = roomElts;
   document.querySelectorAll(".existing-room").forEach((elt => {
     elt.addEventListener("click", async function (e) {
@@ -488,6 +488,10 @@ async function getInRoom(id: string) {
   const recommendations = await getRecommendations(room);
   displayRecommendations(recommendations);
   document.getElementById("get-in-room").style.display = "none";
+  document.getElementById("refresh-recommendations").addEventListener("click", async () => {
+    const recommendations = await getRecommendations(room);
+    displayRecommendations(recommendations);
+  });
   setInterval(async () => {
     const room = await getRoom(id, user.id);
     displayRoom(room);
@@ -513,7 +517,7 @@ export async function doIt() {
   if (roomId && roomId !== "null") {
     await getInRoom(roomId);
   } else {
-    let roomUser;
+    let roomUser = { rooms: [] };
     try {
       roomUser = (await axios.get(`/room/user/${user.id}`)).data.user as { rooms: IRoom[] };
     } catch (error) {
