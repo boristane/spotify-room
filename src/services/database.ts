@@ -61,6 +61,7 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     if (master.token === token && master.deviceId === deviceId) return;
     master.deviceId = deviceId;
     master.token = token;
+    room.isActive = true;
     await room.save();
     return isNewUser;
   }

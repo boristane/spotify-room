@@ -11,7 +11,7 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user || !room.isActive) {
+    if (!room || !user) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);

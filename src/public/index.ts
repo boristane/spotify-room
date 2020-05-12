@@ -449,7 +449,7 @@ function displayExistingRooms(rooms: IRoom[]) {
     return `
     <div class="existing-room" data-id=${room.id}>
     <div class="room-image-container">
-      <img class="room-image" src="https://boristane-projects-data.s3.eu-west-2.amazonaws.com/lyrically.png"/>
+      <img class="room-image" src="https://d1apvrodb6vxub.cloudfront.net/rooom.png"/>
     </div>
       <div class="room-name">
         ${room.name}
@@ -476,6 +476,8 @@ function displayExistingRooms(rooms: IRoom[]) {
 }
 
 async function getInRoom(id: string) {
+  document.getElementById("get-in-room").style.display = "none";
+  (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
   try {
     await axios.put(`/room/join/${id}?token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
@@ -489,6 +491,11 @@ async function getInRoom(id: string) {
   displayRecommendations(recommendations);
   document.getElementById("get-in-room").style.display = "none";
   document.getElementById("refresh-recommendations").addEventListener("click", async () => {
+    // @ts-ignore
+    gtag('event', "refresh-recommendations", {
+      event_category: "room",
+      event_label: "recommendations",
+    });
     const recommendations = await getRecommendations(room);
     displayRecommendations(recommendations);
   });
