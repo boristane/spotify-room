@@ -171,6 +171,10 @@ ol, ul {
   padding: 15px;
 }
 
+.member.inactive {
+  color: grey;
+}
+
 .member-to-approve {
   opacity: 0.5; 
    -moz-opacity: 0.5;  
@@ -408,5 +412,5 @@ margin: 40px 10px;
 
 #existing-rooms {
   display: grid;
-  grid-template-columns: auto auto auto auto auto;
+  grid-template-columns: 160px 160px 160px 160px 160px;
 }

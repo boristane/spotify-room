@@ -13,6 +13,7 @@ import {
   pauseRoom,
   masterRemoveTrack,
   getRoomUser,
+  masterCheckUsers,
 } from "../controller/room";
 
 const router = express.Router();
@@ -25,6 +26,7 @@ router.post("/play/", playRoom);
 router.post("/pause/", pauseRoom);
 router.get("/next/", goToNextTrack);
 router.get("/go-to/", masterGoToTrack);
+router.get("/check/", masterCheckUsers);
 router.delete("/remove/", masterRemoveTrack);
 router.get("/approve/", masterApproveTrack);
 router.get("/approve-member/", masterApproveMember);

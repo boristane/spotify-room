@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember, removeTrack, getRoomsByUser } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setMemberCurrentTrack, approveMember, removeRoomMember, removeTrack, getRoomsByUser, getUserCurrentTrack } from "../services/database";
 import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -170,6 +170,52 @@ export async function masterGoToTrack(req: Request, res: Response, next: NextFun
     return next();
   } catch (error) {
     const message = "There was a problem skipping a track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function masterCheckUsers(req: Request, res: Response, next: NextFunction) {
+  const { id, userId } = req.query;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    if (room.master.id !== userId) {
+      const response = { message: "Unauthorized" };
+      res.locals.body = response;
+      res.status(401).json(response);
+      return next();
+    }
+    const roomCurrentTrackIndex = room.tracks.findIndex((track) => track.current);
+    for (let i = 0; i < room.members.length; i += 1) {
+      const member = room.members[i];
+      if (!member.isActive || !member.isApproved) continue;
+      const u = await getUser(member.id);
+      const { index } = getUserCurrentTrack(room, u);
+      if (index < roomCurrentTrackIndex - 1) {
+        try {
+          await removeRoomMember(room, u);
+        } catch (error) {
+          logger.error("There was an error making a user inactive", { error, member });
+          continue;
+        }
+      }
+    }
+    const response = {
+      message: "checked all users", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem checking the users in the room"
     logger.error(message, { error });
     res.status(500).json({ message });
     return next();

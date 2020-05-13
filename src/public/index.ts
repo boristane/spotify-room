@@ -55,6 +55,14 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   }
 }
 
+export async function checkUsers(roomId: string, userId: string): Promise<IRoom> {
+  try {
+    return (await axios.get(`/room/check/?id=${roomId}&userId=${userId}`)).data.room as IRoom;
+  } catch (err) {
+    return null;
+  }
+}
+
 document.querySelector("body").addEventListener("click", () => {
   document.querySelector("#search-results").innerHTML = "";
   (document.getElementById("search") as HTMLInputElement).value = "";
@@ -87,7 +95,7 @@ export function displayRoom(room: IRoom): boolean {
 
   const membersListElt = document.querySelector(".members") as HTMLDivElement;
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
-  const memberElts = room.members.filter(m => m.isActive && m.isApproved).map((member) => `<li class="member">${member.name}</li>`);
+  const memberElts = room.members.filter(m => m.isApproved).map((member) => `<li class="member ${member.isActive ? "active" : "inactive"}">${member.name}</li>`);
   const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member member-to-approve" data-id="${member.id}" data-name="${member.name}">${member.name}</li>`);
   const masterElt = masterBuilder(room.master);
   membersListElt.innerHTML = masterElt + memberElts.join("");
@@ -441,7 +449,7 @@ function getCookies(): Record<string, string> {
 }
 
 async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
-  if(!room) return [];
+  if (!room) return [];
   try {
     const indices = [0, 1, 2, 3, 4].map((_) => Math.floor(Math.random() * room.tracks.length));
     const uris = room.tracks.filter((a, index, arr) => indices.indexOf(index) > -1).map(t => t.uri);
@@ -534,6 +542,15 @@ async function getInRoom(id: string) {
     const room = await getRoom(id, user.id);
     displayRoom(room);
   }, 10 * 1000);
+
+  setTimeout(() => {
+    if(isMaster) {
+      setInterval(async () => {
+        const room = await checkUsers(id, user.id);
+        displayRoom(room);
+      }, 5 * 60 * 1000);
+    }
+  }, 10 * 1000)
 }
 
 

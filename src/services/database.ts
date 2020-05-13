@@ -206,6 +206,16 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
   return room.tracks[trackIndex];
 }
 
+export function getUserCurrentTrack(room: IRoom, user: IUser): {uri: string, index: number} | undefined {
+  const roomUser = room.members.find((member) => member.id === user.id);
+  if (!roomUser) return undefined;
+  const uri = roomUser.currentTrack;
+  const index = room.tracks.findIndex(t => t.uri === uri);
+  return {
+    uri, index
+  }
+}
+
 export async function removeTrack(room: IRoom, uri: string): Promise<boolean> {
   const track = room.tracks.find(a => a.uri === uri);
   if (!track) return false;
