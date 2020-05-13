@@ -26,15 +26,18 @@
   <meta property="og:url" content="https://rooom.click" />
   <meta property="og:description" content="your music, your friends, in sync, powered by Spotify." />
   <meta property="og:image" content="https://d1apvrodb6vxub.cloudfront.net/rooom.png" />
-  <script>function createDynamicURL() {
+  <script>
+    function getId() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
-      return `/spotify/login/?id=${id}`;
+      return id;
     }
 
-    function RedirectURL() {
-      window.location = createDynamicURL();
-    }</script>
+    const id = getId();
+    if (id) {
+      window.location = `/login/?id=${id}`;
+    }
+  </script>
 </head>
 
 <body>
