@@ -105,5 +105,8 @@ app.use(responseLogger);
 app.get("/you", (req: Request, res: Response) => {
   res.status(200).sendFile(path.join(__dirname + "/../dist/me.html"));
 });
+app.get("/login", (req: Request, res: Response) => {
+  res.status(200).sendFile(path.join(__dirname + "/../dist/login.html"));
+});
 
 export default app;

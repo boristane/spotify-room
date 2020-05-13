@@ -16,8 +16,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <link rel="icon" href="./rooom.png" />
-  <link rel="stylesheet" href="./home.css" />
-  <link rel="stylesheet" href="./me.css" />
+  <link rel="stylesheet" href="./index.css" />
   <link rel="stylesheet" href="./form.css" />
   <link rel="stylesheet" href="./cookie-banner.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -40,35 +39,36 @@
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <section id="get-in-room" style>
-    <div class="logo-container">
-      <a href="/">
-        <img src="./logo.png" alt="logo" class="logo" />
-      </a>
-    </div>
-    <div style="margin-bottom: 50px;">
-      <p>
-        your music, your friends,
-      </p>
-      <p>in sync.</p>
-    </div>
-    <div class="button-container">
-      <a id="primaryButton" href="#" onclick="RedirectURL();return false;">log in with spotify</a>
-    </div>
-    <div class="mobile">
-      <p class="info">
-        rooom was designed for a desktop/laptop experience.
-        <a class="me" href="mailto:?subject=Note to Self - Try out rooom&body=https://rooom.click/">Email yourself the
-          link</a> and try it on the big screen! Or just copy the link and do
-        with it what you will.
-      </p>
-      <p class="form-inline" style="margin-top: 15px;">
-        <input class="" type="text" value="https://rooom.click/" />
-      </p>
-
-    </div>
-    <p class="info">a project by <a class="me" href="http://boristane.com">Boris Tane</a>.</p>
-  </section>
+  <div class="logo-container">
+    <a href="/">
+      <img src="./logo.png" alt="logo" class="logo" />
+    </a>
+    <a href="/">
+      <p style="font-style: italic; padding-top: 8px; color: white !important;">rooom</p>
+    </a>
+  </div>
+  <div class="section-container">
+    <section class="left" style>
+      <div>
+        <div style="margin-bottom: 40px;">
+          <p class="whatever">
+            your music,
+          </p>
+          <p class="whatever">
+            your friends,
+          </p>
+          <p class="whatever">in sync.</p>
+          <p class="another-one" style="margin-top: 30px">Start a group listening session with your friends or family.</p>
+          <p class="another-one">You can all add songs, and everyone listens to the same tracks, at the same time.</p>
+        </div>
+        <div class="button-container">
+          <a id="primaryButton" href="/login">go to rooom</a>
+        </div>
+        
+      </div>
+    </section>
+    <section class="right"></section>
+  </div>
 
   <div id="cookieConsent">
     <p style="margin: 0;">

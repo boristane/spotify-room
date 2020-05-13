@@ -10,7 +10,7 @@ html, body {
   color: white;
   font-family: 'Raleway', sans-serif;
   text-rendering: optimizeLegibility;
-  background: #191414;
+  background: black;
   overflow: hidden;
   height: 100%;
   display: grid;
@@ -387,7 +387,7 @@ margin: 40px 10px;
 }
 
 .existing-room:hover {
-  background: #191414;
+  background: black;
 }
 
 .room-image-container {
