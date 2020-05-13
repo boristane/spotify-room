@@ -205,7 +205,7 @@ export async function getUserProfile(token: string): Promise<ISpotifyUser> {
 
 function chunck(arr: any[], length: number) {
   const result = [];
-  const numChuncks = Math.ceil(arr.length / length)
+  const numChuncks = Math.ceil(arr.length / length);
   for (let i = 0; i < numChuncks; i += 1) {
     const temp = arr.slice(i * length, (i + 1) * length);
     result.push(temp);

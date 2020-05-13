@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations } from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks } from "../services/spotify";
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
@@ -143,9 +143,13 @@ export async function generatePlaylist(req: Request, res: Response) {
 }
 
 export async function getRecommendation(req: Request, res: Response) {
-  const { uris } = req.body;
+  const { uris } = req.body as {uris: string[]};
   const { token } = req.query;
   try {
+    if (uris.length === 0) {
+      const tracks = await getTopTracks(token, "short_term");
+      return res.status(200).json(tracks.items.slice(0, 5));
+    }
     const tracks = await getRecommendations(token, uris);
     res.status(200).json(tracks);
   } catch (err) {
