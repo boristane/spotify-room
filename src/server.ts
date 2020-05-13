@@ -15,9 +15,9 @@ const app = express()
   .use(express.json())
   .use(cookieParser());
 // Todo change this
-const winston = require('winston')
-const morgan = require('morgan')
-const json = require('morgan-json')
+import winston from "winston";
+import morgan from "morgan";
+import json from "morgan-json"
 const format = json({
   method: ':method',
   url: ':url',
@@ -39,8 +39,14 @@ const httpLogger = morgan(format, {
     write: (message) => l.info('HTTP LOG', JSON.parse(message))
   }
 });
-if(process.env.ENV === "prod") {
-  app.use(httpLogger)
+if (process.env.ENV === "prod") {
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    try {
+      httpLogger(req, res, next);
+    } catch (err) {
+      logger.error("Error sending the logs to logsene", { error: err });
+    }
+  });
 }
 
 app.use((req, res, next) => {
