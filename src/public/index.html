@@ -19,13 +19,14 @@
   <link rel="stylesheet" href="./home.css" />
   <link rel="stylesheet" href="./me.css" />
   <link rel="stylesheet" href="./form.css" />
+  <link rel="stylesheet" href="./cookie-banner.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <title>rooom</title>
   <meta name="description" content="your music, your friends, in sync, powered by Spotify." />
   <meta property="og:title" content="rooom - your music, your friends, in sync" />
   <meta property="og:url" content="https://rooom.click" />
   <meta property="og:description" content="your music, your friends, in sync, powered by Spotify." />
-  <meta property="og:image"
-    content="https://d1apvrodb6vxub.cloudfront.net/rooom.png" />
+  <meta property="og:image" content="https://d1apvrodb6vxub.cloudfront.net/rooom.png" />
   <script>function createDynamicURL() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
@@ -68,6 +69,25 @@
     </div>
     <p class="info">a project by <a class="me" href="http://boristane.com">Boris Tane</a>.</p>
   </section>
+
+  <div id="cookieConsent">
+    <p style="margin: 0;">
+      We use cookies to ensure that we give you the best experience possible on our website. By visiting Lesley, you
+      accept our <a style="font-weight: normal;" href="https://docs.google.com/document/d/12mC-51kUiVC8YU_c_q7gInPweeZHvXvAwypd7Lnj3ck/edit?usp=sharing" target="_blank">use of cookies</a>.
+    </p>
+    <i class="material-icons" id="closeCookieConsent">
+      close
+    </i>
+  </div>
+  <script>
+    document.getElementById("cookieConsent").style.opacity = "1";
+    document.querySelector("#closeCookieConsent").addEventListener("click", () => {
+      document.getElementById("cookieConsent").style.opacity = "0";
+      setTimeout(() => {
+        document.getElementById("cookieConsent").style.zIndex = "-1000";
+      }, 500);
+    });
+  </script>
 </body>
 
 </html>
