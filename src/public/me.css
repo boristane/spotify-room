@@ -40,10 +40,32 @@ html, body {
   transition: all 0.2s ease-out;
   position: absolute;
   top: 10px;
-  right: 370px;
+  right: 20px;
   visibility: hidden;
   display: grid;
   grid-template-columns: calc(100% - 80px) 80px;
+}
+
+#search-button {
+  display: grid;
+  grid-template-columns: 30px 150px;
+  border: 1px solid lightgray;
+  color: white;
+  border-radius: 50px;
+  padding: 5px;
+  font-weight: bold;
+  font-size: 15px;
+  margin-left: 3px;
+  /* height: 35px; */
+}
+
+#search-button:hover {
+  border: 1px solid white;
+  color: white;
+  background: white;
+  color: black;
+  transition: all 0.2s ease-out;
+  cursor: pointer;
 }
 
 #room {
@@ -52,7 +74,8 @@ html, body {
   margin: 0;
   visibility: hidden;
   display: grid;
-  grid-template-columns: calc(100% - 350px) 350px ;
+  grid-template-columns: calc(100%) 0px;
+  transition: all 0.2s ease-out;
 }
 
 #cont {
@@ -76,7 +99,7 @@ html, body {
 .button-container {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: 110px 150px;
+  grid-template-columns: 110px 150px 180px;
 }
 
 #mastered-by {

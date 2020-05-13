@@ -66,6 +66,8 @@ export async function checkUsers(roomId: string, userId: string): Promise<IRoom>
 document.querySelector("body").addEventListener("click", () => {
   document.querySelector("#search-results").innerHTML = "";
   (document.getElementById("search") as HTMLInputElement).value = "";
+  (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100%) 0px";
+  (document.querySelector(".user-container") as HTMLDivElement).style.right = "20px";
 });
 
 export function displayRoom(room: IRoom): boolean {
@@ -551,6 +553,12 @@ async function getInRoom(id: string) {
       }, 5 * 60 * 1000);
     }
   }, 10 * 1000);
+
+  document.getElementById("search-button").addEventListener("click", (e) => {
+    e.stopPropagation();
+    (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 350px) 350px";
+    (document.querySelector(".user-container") as HTMLDivElement).style.right = "370px";
+  });
 
   window.addEventListener('beforeunload', async (event) => {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
