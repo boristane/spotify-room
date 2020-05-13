@@ -172,18 +172,18 @@ ol, ul {
 }
 
 .member-to-approve {
-  opacity: 0.2; 
-   -moz-opacity: 0.2;  
-   -webkit-opacity: 0.2;
-   filter: alpha(opacity=20);
-   transition: all 0.2s ease-out;
-}
-
-.member-to-approve:hover {
   opacity: 0.5; 
    -moz-opacity: 0.5;  
    -webkit-opacity: 0.5;
    filter: alpha(opacity=50);
+   transition: all 0.2s ease-out;
+}
+
+.member-to-approve:hover {
+  opacity: 0.9; 
+   -moz-opacity: 0.9;  
+   -webkit-opacity: 0.9;
+   filter: alpha(opacity=90);
    transition: all 0.2s ease-out;
 }
 

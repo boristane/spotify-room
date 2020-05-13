@@ -92,6 +92,7 @@ export function displayRoom(room: IRoom): boolean {
   const masterElt = masterBuilder(room.master);
   membersListElt.innerHTML = masterElt + memberElts.join("");
   membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
+  (document.getElementById("members-to-approve-header") as HTMLDivElement).style.display = (memberToApproveElts.length > 0 && isMaster) ? "block" : "none";
   document.getElementById("room-name").textContent = room.name;
   const numTracks = room.tracks.filter(t => t.approved).length;
   document.getElementById("mastered-by").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
