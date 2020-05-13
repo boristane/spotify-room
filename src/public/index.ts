@@ -236,7 +236,7 @@ export function displayRoom(room: IRoom): boolean {
 
   const currentTrack = room.tracks[currentEltIndex]
   if (currentTrack) {
-    document.title = `${room.name} | ${currentTrack.name} - ${currentTrack.artists.join(", ")}`;
+    document.title = `${currentTrack.name} - ${currentTrack.artists.join(", ")} | ${room.name} `;
   }
 
   if (isMaster && room.members.filter(m => !m.isApproved).length > 0) {
@@ -525,6 +525,7 @@ async function getInRoom(id: string) {
       event_category: "room",
       event_label: "recommendations",
     });
+    const room = await getRoom(id, user.id);
     const recommendations = await getRecommendations(room);
     displayRecommendations(recommendations);
   });
