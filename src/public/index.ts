@@ -550,7 +550,13 @@ async function getInRoom(id: string) {
         displayRoom(room);
       }, 5 * 60 * 1000);
     }
-  }, 10 * 1000)
+  }, 10 * 1000);
+
+  window.addEventListener('beforeunload', async (event) => {
+    await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
+    event.returnValue = '';
+    return ""; 
+  });
 }
 
 
