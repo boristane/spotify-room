@@ -23,7 +23,7 @@ export function login(req: Request, res: Response) {
   const { id } = req.query;
   res.cookie(stateKey, state);
   res.cookie("rooom_id", id);
-  const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public";
+  const scope = "user-read-private user-top-read user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
     qs.stringify({
