@@ -67,7 +67,42 @@ document.querySelector("body").addEventListener("click", () => {
   document.querySelector("#search-results").innerHTML = "";
   (document.getElementById("search") as HTMLInputElement).value = "";
   (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100%) 0px";
+  (document.getElementById("close-search-tray") as HTMLDivElement).style.display = "none";
   (document.querySelector(".user-container") as HTMLDivElement).style.right = "20px";
+  (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
+  (document.querySelector(".button-container") as HTMLDivElement).style.padding = "0px";
+  isSearchTrayOpened = false;
+});
+
+let isSearchTrayOpened = false;
+
+document.getElementById("more").addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!isSearchTrayOpened) {
+    (document.querySelector(".button-container") as HTMLDivElement).style.height = "100px";
+    (document.querySelector(".button-container") as HTMLDivElement).style.padding = "10px";
+  } else {
+    (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
+    (document.querySelector(".button-container") as HTMLDivElement).style.padding = "0px";
+  }
+  isSearchTrayOpened = !isSearchTrayOpened;
+});
+
+let isUsersTrayOpened = false;
+
+document.getElementById("show-users-button").addEventListener("click", (e) => {
+  if (!isUsersTrayOpened) {
+    // @ts-ignore
+    e.target.style.left = "260px";
+    (document.querySelector(".small-room") as HTMLDivElement).style.gridTemplateColumns = "100% 0";
+    (document.querySelector(".left-panel") as HTMLDivElement).style.visibility = "visible";
+  } else {
+    // @ts-ignore
+    e.target.style.left = "10px";
+    (document.querySelector(".small-room") as HTMLDivElement).style.gridTemplateColumns = "0px calc(100%)";
+    (document.querySelector(".left-panel") as HTMLDivElement).style.visibility = "hidden";
+  }
+  isUsersTrayOpened = !isUsersTrayOpened;
 });
 
 export function displayRoom(room: IRoom): boolean {
@@ -81,7 +116,7 @@ export function displayRoom(room: IRoom): boolean {
   }
   document.getElementById("waiting").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
-  document.getElementById("room").style.visibility = "visible";
+  document.getElementById("room").style.display = "grid";
   oldRoom = room;
   isMaster = room.master.id === user.id;
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
@@ -163,7 +198,7 @@ export function displayRoom(room: IRoom): boolean {
           try {
             const room = (await axios.get(`/room/go-to/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
             isPlaying = true;
-            document.getElementById("play").textContent = "pause";
+            document.querySelectorAll(".play").forEach(elt => elt.textContent = "pause");
             displayRoom(room);
             success = true;
           } catch (error) {
@@ -255,6 +290,7 @@ export function displayRoom(room: IRoom): boolean {
 
   setTimeout(() => {
     const userElt = (document.querySelector(".user-container") as HTMLDivElement);
+    (document.querySelector("#show-users-button") as HTMLDivElement).style.visibility = "visible";
     userElt.style.visibility = "visible";
   }, 1000);
 
@@ -296,7 +332,7 @@ let isMaster: boolean = false;
 let oldRoom: IRoom;
 let isPlaying = false;
 
-document.getElementById("play").addEventListener("click", async (e: MouseEvent) => {
+document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", async (e: MouseEvent) => {
   const analyticsLabel = isPlaying ? "pause-button" : "play-button"
   // @ts-ignore
   gtag('event', analyticsLabel, {
@@ -308,12 +344,10 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
     let r: IRoom;
     if (isPlaying) {
       r = (await axios.post(`/room/pause/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
-      //@ts-ignore
-      e.target.innerHTML = "play";
+      document.querySelectorAll(".play").forEach(elt => elt.innerHTML = "play");
     } else {
       r = (await axios.post(`/room/play/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
-      //@ts-ignore
-      e.target.innerHTML = "pause";
+      document.querySelectorAll(".play").forEach(elt => elt.innerHTML = "pause");
     }
     isPlaying = !isPlaying;
     displayRoom(r);
@@ -321,7 +355,7 @@ document.getElementById("play").addEventListener("click", async (e: MouseEvent) 
     displayMessage("There was problem playing the track");
     console.log("There was problem playing the track", error);
   }
-});
+}));
 
 document.getElementById("playlist").addEventListener("click", async (e: MouseEvent) => {
   // @ts-ignore
@@ -517,6 +551,7 @@ function displayExistingRooms(rooms: IRoom[]) {
 async function getInRoom(id: string) {
   document.getElementById("get-in-room").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
+  (document.querySelector("body")).style.overflow = "hidden";
   try {
     await axios.put(`/room/join/?id=${id}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
@@ -546,7 +581,7 @@ async function getInRoom(id: string) {
   }, 10 * 1000);
 
   setTimeout(() => {
-    if(isMaster) {
+    if (isMaster) {
       setInterval(async () => {
         const room = await checkUsers(id, user.id);
         displayRoom(room);
@@ -557,13 +592,15 @@ async function getInRoom(id: string) {
   document.getElementById("search-button").addEventListener("click", (e) => {
     e.stopPropagation();
     (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 350px) 350px";
+    (document.getElementById("close-search-tray") as HTMLDivElement).style.display = "block";
+
     (document.querySelector(".user-container") as HTMLDivElement).style.right = "370px";
   });
 
   window.addEventListener('beforeunload', async (event) => {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
     event.returnValue = '';
-    return ""; 
+    return "";
   });
 }
 

@@ -6,6 +6,14 @@ body {
   background-color: black;
   color: white;
   text-align: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+* {
+  margin: 0;
 }
 
 .logo-container {
@@ -87,20 +95,8 @@ a:active {
 }
 
 @media only screen and (max-width: 800px) {
-  #primaryButton {
-    display: none;
-  }
-
   #get-in-room {
     max-width: 300px;
     margin: 50px auto;
   }
-
-  .mobile {
-    display: block;
-    font-size: 18px;
-    max-width: 300px;
-    margin: 50px auto;
-  }
-
 }

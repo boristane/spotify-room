@@ -66,6 +66,13 @@
     <div id="user"></div>
     <button id="leave" class="room-block red-button">logout</button>
   </div>
+  <div class="mobile-only" id="show-users">
+    <button id="show-users-button" class="green-button">
+      <i class="material-icons" style="padding-top: 5px;">
+        menu
+      </i>
+    </button>
+  </div>
   <div id="room">
     <div class="small-room">
       <div class="left-panel">
@@ -95,8 +102,16 @@
             <div id="room-name"></div>
             <div id="mastered-by"></div>
             <div id="room-id"></div>
+            <div class="mobile-only mobile-button-container">
+              <button style="display: none;" class="play room-block noselect green-button">play</button>
+              <button id="more" class="green-button">
+                <i class="material-icons" style="padding-top: 5px;">
+                  more_horiz
+                </i>
+              </button>
+            </div>
             <div class="button-container">
-              <button id="play" style="display: none;" class="room-block noselect green-button">play</button>
+              <button style="display: none;" class="play room-block noselect green-button not-mobile">play</button>
               <button id="playlist" style="display: none;" class="room-block noselect green-button">create playlist</button>
               <div id="search-button">
                 <i class="material-icons">
@@ -120,15 +135,17 @@
           <ul class="recommendations">
           </ul>
         </div>
-
-
       </div>
-
     </div>
 
     <div class="room-block search-results-container" style="display:none;">
-      <div class="form-inline">
+      <div class="form-inline" id="search-form-container">
         <input type="text" id="search" placeholder="search songs to add to the rooom">
+        <button id="close-search-tray" class="red-button">
+          <i class="material-icons">
+            close
+          </i>
+        </button>
       </div>
       <div class="">
         <ol id="search-results">

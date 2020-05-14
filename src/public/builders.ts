@@ -6,7 +6,7 @@ export function userBuilder(user: ISpotifyUser): string {
   return `<div>
             <img src="${imageUrl}" alt="your avatar" id="user-photo"/>
           </div>
-          <div style="padding-left: 6px; padding-top: 8px;">
+          <div id="username">
             ${username}
           </div>`;
 }
