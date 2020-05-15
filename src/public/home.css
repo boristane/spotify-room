@@ -99,4 +99,9 @@ a:active {
     max-width: 300px;
     margin: 50px auto;
   }
+
+  .mobile {
+    margin-top: 15px;
+    display: block;
+  }
 }

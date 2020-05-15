@@ -15,10 +15,42 @@ const debounce = (func: Function, delay: number) => {
   }
 }
 
+let w;
+
+function startWorker() {
+  if (typeof (Worker) !== "undefined") {
+    if (typeof (w) == "undefined") {
+      w = new Worker("worker.ts");
+    }
+    w.onmessage = function (event) {
+      if (event.data.room) {
+        return displayRoom(event.data.room);
+      }
+      if (event.data.message) {
+        return displayMessage(event.data.message);
+      }
+      if (event.data.deviceId) {
+        deviceId = event.data.deviceId;
+        doIt();
+      }
+    };
+  } else {
+    document.getElementById("result").innerHTML = "Sorry! No Web Worker support.";
+  }
+}
+
+function stopWorker() {
+  w.terminate();
+  w = undefined;
+}
+
+startWorker();
+
 async function getToken() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
   const state = params.get("state");
+  w.postMessage({ code, state });
   const refreshToken = localStorage.getItem("refreshToken");
   if (!refreshToken) {
     const { access_token: token, refresh_token: refreshToken } = (await axios.get(
@@ -549,6 +581,8 @@ function displayExistingRooms(rooms: IRoom[]) {
 }
 
 async function getInRoom(id: string) {
+  w.postMessage({ roomId: id, userId: user.id });
+
   document.getElementById("get-in-room").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
   (document.querySelector("body")).style.overflow = "hidden";
@@ -575,10 +609,6 @@ async function getInRoom(id: string) {
     displayRecommendations(recommendations);
   });
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
-  setInterval(async () => {
-    const room = await getRoom(id, user.id);
-    displayRoom(room);
-  }, 10 * 1000);
 
   setTimeout(() => {
     if (isMaster) {
@@ -651,27 +681,8 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the playback"); console.error(message); });
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
-    if (state.paused && isPlaying) {
-      let success = false;
-      let numAttempts = 0;
-      const maxNumAttempts = 5;
-      while (!success && numAttempts < maxNumAttempts) {
-        try {
-          const room = (await axios.get(`/room/next/?id=${roomId}&userId=${user.id}`)).data.room;
-          displayRoom(room);
-          success = true;
-        } catch (error) {
-          console.log("There was a problem moving to the next track");
-          await refreshRoomToken();
-        }
-        numAttempts += 1;
-      }
-      if (!success) {
-        displayMessage("There was a problem moving to the next track");
-      }
-    }
-    console.log(state);
-  }, 2000));
+    w.postMessage({ goToNextTrack: true, isPlaying, paused: state.paused });
+  }, 4000));
 
   player.addListener('ready', ({ device_id }) => {
     deviceId = device_id;

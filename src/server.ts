@@ -1,5 +1,4 @@
 require("dotenv").config();
-require('spm-agent-nodejs');
 
 import spotifyRouter from "./router/spotify";
 import roomRouter from "./router/room";
