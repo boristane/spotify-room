@@ -682,7 +682,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
     w.postMessage({ goToNextTrack: true, isPlaying, paused: state.paused });
-  }, 4000));
+  }, 2000));
 
   player.addListener('ready', ({ device_id }) => {
     deviceId = device_id;
