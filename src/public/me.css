@@ -139,7 +139,7 @@ html, body {
 .button-container {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: 110px 150px 180px;
+  grid-template-columns: 110px 170px 180px;
 }
 
 #mastered-by {
