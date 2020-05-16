@@ -189,7 +189,8 @@ export function displayRoom(room: IRoom): boolean {
     displayMessage("rooom url copied to clipboard");
   });
 
-  document.getElementById("invite-friends").addEventListener("click", () => {
+  document.getElementById("invite-friends").addEventListener("click", (e) => {
+    e.stopPropagation();
     // @ts-ignore
     gtag('event', "share-room", {
       event_category: "room",
@@ -201,7 +202,7 @@ export function displayRoom(room: IRoom): boolean {
     inputElt.setSelectionRange(0, 99999);
     document.execCommand("copy");
     displayMessage("rooom url copied to clipboard");
-    const modal = document.getElementById("modal");
+    const modal = document.getElementById("invite-friends-modal");
     modal.style.display = "flex";
   });
 
@@ -498,12 +499,17 @@ async function main() {
     return window.location.replace("/");
   }
 
-  const modal = document.getElementById("modal");
-  window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
-  }
+  document.querySelector("body").addEventListener("click", (e) => {
+    document.querySelectorAll(".modal").forEach(elt => {
+      (elt as HTMLDivElement).style.display = "none";
+    });
+  });
+
+  document.querySelectorAll(".modal-content").forEach(elt => {
+    (elt as HTMLDivElement).addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+  });
 }
 
 function getCookies(): Record<string, string> {
@@ -627,6 +633,10 @@ async function getInRoom(id: string) {
     (document.querySelector(".user-container") as HTMLDivElement).style.right = "370px";
   });
 
+  setInterval(() => {
+    refreshRoomToken();
+  }, 30 * 60 * 1000);
+
   window.addEventListener('beforeunload', async (event) => {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
     event.returnValue = '';
@@ -699,10 +709,6 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
 
 main();
-
-setInterval(() => {
-  refreshRoomToken();
-}, 30 * 60 * 1000);
 
 let timeoutId;
 function displayMessage(message: string) {
