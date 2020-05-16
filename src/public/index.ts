@@ -618,6 +618,7 @@ function displayExistingRooms(rooms: IRoom[]) {
       // @ts-ignore
       gtag('event', "join-existing-room", {
         event_category: "room",
+        event_label: "menu"
       });
       const { id } = this.dataset;
       roomId = id;
@@ -703,6 +704,11 @@ export async function doIt() {
 
   roomId = getCookies()["rooom_id"];
   if (roomId && roomId !== "null") {
+    // @ts-ignore
+    gtag('event', "join-existing-room", {
+      event_category: "room",
+      event_label: "cookie"
+    });
     await getInRoom(roomId);
   } else {
     let roomUser = { rooms: [] };
