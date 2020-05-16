@@ -138,11 +138,14 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
     e.target.style.left = "260px";
     (document.querySelector(".small-room") as HTMLDivElement).style.gridTemplateColumns = "100% 0";
     (document.querySelector(".left-panel") as HTMLDivElement).style.visibility = "visible";
+    (document.querySelector(".right-panel") as HTMLDivElement).style.display = "none";
   } else {
     // @ts-ignore
     e.target.style.left = "10px";
     (document.querySelector(".small-room") as HTMLDivElement).style.gridTemplateColumns = "0px calc(100%)";
     (document.querySelector(".left-panel") as HTMLDivElement).style.visibility = "hidden";
+    (document.querySelector(".right-panel") as HTMLDivElement).style.display = "block";
+
   }
   isUsersTrayOpened = !isUsersTrayOpened;
 });
