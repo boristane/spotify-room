@@ -205,7 +205,7 @@ export async function masterCheckUsers(req: Request, res: Response, next: NextFu
       if (!member.isActive || !member.isApproved) continue;
       const u = await getUser(member.id);
       const { index } = getUserCurrentTrack(room, u);
-      if (index < roomCurrentTrackIndex - 1) {
+      if (index < roomCurrentTrackIndex - 2) {
         try {
           await removeRoomMember(room, u);
         } catch (error) {
