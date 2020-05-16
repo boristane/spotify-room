@@ -554,7 +554,8 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
       res.status(404).json(response);
       return next();
     }
-    const approved = room.master.id === userId;
+    // const approved = room.master.id === userId;
+    const approved = true;
     if (approved) {
       await addTrackToRoomInDb(room, uri, name, artists, image, approved, room.master.name);
       const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
