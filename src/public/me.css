@@ -11,6 +11,7 @@ html, body {
   font-family: 'Raleway', sans-serif;
   text-rendering: optimizeLegibility;
   background: black;
+  width: 100%;
 }
 
 #user-photo {
@@ -380,6 +381,7 @@ ol, ul {
 .search-results-container {
   padding: 10px 15px;
   background-color: #000;
+  display: none;
 }
 
 .track-search-result-item {

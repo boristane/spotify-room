@@ -1,8 +1,17 @@
 import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../models/room";
-import { ISpotifyTrack, ISpotifyWebPlaybackState } from "../typings/spotify";
+import { ISpotifyTrack, ISpotifyWebPlaybackState, ISpotifyUser } from "../typings/spotify";
 import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
+
+let token: string;
+let user;
+let roomId: string;
+let deviceId: string;
+let isMaster: boolean = false;
+let oldRoom: IRoom;
+let isPlaying = false;
+let isOnboarded = false;
 
 const debounce = (func: Function, delay: number) => {
   let debounceTimer
@@ -100,6 +109,7 @@ document.querySelector("body").addEventListener("click", () => {
   (document.getElementById("search") as HTMLInputElement).value = "";
   (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100%) 0px";
   (document.getElementById("close-search-tray") as HTMLDivElement).style.display = "none";
+  (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "none";
   (document.querySelector(".user-container") as HTMLDivElement).style.right = "20px";
   (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
   (document.querySelector(".button-container") as HTMLDivElement).style.padding = "0px";
@@ -151,6 +161,14 @@ export function displayRoom(room: IRoom): boolean {
   document.getElementById("room").style.display = "grid";
   oldRoom = room;
   isMaster = room.master.id === user.id;
+  if (!isOnboarded && !isMaster) {
+    displayUnboardingMember(room);
+    isOnboarded = true;
+  }
+  if (!isOnboarded && isMaster) {
+    displayUnboardingMaster(room);
+    isOnboarded = true;
+  }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
   const trackElts = room.tracks.map((track) => trackBuilder(track, isMaster));
   (document.getElementById("add-songs") as HTMLDivElement).style.display = "none";
@@ -312,6 +330,34 @@ export function displayRoom(room: IRoom): boolean {
     elt.style.display = "block";
   });
 
+  function displayUnboardingMember(room: IRoom) {
+    const modal = document.getElementById("onboarding-member") as HTMLDivElement;
+    document.querySelectorAll(".modal-room-master").forEach((elt) => {
+      elt.textContent = room.master.name;
+    });
+    document.querySelectorAll(".modal-room-name").forEach((elt) => {
+      elt.textContent = room.name;
+    });
+    document.querySelectorAll(".modal-user-name").forEach((elt) => {
+      elt.textContent = user.display_name;
+    });
+    modal.style.display = "flex";
+  }
+
+  function displayUnboardingMaster(room: IRoom) {
+    const modal = document.getElementById("onboarding-master") as HTMLDivElement;
+    document.querySelectorAll(".modal-room-master").forEach((elt) => {
+      elt.textContent = room.master.name;
+    });
+    document.querySelectorAll(".modal-room-name").forEach((elt) => {
+      elt.textContent = room.name;
+    });
+    document.querySelectorAll(".modal-user-name").forEach((elt) => {
+      elt.textContent = user.display_name;
+    });
+    modal.style.display = "flex";
+  }
+
   const currentTrack = room.tracks[currentEltIndex]
   if (currentTrack) {
     document.title = `${currentTrack.name} - ${currentTrack.artists.join(", ")} | ${room.name} `;
@@ -356,14 +402,6 @@ function addEventsToRecommendations() {
     });
   });
 }
-
-let token: string;
-let user;
-let roomId: string;
-let deviceId: string;
-let isMaster: boolean = false;
-let oldRoom: IRoom;
-let isPlaying = false;
 
 document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", async (e: MouseEvent) => {
   const analyticsLabel = isPlaying ? "pause-button" : "play-button"
@@ -629,6 +667,7 @@ async function getInRoom(id: string) {
     e.stopPropagation();
     (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 350px) 350px";
     (document.getElementById("close-search-tray") as HTMLDivElement).style.display = "block";
+    (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "block";
 
     (document.querySelector(".user-container") as HTMLDivElement).style.right = "370px";
   });
@@ -647,7 +686,7 @@ async function getInRoom(id: string) {
 
 export async function doIt() {
   try {
-    user = (await axios.get(`/spotify/me/?token=${token}`)).data.user;
+    user = (await axios.get(`/spotify/me/?token=${token}`)).data.user as ISpotifyUser;
     if (user.product !== "premium") {
       displayMessage("unfortunately rooom is available only for premium users");
       setTimeout(() => {
