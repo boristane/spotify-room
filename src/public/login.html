@@ -32,6 +32,9 @@
     }
 
     function RedirectURL() {
+      gtag('event', "log-in", {
+        event_category: "spotify",
+      });
       window.location = createDynamicURL();
     }</script>
 </head>
