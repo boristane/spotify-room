@@ -551,6 +551,15 @@ async function main() {
       e.stopPropagation();
     });
   });
+
+  document.querySelectorAll(".modal .close").forEach(elt => {
+    elt.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.querySelectorAll(".modal").forEach(elt => {
+        (elt as HTMLDivElement).style.display = "none";
+      });
+    });
+  });
 }
 
 function getCookies(): Record<string, string> {
