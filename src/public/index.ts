@@ -107,9 +107,8 @@ export async function checkUsers(roomId: string, userId: string): Promise<IRoom>
 document.querySelector("body").addEventListener("click", () => {
   document.querySelector("#search-results").innerHTML = "";
   (document.getElementById("search") as HTMLInputElement).value = "";
-  (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100%) 0px";
-  (document.getElementById("close-search-tray") as HTMLDivElement).style.display = "none";
   (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "none";
+  (document.querySelector(".user-container") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 400px) 100px 300px";
   (document.querySelector(".user-container") as HTMLDivElement).style.right = "20px";
   (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
   (document.querySelector(".button-container") as HTMLDivElement).style.padding = "0px";
@@ -161,7 +160,7 @@ export function displayRoom(room: IRoom): boolean {
   }
   document.getElementById("waiting").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
-  document.getElementById("room").style.display = "grid";
+  document.getElementById("room").style.display = "block";
   oldRoom = room;
   isMaster = room.master.id === user.id;
   if (!isOnboarded && !isMaster) {
@@ -452,14 +451,17 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
 
 document.getElementById("search").addEventListener("click", (e: MouseEvent) => {
   e.stopPropagation();
+  (document.querySelector(".user-container") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 420px) 100px 320px";
 });
 
 document.getElementById("search").addEventListener('keyup', debounce(async (e: KeyboardEvent) => {
   //@ts-ignore
   const q = e.target.value;
+  const searchResultContainer = document.querySelector(".search-results-container") as HTMLDivElement;
   const searchResultElt = document.getElementById("search-results");
   if (!q) {
-    return searchResultElt.innerHTML = "";
+    searchResultElt.innerHTML = "";
+    return (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "none";
   }
   try {
     const result = (await axios.get(`/spotify/search?token=${token}&query=${q}`)).data as { tracks: { href: string; items: ISpotifyTrack[] } };
@@ -472,6 +474,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
       });
     });
     searchResultElt.innerHTML = resultElts.join("");
+    searchResultContainer.style.display = "block";
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
         e.stopPropagation();
@@ -675,15 +678,6 @@ async function getInRoom(id: string) {
       }, 5 * 60 * 1000);
     }
   }, 10 * 1000);
-
-  document.getElementById("search-button").addEventListener("click", (e) => {
-    e.stopPropagation();
-    (document.getElementById("room") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 350px) 350px";
-    (document.getElementById("close-search-tray") as HTMLDivElement).style.display = "block";
-    (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "block";
-
-    (document.querySelector(".user-container") as HTMLDivElement).style.right = "370px";
-  });
 
   setInterval(() => {
     refreshRoomToken();

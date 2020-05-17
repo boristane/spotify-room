@@ -41,29 +41,7 @@ html, body {
   right: 20px;
   visibility: hidden;
   display: grid;
-  grid-template-columns: calc(100% - 80px) 80px;
-}
-
-#search-button {
-  display: grid;
-  grid-template-columns: 30px 150px;
-  border: 1px solid lightgray;
-  color: white;
-  border-radius: 50px;
-  padding: 5px;
-  font-weight: bold;
-  font-size: 15px;
-  margin-left: 3px;
-  /* height: 35px; */
-}
-
-#search-button:hover {
-  border: 1px solid white;
-  color: white;
-  background: white;
-  color: black;
-  transition: all 0.2s ease-out;
-  cursor: pointer;
+  grid-template-columns: calc(100% - 400px) 100px 300px;
 }
 
 #room {
@@ -71,8 +49,6 @@ html, body {
   padding: 0;
   margin: 0;
   display: none;
-  /* display: grid; */
-  grid-template-columns: calc(100%) 0px;
   transition: all 0.2s ease-out;
 }
 
@@ -85,10 +61,15 @@ html, body {
   background: linear-gradient(180deg, rgba(60,57,57,1) 0%, rgba(0,0,0,1) 100%);
 }
 
+#search {
+  margin: 0 !important;
+  height: 10px;
+  padding-left: 25px;
+}
+
 #search-form-container {
-  padding-top: 20px;
   display: grid;
-  grid-template-columns: calc(100% - 25px) 25px;
+  grid-template-columns: 0px 100%;
 }
 
 #close-search-tray {
@@ -139,7 +120,7 @@ html, body {
 .button-container {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: 110px 170px 180px;
+  grid-template-columns: 110px 170px;
 }
 
 #mastered-by {
@@ -377,11 +358,14 @@ ol, ul {
   transition: all 0.2s ease-out;
 }
 
-
 .search-results-container {
-  padding: 10px 15px;
   background-color: #000;
-  display: none;
+  display: block;
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  width: 340px;
+  z-index: 555;
 }
 
 .track-search-result-item {
@@ -578,7 +562,7 @@ ol, ul {
   
   #search-results {
     overflow: scroll;
-    height: 100vh;
+    height: calc(100vh - 60px);
   }
 
   .not-mobile {
@@ -587,10 +571,6 @@ ol, ul {
 
   .mobile-only {
     display: block;
-  }
-
-  #search-button {
-    margin-left: 0;
   }
 
   #show-users {
@@ -630,6 +610,14 @@ ol, ul {
     margin: auto;
     width: 80%;
   }
+
+  #user {
+    visibility: hidden;: 0;
+  }
+
+  #leave {
+    visibility: hidden;
+  } 
 
   .existing-room {
     width: 100% !important;
