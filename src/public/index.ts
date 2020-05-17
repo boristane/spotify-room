@@ -156,8 +156,7 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
 export function displayRoom(room: IRoom): boolean {
   const waitingElt = document.getElementById("waiting");
   if (room === null) {
-    waitingElt.innerHTML = "<p>waiting to be added to the rooom by the master...</p>";
-    waitingElt.style.display = "block";
+    displayPermanentMessage("<p>waiting to be added to the rooom by the master...</p>");
     document.querySelector("section").style.display = "none";
     return
   };
@@ -656,7 +655,7 @@ async function getInRoom(id: string) {
     await axios.put(`/room/join/?id=${id}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
     displayMessage("There was an error when joining the rooom");
-    console.log("There was an error when joining a rooom", error);
+    displayPermanentMessage("<p>there was an error when joining the rooom. please retry.</p>")
     return;
   }
   const room = await getRoom(id, user.id);
@@ -742,7 +741,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     getOAuthToken: cb => { cb(token); }
   });
 
-  player.addListener('initialization_error', ({ message }) => { 
+  player.addListener('initialization_error', ({ message }) => {
     displayMessage("rooom is not available on your browser");
     const waitingElt = document.getElementById("waiting");
     waitingElt.innerHTML = "<p>whoops! rooom is not available on your browser. please try using <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
@@ -750,7 +749,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
     return;
   });
-  player.addListener('authentication_error', ({ message }) => { 
+  player.addListener('authentication_error', ({ message }) => {
     const waitingElt = document.getElementById("waiting");
     waitingElt.innerHTML = "<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>";
     waitingElt.style.display = "block";
@@ -789,4 +788,11 @@ function displayMessage(message: string) {
   timeoutId = setTimeout(() => {
     messageElt.style.bottom = `-300px`;
   }, 2000);
+}
+
+function displayPermanentMessage(innerHtml: string) {
+  const waitingElt = document.getElementById("waiting");
+  waitingElt.innerHTML = innerHtml;
+  waitingElt.style.display = "block";
+  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
 }
