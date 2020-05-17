@@ -154,15 +154,17 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
 });
 
 export function displayRoom(room: IRoom): boolean {
+  const waitingElt = document.getElementById("waiting");
   if (room === null) {
-    document.getElementById("waiting").style.display = "block";
+    waitingElt.innerHTML = "<p>waiting to be added to the rooom by the master...</p>";
+    waitingElt.style.display = "block";
     document.querySelector("section").style.display = "none";
     return
   };
   if (JSON.stringify(room) === JSON.stringify(oldRoom)) {
     return false;
   }
-  document.getElementById("waiting").style.display = "none";
+  waitingElt.style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
   document.getElementById("room").style.display = "block";
   oldRoom = room;
@@ -736,12 +738,25 @@ export async function doIt() {
 window.onSpotifyWebPlaybackSDKReady = () => {
   //@ts-ignore
   const player = new Spotify.Player({
-    name: 'Rooom',
+    name: 'rooom',
     getOAuthToken: cb => { cb(token); }
   });
 
-  player.addListener('initialization_error', ({ message }) => { displayMessage("rooom is not available on your browser"); console.error(message); });
-  player.addListener('authentication_error', ({ message }) => { console.error(message); });
+  player.addListener('initialization_error', ({ message }) => { 
+    displayMessage("rooom is not available on your browser");
+    const waitingElt = document.getElementById("waiting");
+    waitingElt.innerHTML = "<p>whoops! rooom is not available on your browser. please try using <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
+    waitingElt.style.display = "block";
+    (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+    return;
+  });
+  player.addListener('authentication_error', ({ message }) => { 
+    const waitingElt = document.getElementById("waiting");
+    waitingElt.innerHTML = "<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>";
+    waitingElt.style.display = "block";
+    (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+    return;
+  });
   player.addListener('account_error', ({ message }) => { console.error(message); });
   player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the playback"); console.error(message); });
 
