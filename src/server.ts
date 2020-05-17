@@ -22,6 +22,7 @@ const format = json({
   url: ':url',
   status: ':status',
   contentLength: ':res[content-length]',
+  originIp: ':req[x-forwarded-for]',
   responseTime: ':response-time'
 })
 const Logsene = require('winston-logsene')
@@ -50,6 +51,9 @@ if (process.env.ENV === "prod") {
 }
 
 app.use((req, res, next) => {
+  if(req.url.includes("javascript")) {
+    return res.status(400).json({});
+  }
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
@@ -71,6 +75,7 @@ function requestLogger(
   if (!suppressLoggingPaths.includes(req.url)) {
     logger.info("REQUEST", {
       origin: req.hostname,
+      ip: req['x-forwarded-for'],
       url: req.url,
       body: req.body,
       query: req.query,
