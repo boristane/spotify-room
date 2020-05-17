@@ -65,11 +65,13 @@ html, body {
   margin: 0 !important;
   height: 10px;
   padding-left: 25px;
+  width: 100%
 }
 
 #search-form-container {
   display: grid;
   grid-template-columns: 0px 100%;
+  margin-left: 0;
 }
 
 #close-search-tray {
@@ -561,7 +563,7 @@ ol, ul {
   }
   
   #search-results {
-    overflow: scroll;
+    overflow-y: scroll;
     height: calc(100vh - 60px);
   }
 
@@ -612,7 +614,7 @@ ol, ul {
   }
 
   #user {
-    visibility: hidden;: 0;
+    visibility: hidden;
   }
 
   #leave {
