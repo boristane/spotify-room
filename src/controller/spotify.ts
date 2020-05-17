@@ -1,5 +1,6 @@
 
 import { Request, Response, NextFunction } from "express";
+import { sendEmail, emailType } from "../services/emails";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
@@ -105,7 +106,10 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   const { token } = req.query;
   try {
     const user = await getUserProfile(token);
-    await saveUser(user);
+    const isNewUser = await saveUser(user);
+    if (isNewUser) {
+      sendEmail({ name: user.display_name, email: user.email }, emailType.createAccount);
+    }
     res.locals.body = user;
     res.status(200).json({ user: _.omit(user, ["email", "birthdate"]) });
     return next();
@@ -143,7 +147,7 @@ export async function generatePlaylist(req: Request, res: Response) {
 }
 
 export async function getRecommendation(req: Request, res: Response) {
-  const { uris } = req.body as {uris: string[]};
+  const { uris } = req.body as { uris: string[] };
   const { token } = req.query;
   try {
     if (uris.length === 0) {

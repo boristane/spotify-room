@@ -25,20 +25,21 @@ const format = json({
   responseTime: ':response-time'
 })
 const Logsene = require('winston-logsene')
-const l = winston.createLogger({
-  transports: [new Logsene({
-    token: process.env.LOGS_TOKEN, // token
-    level: 'info',
-    type: 'api_logs',
-    url: 'https://logsene-receiver.sematext.com/_bulk'
-  })]
-})
-const httpLogger = morgan(format, {
-  stream: {
-    write: (message) => l.info('HTTP LOG', JSON.parse(message))
-  }
-});
+
 if (process.env.ENV === "prod") {
+  const l = winston.createLogger({
+    transports: [new Logsene({
+      token: process.env.LOGS_TOKEN, // token
+      level: 'info',
+      type: 'api_logs',
+      url: 'https://logsene-receiver.sematext.com/_bulk'
+    })]
+  })
+  const httpLogger = morgan(format, {
+    stream: {
+      write: (message) => l.info('HTTP LOG', JSON.parse(message))
+    }
+  });
   app.use((req: Request, res: Response, next: NextFunction) => {
     try {
       httpLogger(req, res, next);

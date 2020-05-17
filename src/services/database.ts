@@ -8,7 +8,8 @@ export async function saveUser(spotifyUser: ISpotifyUser) {
   if (!user) {
     const user = new User({
       _id: mongoose.Types.ObjectId(),
-      ...spotifyUser
+      ...spotifyUser,
+      isEmailSubscriber: true,
     });
     return await user.save();
   }
@@ -21,9 +22,10 @@ export async function saveUser(spotifyUser: ISpotifyUser) {
     }
   });
   if (!shouldSave) {
-    return;
+    return false;
   }
   await user.save();
+  return true;
 }
 
 export async function getUser(id: string): Promise<IUser> {

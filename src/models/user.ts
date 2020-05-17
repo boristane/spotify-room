@@ -21,6 +21,7 @@ const UserSchema: Schema = new Schema({
   product: String,
   type: String,
   uri: String,
+  isEmailSubscriber: Boolean,
   explicit_content: { filter_enabled: Boolean, filter_locked: Boolean }
 }, { timestamps: true });
 
@@ -42,6 +43,7 @@ export interface IUser extends Document {
   product: string;
   type: string;
   uri: string;
+  isEmailSubscriber: boolean;
   explicit_content: { filter_enabled: boolean; filter_locked: boolean; }
 }
 
