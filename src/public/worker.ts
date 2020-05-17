@@ -8,6 +8,7 @@ let deviceId;
 let refreshRoomTimeoutId;
 let code;
 let state;
+let refreshToken;
 
 async function refreshRoomToken() {
   const token = await getToken();
@@ -20,17 +21,6 @@ async function refreshRoomToken() {
 }
 
 async function getToken() {
-  const params = new URLSearchParams(location.search);
-  const code = params.get("code");
-  const state = params.get("state");
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) {
-    const { access_token: token, refresh_token: refreshToken } = (await axios.get(
-      `/spotify/get-token/?code=${code}&state=${state}`
-    )).data;
-    localStorage.setItem("refreshToken", refreshToken);
-    return token;
-  }
   const { access_token: token } = (await axios.get(
     `/spotify/refresh-token/?refresh_token=${refreshToken}`
   )).data;
@@ -60,9 +50,10 @@ onmessage = async function (e) {
     }
     return refreshRoom();
   }
-  if (e.data.code && e.data.state) {
+  if (e.data.code && e.data.state && e.data.refreshToken) {
     code = e.data.code;
     state = e.data.state;
+    refreshToken = e.data.refreshToken;
   }
 };
 

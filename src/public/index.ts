@@ -59,18 +59,22 @@ async function getToken() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
   const state = params.get("state");
-  w.postMessage({ code, state });
-  const refreshToken = localStorage.getItem("refreshToken");
+  let refreshToken = localStorage.getItem("refreshToken");
+  let token;
   if (!refreshToken) {
-    const { access_token: token, refresh_token: refreshToken } = (await axios.get(
+    const { access_token, refresh_token } = (await axios.get(
       `/spotify/get-token/?code=${code}&state=${state}`
     )).data;
     localStorage.setItem("refreshToken", refreshToken);
-    return token;
+    token = access_token;
+    refreshToken = refresh_token;
+  } else {
+    const { access_token } = (await axios.get(
+      `/spotify/refresh-token/?refresh_token=${refreshToken}`
+    )).data;
+    token = access_token;
   }
-  const { access_token: token } = (await axios.get(
-    `/spotify/refresh-token/?refresh_token=${refreshToken}`
-  )).data;
+  w.postMessage({ code, state, refreshToken });
   return token;
 }
 
