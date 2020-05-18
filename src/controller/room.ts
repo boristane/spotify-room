@@ -554,10 +554,9 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
       res.status(404).json(response);
       return next();
     }
-    // const approved = room.master.id === userId;
-    const approved = true;
-    if (approved) {
-      await addTrackToRoomInDb(room, uri, name, artists, image, approved, room.master.name);
+    const isMaster = room.master.id === userId;
+    if (isMaster) {
+      await addTrackToRoomInDb(room, uri, name, artists, image, isMaster, room.master.name);
       const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
       res.locals.body = response;
       res.status(200).json(response);
@@ -571,7 +570,7 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
       res.status(404).json(response);
       return next();
     }
-    await addTrackToRoomInDb(room, uri, name, artists, image, approved, roomMember.name);
+    await addTrackToRoomInDb(room, uri, name, artists, image, true, roomMember.name);
     const response = { message: "Track added to room", room: prepareRoomForResponse(room) }
     res.locals.body = response;
     res.status(200).json(response);

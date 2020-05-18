@@ -84,7 +84,7 @@ async function refreshRoomToken() {
   try {
     await axios.put(`/room/join/?id=${roomId}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
-    displayMessage("There was an error when refreshing the token of the rooom");
+    displayMessage("there was an error when refreshing the token of the rooom");
     return;
   }
 }
@@ -96,8 +96,8 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
     if (err.response && err.response.status === 401) {
       return null;
     }
-    displayMessage("There was a problem getting the rooom");
-    console.log("There was a problem getting the room", err);
+    displayMessage("there was a problem getting the rooom");
+    console.log("there was a problem getting the room", err);
   }
 }
 
@@ -193,11 +193,11 @@ export function displayRoom(room: IRoom): boolean {
   oldRoom = room;
   isMaster = room.master.id === user.id;
   if (!isOnboarded && !isMaster) {
-    displayUnboardingMember(room);
+    displayModalUnboardingMember(room);
     isOnboarded = true;
   }
   if (!isOnboarded && isMaster) {
-    displayUnboardingMaster(room);
+    displayModalUnboardingMaster(room);
     isOnboarded = true;
   }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
@@ -284,13 +284,13 @@ export function displayRoom(room: IRoom): boolean {
             displayRoom(room);
             success = true;
           } catch (error) {
-            console.log("There was an error going to a track");
+            console.log("there was an error going to a track");
             await refreshRoomToken();
           }
           numAttempts += 1;
         }
         if (!success) {
-          displayMessage("There was an error going to this track");
+          displayMessage("there was an error going to this track");
         }
       } else {
         // @ts-ignore
@@ -304,8 +304,8 @@ export function displayRoom(room: IRoom): boolean {
           const recommendations = await getRecommendations(room);
           displayRecommendations(recommendations);
         } catch (err) {
-          displayMessage("There was an error approving to this track");
-          console.log("There was an error approving to a track");
+          displayMessage("there was an error approving to this track");
+          console.log("there was an error approving to a track");
         }
       }
     });
@@ -327,8 +327,8 @@ export function displayRoom(room: IRoom): boolean {
         const recommendations = await getRecommendations(room);
         displayRecommendations(recommendations);
       } catch (error) {
-        displayMessage("There was an error removing this track");
-        console.log("There was an error removing a track");
+        displayMessage("there was an error removing this track");
+        console.log("there was an error removing a track");
       }
     });
   })
@@ -351,8 +351,8 @@ export function displayRoom(room: IRoom): boolean {
           displayMessage("Too many members in the rooom");
           return console.log("Too many members in the rooom");
         }
-        displayMessage("There was an error approving this member");
-        console.log("There was an error approving a member");
+        displayMessage("there was an error approving this member");
+        console.log("there was an error approving a member");
       }
     });
   });
@@ -361,41 +361,13 @@ export function displayRoom(room: IRoom): boolean {
     elt.style.display = "block";
   });
 
-  function displayUnboardingMember(room: IRoom) {
-    const modal = document.getElementById("onboarding-member") as HTMLDivElement;
-    document.querySelectorAll(".modal-room-master").forEach((elt) => {
-      elt.textContent = room.master.name;
-    });
-    document.querySelectorAll(".modal-room-name").forEach((elt) => {
-      elt.textContent = room.name;
-    });
-    document.querySelectorAll(".modal-user-name").forEach((elt) => {
-      elt.textContent = user.display_name;
-    });
-    modal.style.display = "flex";
-  }
-
-  function displayUnboardingMaster(room: IRoom) {
-    const modal = document.getElementById("onboarding-master") as HTMLDivElement;
-    document.querySelectorAll(".modal-room-master").forEach((elt) => {
-      elt.textContent = room.master.name;
-    });
-    document.querySelectorAll(".modal-room-name").forEach((elt) => {
-      elt.textContent = room.name;
-    });
-    document.querySelectorAll(".modal-user-name").forEach((elt) => {
-      elt.textContent = user.display_name;
-    });
-    modal.style.display = "flex";
-  }
-
   const currentTrack = room.tracks[currentEltIndex]
   if (currentTrack) {
     document.title = `${currentTrack.name} - ${currentTrack.artists.join(", ")} | ${room.name} `;
   }
 
   if (isMaster && room.members.filter(m => !m.isApproved).length > 0) {
-    displayMessage("There are members in the queue waiting for your approval");
+    displayMessage("there are members in the queue waiting for your approval");
   }
 
   setTimeout(() => {
@@ -454,8 +426,8 @@ document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", 
     isPlaying = !isPlaying;
     displayRoom(r);
   } catch (error) {
-    displayMessage("There was problem playing the track");
-    console.log("There was problem playing the track", error);
+    displayMessage("there was problem playing the track");
+    console.log("there was problem playing the track", error);
   }
 }));
 
@@ -473,8 +445,8 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
     displayMessage("Playlist succesfully created 🥳 ! Check your Spotify account !");
     displayRoom(room);
   } catch (error) {
-    displayMessage("There was problem creating the playlist");
-    console.log("There was problem creating the playlist", error);
+    displayMessage("there was problem creating the playlist");
+    console.log("there was problem creating the playlist", error);
   }
 });
 
@@ -518,8 +490,8 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
       });
     });
   } catch (err) {
-    displayMessage("There was a problem getting your search results");
-    console.log("There was an error getting the search result from spotify", err);
+    displayMessage("there was a problem getting your search results");
+    console.log("there was an error getting the search result from spotify", err);
   }
 }, 500));
 
@@ -542,8 +514,8 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
     });
     window.location.reload();
   } catch (error) {
-    displayMessage("There was a problem creating the rooom 😥");
-    console.log("There was problem creating the room", error);
+    displayMessage("there was a problem creating the rooom 😥");
+    console.log("there was problem creating the room", error);
   }
 });
 
@@ -560,8 +532,8 @@ async function leaveRoom() {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
     window.location.reload();
   } catch (error) {
-    displayMessage("There was problem leaving the room");
-    console.log("There was problem leaving the room", error);
+    displayMessage("there was problem leaving the room");
+    console.log("there was problem leaving the room", error);
   }
 }
 
@@ -615,7 +587,7 @@ async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
     return tracks;
   } catch (err) {
     console.log("Error getting the recommendations", err);
-    displayMessage("There was an issue getting the track recommendations");
+    displayMessage("there was an issue getting the track recommendations");
   }
 }
 
@@ -629,13 +601,17 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
   try {
     const room = (await axios.post(`/room/add-track/?id=${roomId}`, {
       uri, name, artists: artists.split(","), image, userId: user.id,
-    })).data.room;
-    displayMessage("Track added to the room!");
+    })).data.room as IRoom;
+    displayMessage("track added to the room!");
     displayRoom(room);
+    if(room.tracks.filter((track) => track.addedBy === user.display_name).length === 1) {
+      setTimeout(() => {
+        displayModalRoomIsBetter(room);
+      }, 0.5 * 60 * 1000);
+    }
     return room;
   } catch (err) {
-    displayMessage("There was a problem adding a track to the room");
-    console.log("There was a problem adding a track to the room", err);
+    displayMessage("there was a problem adding a track to the room");
   }
 }
 
@@ -680,7 +656,7 @@ async function getInRoom(id: string) {
   try {
     await axios.put(`/room/join/?id=${id}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
   } catch (error) {
-    displayMessage("There was an error when joining the rooom");
+    displayMessage("there was an error when joining the rooom");
     displayPermanentMessage("<p>there was an error when joining the rooom. please retry.</p>")
     return;
   }
@@ -721,6 +697,46 @@ async function getInRoom(id: string) {
   });
 }
 
+function displayModalUnboardingMember(room: IRoom) {
+  const modal = document.getElementById("onboarding-member") as HTMLDivElement;
+  document.querySelectorAll(".modal-room-master").forEach((elt) => {
+    elt.textContent = room.master.name;
+  });
+  document.querySelectorAll(".modal-room-name").forEach((elt) => {
+    elt.textContent = room.name;
+  });
+  document.querySelectorAll(".modal-user-name").forEach((elt) => {
+    elt.textContent = user.display_name;
+  });
+  modal.style.display = "flex";
+}
+
+function displayModalUnboardingMaster(room: IRoom) {
+  const modal = document.getElementById("onboarding-master") as HTMLDivElement;
+  document.querySelectorAll(".modal-room-master").forEach((elt) => {
+    elt.textContent = room.master.name;
+  });
+  document.querySelectorAll(".modal-room-name").forEach((elt) => {
+    elt.textContent = room.name;
+  });
+  document.querySelectorAll(".modal-user-name").forEach((elt) => {
+    elt.textContent = user.display_name;
+  });
+  modal.style.display = "flex";
+}
+
+function displayModalRoomIsBetter(room: IRoom) {
+  const modal = document.getElementById("room-is-better-with-friends") as HTMLDivElement;
+  document.querySelectorAll(".modal-room-name").forEach((elt) => {
+    elt.textContent = room.name;
+  });
+  const inputElt = document.getElementById("text-to-copy-3") as HTMLInputElement;
+  console.log(document.getElementById("room-id").textContent);
+  console.log(inputElt);
+  inputElt.value = document.getElementById("room-id").textContent;
+  modal.style.display = "flex";
+}
+
 
 export async function doIt() {
   let id;
@@ -756,7 +772,7 @@ export async function doIt() {
     try {
       roomUser = (await axios.get(`/room/user/?id=${user.id}`)).data.user as { rooms: IRoom[] };
     } catch (error) {
-      console.log("There was an issue loading your existing rooms");
+      console.log("there was an issue loading your existing rooms");
     } finally {
       displayExistingRooms(roomUser.rooms);
       document.getElementById("get-in-room").style.display = "block";
