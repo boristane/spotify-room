@@ -1,4 +1,4 @@
-export interface IUser {
+export interface IEMailUser {
   name: string;
   email: string;
 }

@@ -28,6 +28,12 @@ export async function saveUser(spotifyUser: ISpotifyUser) {
   return true;
 }
 
+export async function updateUserEmailSubscription(user: IUser, value: boolean): Promise<boolean> {
+  user.isEmailSubscriber = value;
+  await user.save();
+  return true;
+}
+
 export async function getUser(id: string): Promise<IUser> {
   return await User.findOne({ id });
 }

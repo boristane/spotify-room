@@ -125,7 +125,7 @@
         </div>
 
         <div style="display: none; text-align: center; margin-top: 30px;" id="add-songs">start by adding songs to the
-          room. use the search bar.</div>
+          room. please use the search bar.</div>
         <div class="tracklist-container">
           <ul class="tracklist">
           </ul>
@@ -211,6 +211,28 @@
           <p style="margin-top: 15px">once your friends join the rooom, approve them by clicking on their name to the left of the page.</p>
           <!-- <p style="margin-top: 15px">when they add tracks to the rooom, approve those by clicking on them in the play queue. 🎶</p> -->
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>
+        </div>
+      </div>
+      <div class="close">close</div>
+    </div>
+  </div>
+
+  <div id="ask-for-email" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: grid; grid-template-columns: 55px 100%">
+          <img class="logo" src="./logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+          <h2 style="padding: 10px;">let's keep in touch</h2>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div style="color: rgb(80, 80, 80); margin: 30px 0; text-align: left">
+          <p style="margin-top: 15px">hey <span class="modal-user-name"></span>, we would like to keep in touch with updates on your activity on rooom.</p>
+          <p style="margin-top: 15px">just say the word and we will email you semi-regularly.</p>
+          <div style="display: grid; grid-template-columns: 140px 100px; margin: 20px auto;">
+            <button id="yes-email" style="width: 140px; color: rgb(80, 80, 80)" class="green-button">of course</button>
+            <button id="no-email" style="width: 90px; color: rgb(80, 80, 80)" class="red-button">no thanks</button>
+          </div>
         </div>
       </div>
       <div class="close">close</div>

@@ -2,6 +2,7 @@ require("dotenv").config();
 
 import spotifyRouter from "./router/spotify";
 import roomRouter from "./router/room";
+import userRouter from "./router/user";
 
 import cookieParser from "cookie-parser";
 import express, { Response, Request, NextFunction } from "express";
@@ -106,6 +107,7 @@ connectToDb();
 app.use(requestLogger);
 app.use("/spotify", spotifyRouter);
 app.use("/room", roomRouter);
+app.use("/user", userRouter);
 app.use(responseLogger);
 app.get("/you", (req: Request, res: Response) => {
   res.status(200).sendFile(path.join(__dirname + "/../dist/me.html"));

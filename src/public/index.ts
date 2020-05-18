@@ -3,9 +3,10 @@ import "babel-polyfill";
 import { IRoom } from "../models/room";
 import { ISpotifyTrack, ISpotifyWebPlaybackState, ISpotifyUser } from "../typings/spotify";
 import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
+import { IUser } from "../models/user";
 
 let token: string;
-let user;
+let user: IUser;
 let roomId: string;
 let deviceId: string;
 let isMaster: boolean = false;
@@ -151,6 +152,29 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
 
   }
   isUsersTrayOpened = !isUsersTrayOpened;
+});
+
+document.getElementById("yes-email").addEventListener("click", (e) => {
+  e.stopPropagation();
+  try {
+    axios.put(`/user/email-subscription/?id=${user.id}`, {isEmailSubscriber: true});
+    displayMessage("you have been added to the mailing list 📧")
+  } catch (e) {
+    displayMessage("there was a problem adding you to the mailing list, please try again");
+  } finally {
+    closeModals();
+  }
+});
+
+document.getElementById("no-email").addEventListener("click", (e) => {
+  e.stopPropagation();
+  try {
+    axios.put(`/user/email-subscription/?id=${user.id}`, {isEmailSubscriber: false});
+  } catch (e) {
+    return;
+  } finally {
+    closeModals();
+  }
 });
 
 export function displayRoom(room: IRoom): boolean {
@@ -549,9 +573,7 @@ async function main() {
   }
 
   document.querySelector("body").addEventListener("click", (e) => {
-    document.querySelectorAll(".modal").forEach(elt => {
-      (elt as HTMLDivElement).style.display = "none";
-    });
+    closeModals();
   });
 
   document.querySelectorAll(".modal-content").forEach(elt => {
@@ -563,10 +585,14 @@ async function main() {
   document.querySelectorAll(".modal .close").forEach(elt => {
     elt.addEventListener("click", (e) => {
       e.stopPropagation();
-      document.querySelectorAll(".modal").forEach(elt => {
-        (elt as HTMLDivElement).style.display = "none";
-      });
+      closeModals();
     });
+  });
+}
+
+function closeModals() {
+  document.querySelectorAll(".modal").forEach(elt => {
+    (elt as HTMLDivElement).style.display = "none";
   });
 }
 
@@ -697,17 +723,25 @@ async function getInRoom(id: string) {
 
 
 export async function doIt() {
+  let id;
   try {
-    user = (await axios.get(`/spotify/me/?token=${token}`)).data.user as ISpotifyUser;
-    if (user.product !== "premium") {
-      displayMessage("unfortunately rooom is available only for premium users");
-      setTimeout(() => {
-        window.location.replace("/");
-      }, 4000);
+    const spotifyUser = (await axios.get(`/spotify/me/?token=${token}`)).data.user as ISpotifyUser;
+    if (spotifyUser.product !== "premium") {
+      displayPermanentMessage("<p>unfortunately rooom is available only for <a href='https://www.spotify.com/uk/premium/'>Spotify Premium</a> users</p>");
       return;
     }
+    id = spotifyUser.id;
   } catch {
     return window.location.replace("/");
+  }
+
+  user = (await axios.get(`/user/me/?id=${id}`)).data.user as IUser;
+  if (!user.isEmailSubscriber) {
+    console.log(user);
+    setTimeout(() => {
+      const elt = document.getElementById("ask-for-email") as HTMLDivElement;
+      elt.style.display = "flex";
+    }, 1 * 60 * 1000);
   }
 
   roomId = getCookies()["rooom_id"];
@@ -742,22 +776,18 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   });
 
   player.addListener('initialization_error', ({ message }) => {
-    displayMessage("rooom is not available on your browser");
-    const waitingElt = document.getElementById("waiting");
-    waitingElt.innerHTML = "<p>whoops! rooom is not available on your browser. please try using <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
-    waitingElt.style.display = "block";
-    (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+    displayPermanentMessage("<p>whoops! rooom is not available on your browser. please try using <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>");
     return;
   });
   player.addListener('authentication_error', ({ message }) => {
-    const waitingElt = document.getElementById("waiting");
-    waitingElt.innerHTML = "<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>";
-    waitingElt.style.display = "block";
-    (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+    displayPermanentMessage(`<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>`);
     return;
   });
-  player.addListener('account_error', ({ message }) => { console.error(message); });
-  player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the playback"); console.error(message); });
+  player.addListener('account_error', ({ message }) => { 
+    displayPermanentMessage(`<p>there was an error with your account. please refresh the page.</p>`);
+    console.error(message);
+  });
+  player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the web player. please refresh the page."); console.error(message); });
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
     w.postMessage({ goToNextTrack: true, isPlaying, paused: state.paused });
@@ -770,7 +800,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   });
 
   player.addListener('not_ready', ({ device_id }) => {
-    console.log('Device ID has gone offline', device_id);
+    displayPermanentMessage(`<p>the device with device id ${deviceId} has gone offline. please refresh the page0</p>`);
   });
 
   player.connect();
