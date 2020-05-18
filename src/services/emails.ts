@@ -33,8 +33,9 @@ export async function sendEmail(data: object, type: string) {
       break;
     }
     default: {
-      const m = "Seriously -_- ... Got an unknown email type. Sending to dead letter.";
+      const m = "Seriously -_- ... Got an unknown email type.";
       logger.error(m, { data, type });
+      return;
     }
   }
 
@@ -62,6 +63,7 @@ export function getCreateAccountEmailData(data: IRegisterForAlphaRelease): mailg
     "h:X-Mailgun-Variables": JSON.stringify({
       name: data.name.trim().split(" ")[0],
     }),
+    "o:tag": "create-account",
   };
   return emailData;
 }
