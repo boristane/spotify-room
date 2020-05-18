@@ -156,6 +156,10 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
 
 document.getElementById("yes-email").addEventListener("click", (e) => {
   e.stopPropagation();
+  // @ts-ignore
+  gtag('event', "accept-emails", {
+    event_category: "user",
+  });
   try {
     axios.put(`/user/email-subscription/?id=${user.id}`, {isEmailSubscriber: true});
     displayMessage("you have been added to the mailing list 📧")
@@ -168,6 +172,10 @@ document.getElementById("yes-email").addEventListener("click", (e) => {
 
 document.getElementById("no-email").addEventListener("click", (e) => {
   e.stopPropagation();
+  // @ts-ignore
+  gtag('event', "reject-emails", {
+    event_category: "user",
+  });
   try {
     axios.put(`/user/email-subscription/?id=${user.id}`, {isEmailSubscriber: false});
   } catch (e) {
