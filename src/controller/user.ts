@@ -2,6 +2,7 @@ import logger from "logger";
 import _ from "lodash";
 import { NextFunction, Response, Request } from "express";
 import { getUser, updateUserEmailSubscription } from "../services/database";
+import { sendEmail, emailType } from "../services/emails";
 
 export async function getMe(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
@@ -48,6 +49,9 @@ export async function updateEmailSubscription(req: Request, res: Response, next:
       return next();
     }
     await updateUserEmailSubscription(user, isEmailSubscriber);
+    if(isEmailSubscriber) {
+      sendEmail({ name: user.display_name, email: user.email }, emailType.createAccount);
+    }
     res.locals.body = { user: user.id, isEmailSubscriber };
     res.status(200).json({
       message: "All good", isEmailSubscriber, user: user.id,

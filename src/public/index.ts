@@ -736,8 +736,7 @@ export async function doIt() {
   }
 
   user = (await axios.get(`/user/me/?id=${id}`)).data.user as IUser;
-  if (!user.isEmailSubscriber) {
-    console.log(user);
+  if (user.isEmailSubscriber === undefined) {
     setTimeout(() => {
       const elt = document.getElementById("ask-for-email") as HTMLDivElement;
       elt.style.display = "flex";
@@ -791,6 +790,12 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
   player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
     w.postMessage({ goToNextTrack: true, isPlaying, paused: state.paused });
+    if (isPlaying && state.paused) {
+      // @ts-ignore
+      gtag('event', "goto-next-track", {
+        event_category: "spotify",
+      });
+    }
   }, 2000));
 
   player.addListener('ready', ({ device_id }) => {
