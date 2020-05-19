@@ -12,6 +12,15 @@ html, body {
   text-rendering: optimizeLegibility;
   background: black;
   width: 100%;
+  scrollbar-color: hsla(0,0%,100%,.3) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color:  hsla(0,0%,100%,.3); 
 }
 
 #user-photo {
