@@ -76,12 +76,14 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
     const room = await spawnRoom(name, user, token, deviceId);
     const id = room._id.toString();
     res.cookie("rooom_id", id);
-    sendEmail({ 
-      email: user.email,
-      name: user.display_name,
-      roomName: room.name,
-      roomId: room.id,
-    }, emailType.createRoom);
+    if (user.isEmailSubscriber) {
+      sendEmail({
+        email: user.email,
+        name: user.display_name,
+        roomName: room.name,
+        roomId: room.id,
+      }, emailType.createRoom);
+    }
     const response = {
       message: "Room succesfully created",
       room: prepareRoomForResponse(room),
