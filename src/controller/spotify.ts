@@ -110,7 +110,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
     if (isNewUser) {
       sendEmail({ name: user.display_name, email: user.email }, emailType.createAccount);
     }
-    res.locals.body = user;
+    res.locals.body = _.omit(user, ["email", "birthdate"]);
     res.status(200).json({ user: _.omit(user, ["email", "birthdate"]) });
     return next();
   } catch (err) {

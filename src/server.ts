@@ -36,7 +36,7 @@ if (process.env.ENV === "prod") {
       type: 'api_logs',
       url: 'https://logsene-receiver.sematext.com/_bulk'
     })]
-  })
+  });
   const httpLogger = morgan(format, {
     stream: {
       write: (message) => l.info('HTTP LOG', JSON.parse(message))

@@ -20,7 +20,7 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
       res.status(404).json(response);
       return next();
     }
-    res.locals.body = user;
+    res.locals.body =  _.omit(user, ["email", "birthdate"]);
     res.status(200).json({ user: _.omit(user, ["email", "birthdate"]) });
     return next();
   } catch (error) {

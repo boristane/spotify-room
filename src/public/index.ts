@@ -549,7 +549,9 @@ async function main() {
   try {
     token = await getToken();
   } catch {
-    return window.location.replace("/");
+    displayPermanentMessage("<p>there was an issue getting your authentication token, please try again.</p>");
+    return;
+    // return window.location.replace("/");
   }
 
   document.querySelector("body").addEventListener("click", (e) => {
@@ -745,7 +747,6 @@ function displayModalRoomIsBetter(room: IRoom) {
   modal.style.display = "flex";
 }
 
-
 export async function doIt() {
   let id;
   try {
@@ -756,7 +757,9 @@ export async function doIt() {
     }
     id = spotifyUser.id;
   } catch {
-    return window.location.replace("/");
+    displayPermanentMessage("<p>there was an issue getting your profile from Spotify, please try again.</p>");
+    return;
+    // return window.location.replace("/");
   }
 
   user = (await axios.get(`/user/me/?id=${id}`)).data.user as IUser;
