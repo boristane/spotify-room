@@ -49,7 +49,7 @@ export async function updateEmailSubscription(req: Request, res: Response, next:
       return next();
     }
     await updateUserEmailSubscription(user, isEmailSubscriber);
-    if(isEmailSubscriber) {
+    if (isEmailSubscriber) {
       sendEmail({ name: user.display_name, email: user.email }, emailType.createAccount);
     }
     res.locals.body = { user: user.id, isEmailSubscriber };

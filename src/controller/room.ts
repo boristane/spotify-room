@@ -4,6 +4,7 @@ import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInD
 import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
+import { sendEmail, emailType } from "../services/emails";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id, token, userId, deviceId } = req.query;
@@ -75,6 +76,12 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
     const room = await spawnRoom(name, user, token, deviceId);
     const id = room._id.toString();
     res.cookie("rooom_id", id);
+    sendEmail({ 
+      email: user.email,
+      name: user.display_name,
+      roomName: room.name,
+      roomId: room.id,
+    }, emailType.createRoom);
     const response = {
       message: "Room succesfully created",
       room: prepareRoomForResponse(room),

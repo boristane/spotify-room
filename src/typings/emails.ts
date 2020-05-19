@@ -3,7 +3,15 @@ export interface IEMailUser {
   email: string;
 }
 
-export interface IRegisterForAlphaRelease {
+export interface ICreateAccountData {
   email: string;
   name: string;
+}
+
+
+export interface ICreateRoomData {
+  email: string;
+  name: string;
+  roomName: string;
+  roomId: string;
 }

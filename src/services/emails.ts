@@ -5,9 +5,9 @@ import mailgun from "mailgun-js";
 require("dotenv").config();
 
 import logger from "logger";
-import { IRegisterForAlphaRelease } from "../typings/emails";
+import { ICreateAccountData, ICreateRoomData } from "../typings/emails";
 
-export async function sendEmail(data: object, type: string) {
+export async function sendEmail(data: ICreateRoomData | ICreateAccountData, type: string) {
   const mg = mailgun({
     apiKey: process.env.MAILGUN_API_KEY || "",
     domain: process.env.MAILGUN_DOMAIN || "",
@@ -15,19 +15,18 @@ export async function sendEmail(data: object, type: string) {
   });
   let emailData: mailgun.messages.SendTemplateData;
   let subscriberData: mailgun.lists.MemberCreateData;
-  console.log(type);
   switch (type) {
-    // case eventType.resetPassword: {
-    //   emailData = getPasswordResetEmailData(data as IResetPasswordData);
-    //   break;
-    // }
+    case emailType.createRoom: {
+      emailData = getCreateRoomEmailData(data as ICreateRoomData);
+      break;
+    }
     // case eventType.signup: {
     //   emailData = getSignupEmailData(data as IActivateAccountData);
     //   break;
     // }
     case emailType.createAccount: {
-      emailData = getCreateAccountEmailData(data as IRegisterForAlphaRelease);
-      subscriberData = getCreateAccountSubscriberData(data as IRegisterForAlphaRelease);
+      emailData = getCreateAccountEmailData(data as ICreateAccountData);
+      subscriberData = getCreateAccountSubscriberData(data as ICreateAccountData);
       const alphaEmailListId = process.env.USERS_EMAIL_LIST_ID || "";
       await mg.lists(alphaEmailListId).members().create(subscriberData);
       break;
@@ -44,16 +43,32 @@ export async function sendEmail(data: object, type: string) {
     await mg.messages().send(emailData);
   } catch (error) {
     const m = "There was a problem sending an email";
-    console.log(emailData);
     logger.error(m, { data: {domain: process.env.MAILGUN_DOMAIN, key: process.env.MAILGUN_API_KEY}, error });
   }
 }
 
 export const enum emailType {
   createAccount = "CREATE_ACCOUNT",
+  createRoom = "CREATE_ROOM",
 }
 
-export function getCreateAccountEmailData(data: IRegisterForAlphaRelease): mailgun.messages.SendTemplateData {
+export function getCreateRoomEmailData(data: ICreateRoomData): mailgun.messages.SendTemplateData {
+  const emailData: mailgun.messages.SendTemplateData = {
+    from: `${process.env.MAILGUN_USER_NAME} ${process.env.MAILGUN_FROM}`,
+    to: `${data.email}`,
+    subject: "your rooom awaits",
+    template: process.env.MG_CREATE_ROOM_EMAIL || "",
+    "h:X-Mailgun-Variables": JSON.stringify({
+      name: data.name.trim().split(" ")[0],
+      roomName: data.roomName,
+      roomId: data.roomId,
+    }),
+    "o:tag": "create-room",
+  };
+  return emailData;
+}
+
+export function getCreateAccountEmailData(data: ICreateAccountData): mailgun.messages.SendTemplateData {
   const emailData: mailgun.messages.SendTemplateData = {
     from: `${process.env.MAILGUN_USER_NAME} ${process.env.MAILGUN_FROM}`,
     to: `${data.email}`,
@@ -68,7 +83,7 @@ export function getCreateAccountEmailData(data: IRegisterForAlphaRelease): mailg
   return emailData;
 }
 
-export function getCreateAccountSubscriberData(data: IRegisterForAlphaRelease): mailgun.lists.MemberCreateData {
+export function getCreateAccountSubscriberData(data: ICreateAccountData): mailgun.lists.MemberCreateData {
   const subscriberData: mailgun.lists.MemberCreateData = {
     subscribed: true,
     address: data.email,
