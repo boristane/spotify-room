@@ -37,10 +37,11 @@
   <div id="message"></div>
   <section id="get-in-room" style="display: none;">
     <div id="create-room-section">
-      <div class="logo-container">
+      <div class="logo-container" style="display: flex; flex-direction: row;">
         <a href="/">
           <img src="./logo.png" alt="logo" class="logo" />
         </a>
+        <div class="beta">BETA</div>
       </div>
       <div style="margin-bottom: 50px;">
         <p>
@@ -106,7 +107,10 @@
             </a>
           </div>
           <div id="room-description">
-            <div id="room-name"></div>
+            <div style="display: flex; flex-direction: row;">
+              <div id="room-name"></div>
+              <div class="beta">BETA</div>
+            </div>
             <div id="mastered-by"></div>
             <div id="room-id"></div>
             <div class="mobile-only mobile-button-container">

@@ -741,8 +741,6 @@ function displayModalRoomIsBetter(room: IRoom) {
     elt.textContent = room.name;
   });
   const inputElt = document.getElementById("text-to-copy-3") as HTMLInputElement;
-  console.log(document.getElementById("room-id").textContent);
-  console.log(inputElt);
   inputElt.value = document.getElementById("room-id").textContent;
   modal.style.display = "flex";
 }

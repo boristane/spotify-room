@@ -20,6 +20,8 @@ body {
   width: 150px;
   margin: auto;
   padding-top: 15px;
+  display: flex;
+  flex-direction:row;
 }
 
 .logo {
@@ -91,6 +93,15 @@ a:active {
 
 .mobile {
   display: none;
+}
+
+.beta {
+  font-weight: bold;
+  background-color: #ce2029;
+  display: inline-block;
+  padding: 5px;
+  border-radius: 5px;
+  height: 20px;
 }
 
 @media only screen and (max-width: 800px) {
