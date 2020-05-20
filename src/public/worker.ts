@@ -1,17 +1,21 @@
 import axios from "axios";
 import 'babel-polyfill';
+import { ICurrentTrackResponse } from "../typings/spotify";
 const sendMessage: any = self.postMessage;
 
 let roomId;
 let userId;
 let deviceId;
 let refreshRoomTimeoutId;
+let getCurrentTrackTimeoutId;
 let code;
 let state;
 let refreshToken;
+let token;
+let wasPlaying = false;
 
 async function refreshRoomToken() {
-  const token = await getToken();
+  token = await getToken();
   try {
     await axios.put(`/room/join/?id=${roomId}&token=${token}&userId=${userId}&deviceId=${deviceId}`);
   } catch (error) {
@@ -37,15 +41,29 @@ async function refreshRoom() {
   refreshRoomTimeoutId = setTimeout(refreshRoom, 10 * 1000);
 }
 
-onmessage = async function (e) {
-  if(e.data.goToNextTrack && e.data.paused && e.data.isPlaying) {
-    await goToNextTrack()
-    return;
+async function getCurrentTrack() {
+  try {
+    const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}`)).data;
+    if (wasPlaying != track.is_playing) {
+      wasPlaying = track.is_playing;
+      sendMessage({ isPlaying: wasPlaying });
+    }
+    if (track.item.duration_ms - track.progress_ms <= 2000) {
+      setTimeout(() => {
+        goToNextTrack();
+      }, track.item.duration_ms - track.progress_ms);
+    }
+  } catch (error) {
+    console.log(error);
   }
+  getCurrentTrackTimeoutId = setTimeout(getCurrentTrack, 2 * 1000);
+}
+
+onmessage = async function (e) {
   if (e.data.roomId && e.data.roomId) {
     roomId = e.data.roomId;
     userId = e.data.userId;
-    if(refreshRoomTimeoutId) {
+    if (refreshRoomTimeoutId) {
       this.clearTimeout(refreshRoomTimeoutId);
     }
     return refreshRoom();
@@ -54,25 +72,30 @@ onmessage = async function (e) {
     code = e.data.code;
     state = e.data.state;
     refreshToken = e.data.refreshToken;
+    token = await getToken();
+    if (getCurrentTrackTimeoutId) {
+      this.clearTimeout(getCurrentTrackTimeoutId);
+    }
+    getCurrentTrack();
   }
 };
 
 async function goToNextTrack() {
-    let success = false;
-    let numAttempts = 0;
-    const maxNumAttempts = 5;
-    while (!success && numAttempts < maxNumAttempts) {
-      try {
-        const room = (await axios.get(`/room/next/?id=${roomId}&userId=${userId}`)).data.room;
-        sendMessage({ room });
-        success = true;
-      } catch (error) {
-        console.log("There was a problem moving to the next track");
-        await refreshRoomToken();
-      }
-      numAttempts += 1;
+  let success = false;
+  let numAttempts = 0;
+  const maxNumAttempts = 5;
+  while (!success && numAttempts < maxNumAttempts) {
+    try {
+      const room = (await axios.get(`/room/next/?id=${roomId}&userId=${userId}`)).data.room;
+      sendMessage({ room });
+      success = true;
+    } catch (error) {
+      console.log("There was a problem moving to the next track");
+      await refreshRoomToken();
     }
-    if (!success) {
-      sendMessage({ message: "There was a problem moving to the next track" });
-    }
+    numAttempts += 1;
+  }
+  if (!success) {
+    sendMessage({ message: "There was a problem moving to the next track" });
+  }
 }

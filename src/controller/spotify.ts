@@ -4,7 +4,7 @@ import { sendEmail, emailType } from "../services/emails";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks } from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks, getCurrentlyPalyingTrack } from "../services/spotify";
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
@@ -112,6 +112,19 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
     }
     res.locals.body = _.omit(user, ["email", "birthdate"]);
     res.status(200).json({ user: _.omit(user, ["email", "birthdate"]) });
+    return next();
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+  }
+}
+
+export async function getCurrentTrack(req: Request, res: Response, next: NextFunction) {
+  const { token } = req.query;
+  try {
+    const track = await getCurrentlyPalyingTrack(token);
+    res.locals.body = track;
+    res.status(200).json({ track });
     return next();
   } catch (err) {
     console.log(err);

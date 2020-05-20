@@ -1,7 +1,7 @@
 import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../models/room";
-import { ISpotifyTrack, ISpotifyWebPlaybackState, ISpotifyUser } from "../typings/spotify";
+import { ISpotifyTrack, ISpotifyUser } from "../typings/spotify";
 import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
 import { IUser } from "../models/user";
 
@@ -811,21 +811,10 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     displayPermanentMessage(`<p>there was an error with your account. please refresh the page.</p>`);
     console.error(message);
   });
-  player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the web player. please refresh the page."); console.error(message); });
-
-  player.addListener('player_state_changed', debounce(async (state: ISpotifyWebPlaybackState) => {
-    w.postMessage({ goToNextTrack: true, isPlaying, paused: state.paused });
-    if (isPlaying && state.paused) {
-      // @ts-ignore
-      gtag('event', "goto-next-track", {
-        event_category: "spotify",
-      });
-    }
-  }, 2000));
+  player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the web player. please refresh the page."); console.error(message); })
 
   player.addListener('ready', ({ device_id }) => {
     deviceId = device_id;
-    console.log('Ready with Device ID', device_id);
     doIt();
   });
 

@@ -135,6 +135,7 @@ export interface ISpotifyWebPlaybackState {
   },
   paused: boolean,  // Whether the current track is paused.
   position: number,    // The position_ms of the current track.
+  duration: number,
   repeat_mode: number, // The repeat mode. No repeat mode is 0,
   // once-repeat is 1 and full repeat is 2.
   shuffle: boolean, // True if shuffled, false otherwise.
