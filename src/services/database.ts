@@ -85,7 +85,7 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     return isNewUser;
   }
   isNewUser = true;
-  members.push({ id: user.id, token, name: user.display_name, deviceId, isActive: false, isApproved: false, currentTrack: "" });
+  members.push({ id: user.id, token, name: user.display_name, deviceId, isActive: false, isApproved: true, currentTrack: "" });
   await room.save();
   return isNewUser;
 }

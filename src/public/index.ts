@@ -13,6 +13,7 @@ let isMaster: boolean = false;
 let oldRoom: IRoom;
 let isPlaying = false;
 let isOnboarded = false;
+const browserNotSupportedHtml = "<p>whoops! rooom is not available on your browser. please try using the latest version of <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
 
 const debounce = (func: Function, delay: number) => {
   let debounceTimer
@@ -45,7 +46,7 @@ function startWorker() {
       }
     };
   } else {
-    document.getElementById("result").innerHTML = "Sorry! No Web Worker support.";
+    displayPermanentMessage(browserNotSupportedHtml);
   }
 }
 
@@ -125,7 +126,7 @@ let isSearchTrayOpened = false;
 document.getElementById("more").addEventListener("click", (e) => {
   e.stopPropagation();
   if (!isSearchTrayOpened) {
-    (document.querySelector(".button-container") as HTMLDivElement).style.height = "100px";
+    (document.querySelector(".button-container") as HTMLDivElement).style.height = "50px";
     (document.querySelector(".button-container") as HTMLDivElement).style.padding = "10px";
   } else {
     (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
@@ -800,7 +801,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   });
 
   player.addListener('initialization_error', ({ message }) => {
-    displayPermanentMessage("<p>whoops! rooom is not available on your browser. please try using <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>");
+    displayPermanentMessage(browserNotSupportedHtml);
     return;
   });
   player.addListener('authentication_error', ({ message }) => {
@@ -843,5 +844,6 @@ function displayPermanentMessage(innerHtml: string) {
   const waitingElt = document.getElementById("waiting");
   waitingElt.innerHTML = innerHtml;
   waitingElt.style.display = "block";
+  (document.getElementById("room") as HTMLDivElement).style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
 }

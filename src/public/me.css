@@ -192,7 +192,7 @@ html, body {
 #message {
   text-align: center;
   position: fixed;
-  left: calc(50% - 160px);
+  left: calc(50% - 165px);
   bottom: -300px;
   width: 300px;
   border-radius: 5px;
@@ -410,6 +410,7 @@ ol, ul {
 .logo {
   width: 200px;
   margin: auto;
+  /* box-shadow: 0 8px 16px 0 rgba(0,0,0,.8),0 6px 20px 0 rgba(0,0,0,.19); */
 }
 
 #waiting {
@@ -468,7 +469,7 @@ ol, ul {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 10px;
+  padding-right: 10px;
 }
 
 .room-details {
@@ -654,6 +655,10 @@ ol, ul {
   .existing-room {
     width: 100% !important;
     max-width: 80% !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
   }
 }
 

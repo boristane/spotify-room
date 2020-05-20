@@ -65,5 +65,14 @@
   color: white;
 }
 
-  
-.modal-body {padding: 6px 26px;text-align: center; }
+.modal-body {
+  padding: 6px 26px;
+  text-align: center;
+}
+
+@media only screen and (max-width: 480px) {
+  /* Modal Content */
+  .modal-content {
+    margin-top: 70px;
+  }
+}

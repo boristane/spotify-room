@@ -44,11 +44,11 @@ async function refreshRoom() {
 async function getCurrentTrack() {
   try {
     const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}`)).data;
-    if (wasPlaying != track.is_playing) {
-      wasPlaying = track.is_playing;
+    if (wasPlaying != track?.is_playing) {
+      wasPlaying = track?.is_playing;
       sendMessage({ isPlaying: wasPlaying });
     }
-    if (track.item.duration_ms - track.progress_ms <= 2000) {
+    if (track?.item?.duration_ms - track?.progress_ms <= 2000) {
       setTimeout(() => {
         goToNextTrack();
       }, track.item.duration_ms - track.progress_ms);
