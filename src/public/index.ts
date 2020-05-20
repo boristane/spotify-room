@@ -535,6 +535,7 @@ document.getElementById("leave").addEventListener("click", async (e: MouseEvent)
 });
 
 async function leaveRoom() {
+  stopWorker();
   try {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
     window.location.reload();
@@ -700,7 +701,7 @@ async function getInRoom(id: string) {
   }, 30 * 60 * 1000);
 
   window.addEventListener('beforeunload', async (event) => {
-    await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
+    leaveRoom();
     event.returnValue = '';
     return "";
   });

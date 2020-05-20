@@ -434,6 +434,7 @@ ol, ul {
 #existing-rooms {
   margin-top: 50px !important;
   margin-bottom: 50px !important;
+  text-align: left;
 } 
 
 .existing-room {

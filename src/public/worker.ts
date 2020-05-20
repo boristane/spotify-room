@@ -66,17 +66,18 @@ onmessage = async function (e) {
     if (refreshRoomTimeoutId) {
       this.clearTimeout(refreshRoomTimeoutId);
     }
+    token = await getToken();
+    if (getCurrentTrackTimeoutId) {
+      this.clearTimeout(getCurrentTrackTimeoutId);
+    }
+    // TODO this is not at the right place
+    getCurrentTrack();
     return refreshRoom();
   }
   if (e.data.code && e.data.state && e.data.refreshToken) {
     code = e.data.code;
     state = e.data.state;
     refreshToken = e.data.refreshToken;
-    token = await getToken();
-    if (getCurrentTrackTimeoutId) {
-      this.clearTimeout(getCurrentTrackTimeoutId);
-    }
-    getCurrentTrack();
   }
 };
 
