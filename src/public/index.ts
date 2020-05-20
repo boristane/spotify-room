@@ -2,14 +2,14 @@ import axios from "axios";
 import "babel-polyfill";
 import { IRoom } from "../models/room";
 import { ISpotifyTrack, ISpotifyUser } from "../typings/spotify";
-import { userBuilder, masterBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
+import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
 import { IUser } from "../models/user";
 
 let token: string;
 let user: IUser;
 let roomId: string;
 let deviceId: string;
-let isMaster: boolean = false;
+let isHost: boolean = false;
 let oldRoom: IRoom;
 let isPlaying = false;
 let isOnboarded = false;
@@ -189,7 +189,7 @@ document.getElementById("no-email").addEventListener("click", (e) => {
 export function displayRoom(room: IRoom): boolean {
   const waitingElt = document.getElementById("waiting");
   if (room === null) {
-    displayPermanentMessage("<p>waiting to be added to the rooom by the master...</p>");
+    displayPermanentMessage("<p>waiting to be added to the rooom by the host...</p>");
     document.querySelector("section").style.display = "none";
     return
   };
@@ -200,17 +200,17 @@ export function displayRoom(room: IRoom): boolean {
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
   document.getElementById("room").style.display = "block";
   oldRoom = room;
-  isMaster = room.master.id === user.id;
-  if (!isOnboarded && !isMaster) {
+  isHost = room.master.id === user.id;
+  if (!isOnboarded && !isHost) {
     displayModalUnboardingMember(room);
     isOnboarded = true;
   }
-  if (!isOnboarded && isMaster) {
+  if (!isOnboarded && isHost) {
     displayModalUnboardingMaster(room);
     isOnboarded = true;
   }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
-  const trackElts = room.tracks.map((track) => trackBuilder(track, isMaster));
+  const trackElts = room.tracks.map((track) => trackBuilder(track, isHost));
   (document.getElementById("add-songs") as HTMLDivElement).style.display = "none";
   tracklistElt.innerHTML = trackElts.join("");
   if (tracklistElt.innerHTML === "") {
@@ -224,13 +224,13 @@ export function displayRoom(room: IRoom): boolean {
   const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
   const memberElts = room.members.filter(m => m.isApproved).map((member) => `<li class="member ${member.isActive ? "active" : "inactive"}">${member.name}</li>`);
   const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member member-to-approve" data-id="${member.id}" data-name="${member.name}">${member.name}</li>`);
-  const masterElt = masterBuilder(room.master);
-  membersListElt.innerHTML = masterElt + memberElts.join("");
-  membersToAppoveListElt.innerHTML = isMaster ? memberToApproveElts.join("") : "";
-  (document.getElementById("members-to-approve-header") as HTMLDivElement).style.display = (memberToApproveElts.length > 0 && isMaster) ? "block" : "none";
+  const hostElt = hostBuilder(room.master);
+  membersListElt.innerHTML = hostElt + memberElts.join("");
+  membersToAppoveListElt.innerHTML = isHost ? memberToApproveElts.join("") : "";
+  (document.getElementById("members-to-approve-header") as HTMLDivElement).style.display = (memberToApproveElts.length > 0 && isHost) ? "block" : "none";
   document.getElementById("room-name").textContent = room.name;
   const numTracks = room.tracks.filter(t => t.approved).length;
-  document.getElementById("mastered-by").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
+  document.getElementById("host").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
 
   document.querySelectorAll(".copy-to-clipboard").forEach(elt => {
@@ -264,13 +264,13 @@ export function displayRoom(room: IRoom): boolean {
 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
-      if (!isMaster) {
+      if (!isHost) {
         // @ts-ignore
         gtag('event', "play-track", {
           event_category: "track",
-          event_label: "non-master"
+          event_label: "non-host"
         });
-        displayMessage("Only the rooom master can skip tracks 😅");
+        displayMessage("Only the rooom host can skip tracks 😅");
         return;
       };
       const { uri, approved } = this.dataset;
@@ -278,7 +278,7 @@ export function displayRoom(room: IRoom): boolean {
         // @ts-ignore
         gtag('event', "play-track", {
           event_category: "track",
-          event_label: "master"
+          event_label: "host"
         });
         let success = false;
         const maxNumAttempts = 5;
@@ -325,7 +325,7 @@ export function displayRoom(room: IRoom): boolean {
       gtag('event', "remove-track", {
         event_category: "track",
       });
-      if (!isMaster) return;
+      if (!isHost) return;
       try {
         const { uri } = this.dataset;
         const room = (await axios.delete(`/room/remove/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
@@ -345,9 +345,9 @@ export function displayRoom(room: IRoom): boolean {
       // @ts-ignore
       gtag('event', "approve", {
         event_category: "user",
-        event_label: isMaster ? "master" : "non-master",
+        event_label: isHost ? "host" : "non-host",
       });
-      if (!isMaster) return;
+      if (!isHost) return;
       const { id, name } = this.dataset;
       try {
         const room = (await axios.get(`/room/approve-member/?id=${roomId}&userId=${user.id}&memberId=${id}`)).data.room;
@@ -373,7 +373,7 @@ export function displayRoom(room: IRoom): boolean {
     document.title = `${currentTrack.name} - ${currentTrack.artists.join(", ")} | ${room.name} `;
   }
 
-  if (isMaster && room.members.filter(m => !m.isApproved).length > 0) {
+  if (isHost && room.members.filter(m => !m.isApproved).length > 0) {
     displayMessage("there are members in the queue waiting for your approval");
   }
 
@@ -687,7 +687,7 @@ async function getInRoom(id: string) {
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
 
   setTimeout(() => {
-    if (isMaster) {
+    if (isHost) {
       setInterval(async () => {
         const room = await checkUsers(id, user.id);
         displayRoom(room);
@@ -708,7 +708,7 @@ async function getInRoom(id: string) {
 
 function displayModalUnboardingMember(room: IRoom) {
   const modal = document.getElementById("onboarding-member") as HTMLDivElement;
-  document.querySelectorAll(".modal-room-master").forEach((elt) => {
+  document.querySelectorAll(".modal-room-host").forEach((elt) => {
     elt.textContent = room.master.name;
   });
   document.querySelectorAll(".modal-room-name").forEach((elt) => {
@@ -721,8 +721,8 @@ function displayModalUnboardingMember(room: IRoom) {
 }
 
 function displayModalUnboardingMaster(room: IRoom) {
-  const modal = document.getElementById("onboarding-master") as HTMLDivElement;
-  document.querySelectorAll(".modal-room-master").forEach((elt) => {
+  const modal = document.getElementById("onboarding-host") as HTMLDivElement;
+  document.querySelectorAll(".modal-room-host").forEach((elt) => {
     elt.textContent = room.master.name;
   });
   document.querySelectorAll(".modal-room-name").forEach((elt) => {

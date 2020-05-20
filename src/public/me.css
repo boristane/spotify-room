@@ -129,7 +129,7 @@ html, body {
   grid-template-columns: 110px 170px;
 }
 
-#mastered-by {
+#host {
   color: grey;
   font-size: 13px;
   margin-top: 0px;
@@ -241,7 +241,7 @@ ol, ul {
    transition: all 0.2s ease-out;
 }
 
-.master {
+.host {
   font-weight: bold;
 }
 

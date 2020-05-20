@@ -90,7 +90,7 @@
         </div>
         <div>
           <div style="font-size: 12px; margin-left: 15px; margin-top: 20px;" id="members-to-approve-header">
-            members to approve
+            guests to approve
           </div>
           <ul class="members-to-approve">
           </ul>
@@ -111,7 +111,7 @@
               <div id="room-name"></div>
               <div class="beta">BETA</div>
             </div>
-            <div id="mastered-by"></div>
+            <div id="host"></div>
             <div id="room-id" class="copy-to-clipboard"></div>
             <div class="mobile-only mobile-button-container">
               <button style="display: none;" class="play room-block noselect green-button">play</button>
@@ -152,7 +152,7 @@
   </div>
   <input type="text" value="" id="text-to-copy" style="display:block;position: absolute; top: -500px; left: -500px">
 
-  <div id="waiting" style="display: none;">waiting to be added to the rooom by the master...</div>
+  <div id="waiting" style="display: none;">waiting to be added to the rooom by the host...</div>
 
   <div id="invite-friends-modal" class="modal">
     <div class="modal-content">
@@ -214,10 +214,10 @@
       <div class="modal-body">
         <div style="color: rgb(80, 80, 80); margin: 30px 0; text-align: left">
           <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span class="modal-room-name">the rooom</span>! 🎉</p>
-          <p style="margin-top: 15px">the rooom master <span class="modal-room-master"></span> controls the music, and all other rooom members listen to the same track simultaneously and in sync. 🤖</p>
+          <p style="margin-top: 15px">the rooom host <span class="modal-room-host"></span> controls the music, and the rooom guests listen to the same track simultaneously and in sync. 🤖</p>
           <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i class="material-icons" style="font-size: 16px;">search</i> ) or simply using the recommendations at the bottom of the page.</p>
-          <!-- <p style="margin-top: 15px">once <span class="modal-room-master">the rooom master</span> has approved your tracks, they will be added to the play queue.</p> -->
-          <p style="margin-top: 15px">when you are ready, just click on the play button ⏯️ and start jamming with <span class="modal-room-master">the rooom master</span>!</p>
+          <!-- <p style="margin-top: 15px">once <span class="modal-room-host">the rooom host</span> has approved your tracks, they will be added to the play queue.</p> -->
+          <p style="margin-top: 15px">when you are ready, just click on the play button ⏯️ and start jamming with <span class="modal-room-host">the rooom host</span>!</p>
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>
         </div>
       </div>
@@ -225,7 +225,7 @@
     </div>
   </div>
 
-  <div id="onboarding-master" class="modal">
+  <div id="onboarding-host" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <div style="display: grid; grid-template-columns: 55px 100%">
@@ -236,10 +236,10 @@
       <div class="modal-body">
         <div style="color: rgb(80, 80, 80); margin: 30px 0; text-align: left">
           <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span class="modal-room-name">the rooom</span>! 🎉</p>
-          <p style="margin-top: 15px">you are the rooom master, you control the music, and all other rooom members listen to the same track simultaneously and in sync. 🤖</p>
+          <p style="margin-top: 15px">you are the rooom host, you control the music, and the rooom guests listen to the same track simultaneously and in sync. 🤖</p>
           <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i class="material-icons" style="font-size: 16px;">search</i> ) or simply using the recommendations at the bottom of the page.</p>
           <p style="margin-top: 15px">when you are ready, invite your friends to the rooom by clicking the "invite friends" button to the left of the page! 📨</p>
-          <!-- <p style="margin-top: 15px">as the rooom master, with great power comes great responsibility. 💯</p> -->
+          <!-- <p style="margin-top: 15px">as the rooom host, with great power comes great responsibility. 💯</p> -->
           <!-- <p style="margin-top: 15px">once your friends join the rooom, approve them by clicking on their name to the left of the page.</p> -->
           <!-- <p style="margin-top: 15px">when they add tracks to the rooom, approve those by clicking on them in the play queue. 🎶</p> -->
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>

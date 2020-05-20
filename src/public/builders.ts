@@ -11,9 +11,9 @@ export function userBuilder(user: ISpotifyUser): string {
           </div>`;
 }
 
-export function masterBuilder(master): string {
-  return `<li class="master member">
-                ${master.name} <spam style="font-size: 8px;">MASTER</span>     
+export function hostBuilder(host): string {
+  return `<li class="host member">
+                ${host.name} <spam style="font-size: 8px;">HOST</span>     
            </li>`
 }
 
