@@ -43,7 +43,7 @@ export async function getToken(req: Request, res: Response) {
   const storedState = req.cookies ? req.cookies[stateKey] : undefined;
 
   if (state === undefined || state !== storedState) {
-    console.log({ error: "state_mismatch" });
+    logger.error("State mismatch");
     return res.status(500).json({ error: "state_mismatch" });
   }
 
@@ -70,7 +70,7 @@ export async function getToken(req: Request, res: Response) {
     logger.info("Token", response.data);
     res.status(200).json(response.data);
   } catch {
-    console.log({ error: "invalid_token" });
+    logger.error("Invalid token");
     res.status(500).json({ error: "invalid_token" });
   }
 }
@@ -97,7 +97,7 @@ export async function refreshToken(req: Request, res: Response) {
     );
     res.status(200).json(response.data);
   } catch {
-    console.log({ error: "invalid_token" });
+    logger.error("Invalid token");
     res.status(500).json({ error: "invalid_token" });
   }
 }

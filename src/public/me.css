@@ -118,11 +118,6 @@ html, body {
   padding-top: 20px;
 }
 
-#room-name {
-  font-size: 60px;
-  font-weight: bold;
-}
-
 #username {
   padding-left: 6px;
   padding-top: 8px;
@@ -466,9 +461,14 @@ ol, ul {
   width: 100%;
 }
 
-.room-name {
+#room-name {
+  font-size: 60px;
   text-align: left;
   font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 10px;
 }
 
 .room-details {
