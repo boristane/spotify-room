@@ -233,19 +233,21 @@ export function displayRoom(room: IRoom): boolean {
   document.getElementById("mastered-by").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
 
-  document.getElementById("room-id").addEventListener("click", () => {
-    // @ts-ignore
-    gtag('event', "share-room", {
-      event_category: "room",
-      event_label: "room-id"
+  document.querySelectorAll(".copy-to-clipboard").forEach(elt => {
+    elt.addEventListener("click", (e: MouseEvent) => {
+      // @ts-ignore
+      gtag('event', "share-room", {
+        event_category: "room",
+      });
+      const inputElt = document.getElementById("text-to-copy") as HTMLInputElement;
+      inputElt.value = document.getElementById("room-id").textContent;
+      inputElt.select();
+      inputElt.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      inputElt.blur();
+      displayMessage("rooom url copied to clipboard");
     });
-    const inputElt = document.getElementById("text-to-copy") as HTMLInputElement;
-    inputElt.value = document.getElementById("room-id").textContent;
-    inputElt.select();
-    inputElt.setSelectionRange(0, 99999);
-    document.execCommand("copy");
-    displayMessage("rooom url copied to clipboard");
-  });
+  })
 
   document.getElementById("invite-friends").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -256,10 +258,6 @@ export function displayRoom(room: IRoom): boolean {
     });
     const inputElt = document.getElementById("text-to-copy-2") as HTMLInputElement;
     inputElt.value = document.getElementById("room-id").textContent;
-    inputElt.select();
-    inputElt.setSelectionRange(0, 99999);
-    document.execCommand("copy");
-    displayMessage("rooom url copied to clipboard");
     const modal = document.getElementById("invite-friends-modal");
     modal.style.display = "flex";
   });
