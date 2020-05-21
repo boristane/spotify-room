@@ -13,6 +13,7 @@ let token;
 async function refreshRoomToken() {
   token = await getToken();
   try {
+    if (!deviceId) throw new Error();
     await axios.put(`/room/join/?id=${roomId}&token=${token}&userId=${userId}&deviceId=${deviceId}`);
   } catch (error) {
     sendMessage({ message: "There was an error when refreshing the token of the rooom" }, "");
@@ -50,6 +51,9 @@ onmessage = async function (e) {
   }
   if (e.data.refreshToken) {
     refreshToken = e.data.refreshToken;
+  }
+  if (e.data.deviceId) {
+    deviceId = e.data.deviceId;
   }
   if (e.data.startPlaying) {
     if (getCurrentTrackTimeoutId) {

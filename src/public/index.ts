@@ -41,10 +41,6 @@ function startWorker() {
       if (event.data.message) {
         return displayMessage(event.data.message);
       }
-      if (event.data.deviceId) {
-        deviceId = event.data.deviceId;
-        doIt();
-      }
     };
   } else {
     displayPermanentMessage(browserNotSupportedHtml);
@@ -824,11 +820,12 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
   player.addListener('ready', ({ device_id }) => {
     deviceId = device_id;
+    w.postMessage({ deviceId });
     doIt();
   });
 
   player.addListener('not_ready', ({ device_id }) => {
-    displayPermanentMessage(`<p>the device with device id ${deviceId} has gone offline. please refresh the page0</p>`);
+    displayPermanentMessage(`<p>the device with device id ${deviceId} has gone offline. please refresh the page</p>`);
   });
 
   player.connect();
