@@ -6,13 +6,9 @@ const sendMessage: any = self.postMessage;
 let roomId;
 let userId;
 let deviceId;
-let refreshRoomTimeoutId;
 let getCurrentTrackTimeoutId;
-let code;
-let state;
 let refreshToken;
 let token;
-let wasPlaying = false;
 
 async function refreshRoomToken() {
   token = await getToken();
@@ -31,24 +27,11 @@ async function getToken() {
   return token;
 }
 
-async function refreshRoom() {
+async function getCurrentLoop() {
+  const loopTime = 10 * 1000;
   try {
-    const room = (await axios.get(`/room/?id=${roomId}&userId=${userId}`)).data.room;
-    sendMessage({ room });
-  } catch (error) {
-    console.log(error);
-  }
-  refreshRoomTimeoutId = setTimeout(refreshRoom, 10 * 1000);
-}
-
-async function getCurrentTrack() {
-  try {
-    const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}`)).data;
-    if (wasPlaying != track?.is_playing) {
-      wasPlaying = track?.is_playing;
-      sendMessage({ isPlaying: wasPlaying });
-    }
-    if (track?.item?.duration_ms - track?.progress_ms <= 2000) {
+    const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}&userId=${userId}`)).data;
+    if (track?.item?.duration_ms - track?.progress_ms <= loopTime) {
       setTimeout(() => {
         goToNextTrack();
       }, track.item.duration_ms - track.progress_ms);
@@ -56,28 +39,28 @@ async function getCurrentTrack() {
   } catch (error) {
     console.log(error);
   }
-  getCurrentTrackTimeoutId = setTimeout(getCurrentTrack, 2 * 1000);
+  getCurrentTrackTimeoutId = setTimeout(getCurrentLoop, loopTime);
 }
 
 onmessage = async function (e) {
-  if (e.data.roomId && e.data.roomId) {
+  if (e.data.roomId && e.data.userId) {
     roomId = e.data.roomId;
     userId = e.data.userId;
-    if (refreshRoomTimeoutId) {
-      this.clearTimeout(refreshRoomTimeoutId);
-    }
     token = await getToken();
+  }
+  if (e.data.refreshToken) {
+    refreshToken = e.data.refreshToken;
+  }
+  if (e.data.startPlaying) {
     if (getCurrentTrackTimeoutId) {
       this.clearTimeout(getCurrentTrackTimeoutId);
     }
-    // TODO this is not at the right place
-    getCurrentTrack();
-    return refreshRoom();
+    getCurrentLoop();
   }
-  if (e.data.code && e.data.state && e.data.refreshToken) {
-    code = e.data.code;
-    state = e.data.state;
-    refreshToken = e.data.refreshToken;
+  if (e.data.stopPlaying) {
+    if (getCurrentTrackTimeoutId) {
+      this.clearTimeout(getCurrentTrackTimeoutId);
+    }
   }
 };
 

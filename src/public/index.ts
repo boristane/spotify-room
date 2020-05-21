@@ -13,6 +13,7 @@ let isHost: boolean = false;
 let oldRoom: IRoom;
 let isPlaying = false;
 let isOnboarded = false;
+let refreshRoomTimeoutId;
 const browserNotSupportedHtml = "<p>whoops! rooom is not available on your browser. please try using the latest version of <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
 
 const debounce = (func: Function, delay: number) => {
@@ -76,7 +77,7 @@ async function getToken() {
     )).data;
     token = access_token;
   }
-  w.postMessage({ code, state, refreshToken });
+  w.postMessage({ refreshToken });
   return token;
 }
 
@@ -162,7 +163,7 @@ document.getElementById("yes-email").addEventListener("click", (e) => {
     event_category: "user",
   });
   try {
-    axios.put(`/user/email-subscription/?id=${user.id}`, {isEmailSubscriber: true});
+    axios.put(`/user/email-subscription/?id=${user.id}`, { isEmailSubscriber: true });
     displayMessage("you have been added to the mailing list 📧")
   } catch (e) {
     displayMessage("there was a problem adding you to the mailing list, please try again");
@@ -178,7 +179,7 @@ document.getElementById("no-email").addEventListener("click", (e) => {
     event_category: "user",
   });
   try {
-    axios.put(`/user/email-subscription/?id=${user.id}`, {isEmailSubscriber: false});
+    axios.put(`/user/email-subscription/?id=${user.id}`, { isEmailSubscriber: false });
   } catch (e) {
     return;
   } finally {
@@ -287,6 +288,7 @@ export function displayRoom(room: IRoom): boolean {
           try {
             const room = (await axios.get(`/room/go-to/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
             isPlaying = true;
+            w.postMessage({ startPlaying: true });
             document.querySelectorAll(".play").forEach(elt => elt.textContent = "pause");
             displayRoom(room);
             success = true;
@@ -426,9 +428,11 @@ document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", 
     if (isPlaying) {
       r = (await axios.post(`/room/pause/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
       document.querySelectorAll(".play").forEach(elt => elt.innerHTML = "play");
+      w.postMessage({ stopPlaying: true });
     } else {
       r = (await axios.post(`/room/play/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
       document.querySelectorAll(".play").forEach(elt => elt.innerHTML = "pause");
+      w.postMessage({ startPlaying: true });
     }
     isPlaying = !isPlaying;
     displayRoom(r);
@@ -535,6 +539,7 @@ document.getElementById("leave").addEventListener("click", async (e: MouseEvent)
 });
 
 async function leaveRoom() {
+  w.postMessage({ stopPlaying: true });
   stopWorker();
   try {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
@@ -614,7 +619,7 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
     })).data.room as IRoom;
     displayMessage("track added to the room!");
     displayRoom(room);
-    if(room.tracks.filter((track) => track.addedBy === user.display_name).length === 1) {
+    if (room.tracks.filter((track) => track.addedBy === user.display_name).length === 1) {
       setTimeout(() => {
         displayModalRoomIsBetter(room);
       }, 0.5 * 60 * 1000);
@@ -659,6 +664,10 @@ function displayExistingRooms(rooms: IRoom[]) {
 
 async function getInRoom(id: string) {
   w.postMessage({ roomId: id, userId: user.id });
+  if (refreshRoomTimeoutId) {
+    this.clearTimeout(refreshRoomTimeoutId);
+  }
+  refreshRoomLoop();
 
   document.getElementById("get-in-room").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
@@ -807,7 +816,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     displayPermanentMessage(`<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>`);
     return;
   });
-  player.addListener('account_error', ({ message }) => { 
+  player.addListener('account_error', ({ message }) => {
     displayPermanentMessage(`<p>there was an error with your account. please refresh the page.</p>`);
     console.error(message);
   });
@@ -846,3 +855,14 @@ function displayPermanentMessage(innerHtml: string) {
   (document.getElementById("room") as HTMLDivElement).style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
 }
+
+async function refreshRoomLoop() {
+  try {
+    const room = (await axios.get(`/room/?id=${roomId}&userId=${user.id}`)).data.room;
+    displayRoom(room);
+  } catch (error) {
+    console.log(error);
+  }
+  refreshRoomTimeoutId = setTimeout(refreshRoomLoop, 10 * 1000);
+}
+
