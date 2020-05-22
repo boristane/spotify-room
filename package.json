@@ -4,8 +4,8 @@
   "description": "A spotify room to chill out with your friends.",
   "main": "index.js",
   "scripts": {
-    "build-front": "npx parcel build ./src/public/*.html --no-minify",
-    "watch": "npx parcel watch ./src/public/*.html",
+    "build-front": "npx parcel build ./src/public/**/*.html --no-minify",
+    "watch": "npx parcel watch ./src/public/**/*.html",
     "start": "npx nodemon index.ts",
     "build": "npx tsc"
   },
