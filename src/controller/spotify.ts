@@ -38,13 +38,14 @@ export function login(req: Request, res: Response) {
   );
 }
 
-export async function getToken(req: Request, res: Response) {
+export async function getToken(req: Request, res: Response, next: NextFunction) {
   const { code, state } = req.query;
   const storedState = req.cookies ? req.cookies[stateKey] : undefined;
 
   if (state === undefined || state !== storedState) {
-    logger.error("State mismatch");
-    return res.status(500).json({ error: "state_mismatch" });
+    logger.error("State mismatch", { state, storedState });
+    res.status(500).json({ error: "state_mismatch" });
+    return next();
   }
 
   res.clearCookie(stateKey);
@@ -67,11 +68,12 @@ export async function getToken(req: Request, res: Response) {
       dataString,
       axiosConfig
     );
-    logger.info("Token", response.data);
     res.status(200).json(response.data);
-  } catch {
-    logger.error("Invalid token");
+    return next();
+  } catch (err) {
+    logger.error("Invalid token", { error: err });
     res.status(500).json({ error: "invalid_token" });
+    return next();
   }
 }
 
@@ -96,8 +98,8 @@ export async function refreshToken(req: Request, res: Response) {
       axiosConfig
     );
     res.status(200).json(response.data);
-  } catch {
-    logger.error("Invalid token");
+  } catch(error) {
+    logger.error("Invalid refresh token", { error });
     res.status(500).json({ error: "invalid_token" });
   }
 }

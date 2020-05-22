@@ -473,12 +473,15 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     const networkDelay = 1000;
     if (room.host.id === userId) {
       let uri: string;
-      let progress: number;
+      let progress = 0;
       const hostToken = room.host.token;
       const roomCurrentTrack = room.tracks.find((t) => t.current);
       if (roomCurrentTrack) {
+        const currentTrack = await getCurrentlyPalyingTrack(hostToken);
+        if(roomCurrentTrack.uri === currentTrack?.item?.uri) {
+          progress = currentTrack.progress_ms;
+        }
         uri = roomCurrentTrack.uri;
-        progress = 0;
         room.guests.forEach(m => m.currentTrack = roomCurrentTrack.uri);
         await room.save();
       } else {

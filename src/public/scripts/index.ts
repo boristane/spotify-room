@@ -65,9 +65,9 @@ async function getToken() {
     const { access_token, refresh_token } = (await axios.get(
       `/spotify/get-token/?code=${code}&state=${state}`
     )).data;
-    localStorage.setItem("refreshToken", refreshToken);
     token = access_token;
     refreshToken = refresh_token;
+    localStorage.setItem("refreshToken", refreshToken);
   } else {
     const { access_token } = (await axios.get(
       `/spotify/refresh-token/?refresh_token=${refreshToken}`
@@ -187,9 +187,7 @@ document.getElementById("no-email").addEventListener("click", (e) => {
 export function displayRoom(room: IRoom): boolean {
   const waitingElt = document.getElementById("waiting");
   if (room === null) {
-    displayPermanentMessage("<p>waiting to be added to the rooom by the host...</p>");
-    document.querySelector("section").style.display = "none";
-    return
+    return;
   };
   if (JSON.stringify(room) === JSON.stringify(oldRoom)) {
     return false;
@@ -857,52 +855,45 @@ export async function doIt() {
 }
 
 //@ts-ignore
-window.onSpotifyWebPlaybackSDKReady = async () => {
+window.onSpotifyWebPlaybackSDKReady = () => {
   const ios = isIOS();
   if(ios) {
     return displayPermanentMessage("<p>whoops! rooom is not available on your device. please try using a laptop/desktop.</p>");
   }
-  if(!token) {
-    try {
-      console.log("getting the token");
-      token = await getToken();
-    } catch {
-      displayPermanentMessage("<p>there was an issue getting your authentication token, please try again.</p>");
+  
+  setTimeout(() => {
+    //@ts-ignore
+    const player = new Spotify.Player({
+      name: 'rooom',
+      getOAuthToken: cb => { cb(token); }
+    });
+  
+    player.addListener('initialization_error', ({ message }) => {
+      displayPermanentMessage(browserNotSupportedHtml);
       return;
-    }
-  }
-
-  //@ts-ignore
-  const player = new Spotify.Player({
-    name: 'rooom',
-    getOAuthToken: cb => { cb(token); }
-  });
-
-  player.addListener('initialization_error', ({ message }) => {
-    displayPermanentMessage(browserNotSupportedHtml);
-    return;
-  });
-  player.addListener('authentication_error', ({ message }) => {
-    displayPermanentMessage(`<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>`);
-    return;
-  });
-  player.addListener('account_error', ({ message }) => {
-    displayPermanentMessage(`<p>there was an error with your account. please refresh the page.</p>`);
-    console.error(message);
-  });
-  player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the web player. please refresh the page."); console.error(message); })
-
-  player.addListener('ready', ({ device_id }) => {
-    deviceId = device_id;
-    w.postMessage({ deviceId });
-    doIt();
-  });
-
-  player.addListener('not_ready', ({ device_id }) => {
-    displayPermanentMessage(`<p>the device with device id ${deviceId} has gone offline. please refresh the page</p>`);
-  });
-
-  player.connect();
+    });
+    player.addListener('authentication_error', ({ message }) => {
+      displayPermanentMessage(`<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>`);
+      return;
+    });
+    player.addListener('account_error', ({ message }) => {
+      displayPermanentMessage(`<p>there was an error with your account. please refresh the page.</p>`);
+      console.error(message);
+    });
+    player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the web player. please refresh the page."); console.error(message); })
+  
+    player.addListener('ready', ({ device_id }) => {
+      deviceId = device_id;
+      w.postMessage({ deviceId });
+      doIt();
+    });
+  
+    player.addListener('not_ready', ({ device_id }) => {
+      displayPermanentMessage(`<p>the device with device id ${deviceId} has gone offline. please refresh the page</p>`);
+    });
+  
+    player.connect();
+  }, 500);
 };
 
 
