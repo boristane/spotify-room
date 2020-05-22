@@ -488,7 +488,6 @@ ol, ul {
   display: none;
 }
 
-
 .beta {
   font-weight: bold;
   background-color: #f59b23;
@@ -498,6 +497,17 @@ ol, ul {
   height: 20px;
 }
 
+#twitter-share {
+  padding-left: 10px;
+  padding-top: 2px;
+  color: grey;
+  transition: all 0.2s ease-out;
+  cursor: pointer;
+}
+
+#twitter-share:hover {
+  color: white;
+}
 
 @media only screen and (max-width: 800px) {
   #get-in-room {

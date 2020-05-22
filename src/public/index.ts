@@ -791,6 +791,12 @@ function addEventListeners(id: string) {
     const recommendations = await getRecommendations(room);
     displayRecommendations(recommendations);
   });
+
+  document.getElementById("twitter-share").addEventListener("click", async(e) => {
+    e.preventDefault();
+		const tweet = "Join my remote music listening session!";
+    tweetIt(tweet, `https://rooom.click?id=${id}`);
+  });
 }
 
 export async function doIt() {
@@ -905,3 +911,10 @@ async function refreshRoomLoop() {
   refreshRoomTimeoutId = setTimeout(refreshRoomLoop, 10 * 1000);
 }
 
+function tweetIt(text: string, url:string="", hashtag:string=""){
+  const t = encodeURIComponent(text);
+  const u = encodeURIComponent(url);
+  const h = encodeURIComponent(hashtag);
+  const tweetUrl = `https://twitter.com/share?text=${t}&url=${u}&hashtags=${h}`;
+  window.open(tweetUrl);
+}
