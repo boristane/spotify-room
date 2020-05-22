@@ -90,7 +90,6 @@ function getCreateAccountEmailData(data: ICreateAccountData): mailgun.messages.S
   const emailData: mailgun.messages.SendTemplateData = {
     from: `${process.env.MAILGUN_USER_NAME} ${process.env.MAILGUN_FROM}`,
     to: `${data.email}`,
-    bcc: "boris.tane@gmail.com",
     subject: "Welcome to rooom",
     template: process.env.MG_CREATE_ACCOUNT_EMAIL || "",
     "h:X-Mailgun-Variables": JSON.stringify({
