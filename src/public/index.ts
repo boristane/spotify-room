@@ -233,8 +233,8 @@ export function displayRoom(room: IRoom): boolean {
   document.querySelectorAll(".copy-to-clipboard").forEach(elt => {
     elt.addEventListener("click", (e: MouseEvent) => {
       // @ts-ignore
-      gtag('event', "share-room", {
-        event_category: "room",
+      gtag('event', "invite-friends", {
+        event_category: "copy",
       });
       const inputElt = document.getElementById("text-to-copy") as HTMLInputElement;
       inputElt.value = document.getElementById("room-id").textContent;
@@ -244,7 +244,25 @@ export function displayRoom(room: IRoom): boolean {
       inputElt.blur();
       displayMessage("rooom url copied to clipboard");
     });
-  })
+  });
+
+  document.getElementById("send-email-invites-1").addEventListener("click", async (e: MouseEvent) => {
+    // @ts-ignore
+    gtag('event', "invite-friends", {
+      event_category: "email",
+      event_label: "invinte-friends-button"
+    });
+    const inputElt = document.getElementById("email-invites-1") as HTMLInputElement;
+    const data = (inputElt.value.split(",").map(elt => elt.split(" "))).reduce((acc, val) => acc.concat(val), []).filter(elt => elt !== "");
+    try {
+      await axios.post(`/room/email-invite/?id=${roomId}&userId=${user.id}`, { emails: data });
+      inputElt.value = "";
+      closeModals();
+      displayMessage("email invite(s) sent");
+    } catch (err) {
+      displayMessage("there was an error sending the email invite(s)");
+    }
+  });
 
   document.getElementById("invite-friends").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -547,6 +565,9 @@ async function leaveRoom() {
 }
 
 async function main() {
+  document.querySelectorAll("input").forEach(elt => {
+    elt.value = ""
+  });
   try {
     token = await getToken();
   } catch {

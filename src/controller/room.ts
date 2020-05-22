@@ -5,6 +5,7 @@ import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
 import { sendEmail, emailType } from "../services/emails";
+import { validateEmail } from "../utils";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id, token, userId, deviceId } = req.query;
@@ -130,6 +131,52 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
     await play(roomMember.token, currentTrack.uri, 0, roomMember.deviceId);
     const response = {
       message: "Went to next track", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem going to next track in a room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function inviteViaEmail(req: Request, res: Response, next: NextFunction) {
+  const { id, userId } = req.query;
+  const { emails } = req.body as { emails: string[] };
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+
+    if (emails?.length === 0) {
+      const response = { message: "Bad request" };
+      res.locals.body = response;
+      res.status(401).json(response);
+      return next();
+    }
+
+    emails.forEach((email) => {
+      if(!validateEmail(email)) return;
+      const emailData = {
+        email,
+        name: user.display_name,
+        roomName: room.name,
+        roomId: room.id,
+      }
+      sendEmail(emailData, emailType.inviteToRoom);
+    });
+
+
+    const response = {
+      message: "Sent email invites", room: prepareRoomForResponse(room),
     };
     res.locals.body = response;
     res.status(200).json(response);

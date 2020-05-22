@@ -15,3 +15,10 @@ export interface ICreateRoomData {
   roomName: string;
   roomId: string;
 }
+
+export interface IInviteToRoomData {
+  email: string;
+  name: string;
+  roomName: string;
+  roomId: string;
+}

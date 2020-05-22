@@ -5,9 +5,9 @@ import mailgun from "mailgun-js";
 require("dotenv").config();
 
 import logger from "logger";
-import { ICreateAccountData, ICreateRoomData } from "../typings/emails";
+import { ICreateAccountData, ICreateRoomData, IInviteToRoomData } from "../typings/emails";
 
-export async function sendEmail(data: ICreateRoomData | ICreateAccountData, type: string) {
+export async function sendEmail(data: Record<string, any>, type: string) {
   const mg = mailgun({
     apiKey: process.env.MAILGUN_API_KEY || "",
     domain: process.env.MAILGUN_DOMAIN || "",
@@ -20,10 +20,10 @@ export async function sendEmail(data: ICreateRoomData | ICreateAccountData, type
       emailData = getCreateRoomEmailData(data as ICreateRoomData);
       break;
     }
-    // case eventType.signup: {
-    //   emailData = getSignupEmailData(data as IActivateAccountData);
-    //   break;
-    // }
+    case emailType.inviteToRoom: {
+      emailData = getInviteToRoomEmailData(data as IInviteToRoomData);
+      break;
+    }
     case emailType.createAccount: {
       emailData = getCreateAccountEmailData(data as ICreateAccountData);
       subscriberData = getCreateAccountSubscriberData(data as ICreateAccountData);
@@ -50,34 +50,53 @@ export async function sendEmail(data: ICreateRoomData | ICreateAccountData, type
 export const enum emailType {
   createAccount = "CREATE_ACCOUNT",
   createRoom = "CREATE_ROOM",
+  inviteToRoom = "INVITE_TO_ROOM"
 }
 
-export function getCreateRoomEmailData(data: ICreateRoomData): mailgun.messages.SendTemplateData {
+function getCreateRoomEmailData(data: ICreateRoomData): mailgun.messages.SendTemplateData {
   const emailData: mailgun.messages.SendTemplateData = {
     from: `${process.env.MAILGUN_USER_NAME} ${process.env.MAILGUN_FROM}`,
     to: `${data.email}`,
-    subject: "your rooom awaits",
+    subject: "Your rooom awaits",
     template: process.env.MG_CREATE_ROOM_EMAIL || "",
     "h:X-Mailgun-Variables": JSON.stringify({
       name: data.name.trim().split(" ")[0],
       roomName: data.roomName,
       roomId: data.roomId,
     }),
+    "h:Reply-To": process.env.MAILGUN_REPLY_TO,
     "o:tag": "create-room",
   };
   return emailData;
 }
 
-export function getCreateAccountEmailData(data: ICreateAccountData): mailgun.messages.SendTemplateData {
+function getInviteToRoomEmailData(data: IInviteToRoomData): mailgun.messages.SendTemplateData {
+  const emailData: mailgun.messages.SendTemplateData = {
+    from: `${process.env.MAILGUN_USER_NAME} ${process.env.MAILGUN_FROM}`,
+    to: `${data.email}`,
+    subject: `Happening now: ${data.name} is inviting you to a music listening session`,
+    template: process.env.MG_INVITE_TO_ROOM_EMAIL || "",
+    "h:X-Mailgun-Variables": JSON.stringify({
+      name: data.name,
+      roomName: data.roomName,
+      roomId: data.roomId,
+    }),
+    "o:tag": "invite-to-room",
+  };
+  return emailData;
+}
+
+function getCreateAccountEmailData(data: ICreateAccountData): mailgun.messages.SendTemplateData {
   const emailData: mailgun.messages.SendTemplateData = {
     from: `${process.env.MAILGUN_USER_NAME} ${process.env.MAILGUN_FROM}`,
     to: `${data.email}`,
     bcc: "boris.tane@gmail.com",
-    subject: "welcome to rooom",
+    subject: "Welcome to rooom",
     template: process.env.MG_CREATE_ACCOUNT_EMAIL || "",
     "h:X-Mailgun-Variables": JSON.stringify({
       name: data.name.trim().split(" ")[0],
     }),
+    "h:Reply-To": process.env.MAILGUN_REPLY_TO,
     "o:tag": "create-account",
   };
   return emailData;

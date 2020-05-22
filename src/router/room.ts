@@ -14,6 +14,7 @@ import {
   masterRemoveTrack,
   getRoomUser,
   masterCheckUsers,
+  inviteViaEmail,
 } from "../controller/room";
 
 const router = express.Router();
@@ -32,5 +33,6 @@ router.get("/approve/", masterApproveTrack);
 router.get("/approve-member/", masterApproveMember);
 router.get("/", getRooom);
 router.post("/add-track/", addTrackToRoom);
+router.post("/email-invite/", inviteViaEmail);
 
 export default router;

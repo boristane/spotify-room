@@ -68,6 +68,24 @@
 .modal-body {
   padding: 6px 26px;
   text-align: center;
+  color: rgb(80, 80, 80);
+  text-align: left;
+}
+
+.modal .icon-button {
+  display: grid;
+  grid-template-columns: 30px 140px;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  color: rgb(41, 41, 41);
+  transition: all 0.2s ease-out;
+  padding: 10px 0;
+  background-color: white;
+}
+
+.modal .icon-button:hover {
+  background-color: rgb(247, 247, 247);
 }
 
 @media only screen and (max-width: 480px) {
