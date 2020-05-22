@@ -4,7 +4,7 @@ import { IRoom } from "../../models/room";
 import { ISpotifyTrack, ISpotifyUser } from "../../typings/spotify";
 import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
 import { IUser } from "../../models/user";
-import { shareOnFacebook, tweetIt } from "../utils/utils";
+import { shareOnFacebook, tweetIt, isIOS } from "../utils/utils";
 
 let token: string;
 let user: IUser;
@@ -859,6 +859,11 @@ export async function doIt() {
 
 //@ts-ignore
 window.onSpotifyWebPlaybackSDKReady = () => {
+  const ios = isIOS();
+  if(ios) {
+    return displayPermanentMessage("<p>>whoops! rooom is not available on your device. please try using a laptop/desktop.</p>");
+  }
+
   //@ts-ignore
   const player = new Spotify.Player({
     name: 'rooom',
