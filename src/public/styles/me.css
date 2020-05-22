@@ -477,6 +477,7 @@ ol, ul {
   text-align: left;
   font-size: 12px;
   color: grey;
+  overflow-x: hidden;
 }
 
 #existing-rooms {
