@@ -1,6 +1,6 @@
 import axios from "axios";
 import 'babel-polyfill';
-import { ICurrentTrackResponse } from "../typings/spotify";
+import { ICurrentTrackResponse } from "../../typings/spotify";
 const sendMessage: any = self.postMessage;
 
 let roomId;

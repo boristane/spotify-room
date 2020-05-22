@@ -1,9 +1,10 @@
 import axios from "axios";
 import "babel-polyfill";
-import { IRoom } from "../models/room";
-import { ISpotifyTrack, ISpotifyUser } from "../typings/spotify";
+import { IRoom } from "../../models/room";
+import { ISpotifyTrack, ISpotifyUser } from "../../typings/spotify";
 import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
-import { IUser } from "../models/user";
+import { IUser } from "../../models/user";
+import { shareOnFacebook, tweetIt } from "../utils/utils";
 
 let token: string;
 let user: IUser;
@@ -32,7 +33,7 @@ let w;
 function startWorker() {
   if (typeof (Worker) !== "undefined") {
     if (typeof (w) == "undefined") {
-      w = new Worker("worker.ts");
+      w = new Worker("../workers/worker.ts");
     }
     w.onmessage = function (event) {
       if (event.data.room) {
@@ -245,7 +246,7 @@ export function displayRoom(room: IRoom): boolean {
       displayMessage("rooom url copied to clipboard");
     });
   });
- 
+
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
       if (!isHost) {
@@ -640,7 +641,7 @@ function displayExistingRooms(rooms: IRoom[]) {
   } else {
     document.getElementById("existing-rooms").innerHTML = roomElts;
   }
-    document.querySelectorAll(".existing-room").forEach((elt => {
+  document.querySelectorAll(".existing-room").forEach((elt => {
     elt.addEventListener("click", async function (e) {
       // @ts-ignore
       gtag('event', "join-existing-room", {
@@ -799,13 +800,13 @@ function addEventListeners(id: string) {
     displayRecommendations(recommendations);
   });
 
-  document.getElementById("twitter-share").addEventListener("click", async(e) => {
+  document.getElementById("twitter-share").addEventListener("click", async (e) => {
     e.preventDefault();
-		const tweet = "Join my remote music listening session!";
+    const tweet = "Join my remote music listening session!";
     tweetIt(tweet, `https://rooom.click?id=${id}`);
   });
 
-  document.getElementById("facebook-share").addEventListener("click", async(e) => {
+  document.getElementById("facebook-share").addEventListener("click", async (e) => {
     e.preventDefault();
     shareOnFacebook(`https://rooom.click?id=${id}`);
   });
@@ -921,17 +922,4 @@ async function refreshRoomLoop() {
     console.log(error);
   }
   refreshRoomTimeoutId = setTimeout(refreshRoomLoop, 10 * 1000);
-}
-
-function tweetIt(text: string, url:string="", hashtag:string=""){
-  const t = encodeURIComponent(text);
-  const u = encodeURIComponent(url);
-  const h = encodeURIComponent(hashtag);
-  const tweetUrl = `https://twitter.com/share?text=${t}&url=${u}&hashtags=${h}`;
-  window.open(tweetUrl);
-}
-
-function shareOnFacebook(url: string) {
-  const u = encodeURIComponent(url);
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${u}`, 'facebook-share-dialog','width=626,height=436');
 }
