@@ -6,14 +6,14 @@ import {
   playRoom,
   getRooom,
   addTrackToRoom,
-  masterGoToTrack,
-  masterApproveTrack,
-  masterApproveMember,
+  hostGoToTrack,
+  hostApproveTrack,
+  hostApproveGuest,
   leaveRoom,
   pauseRoom,
-  masterRemoveTrack,
+  hostRemoveTrack,
   getRoomUser,
-  masterCheckUsers,
+  hostCheckUsers,
   inviteViaEmail,
 } from "../controller/room";
 
@@ -26,11 +26,11 @@ router.post("/create", createRoom);
 router.post("/play/", playRoom);
 router.post("/pause/", pauseRoom);
 router.get("/next/", goToNextTrack);
-router.get("/go-to/", masterGoToTrack);
-router.get("/check/", masterCheckUsers);
-router.delete("/remove/", masterRemoveTrack);
-router.get("/approve/", masterApproveTrack);
-router.get("/approve-member/", masterApproveMember);
+router.get("/go-to/", hostGoToTrack);
+router.get("/check/", hostCheckUsers);
+router.delete("/remove/", hostRemoveTrack);
+router.get("/approve/", hostApproveTrack);
+router.get("/approve-guest/", hostApproveGuest);
 router.get("/", getRooom);
 router.post("/add-track/", addTrackToRoom);
 router.post("/email-invite/", inviteViaEmail);

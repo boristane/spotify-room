@@ -197,13 +197,13 @@ export function displayRoom(room: IRoom): boolean {
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
   document.getElementById("room").style.display = "block";
   oldRoom = room;
-  isHost = room.master.id === user.id;
+  isHost = room.host.id === user.id;
   if (!isOnboarded && !isHost) {
-    displayModalUnboardingMember(room);
+    displayModalUnboardingGuest(room);
     isOnboarded = true;
   }
   if (!isOnboarded && isHost) {
-    displayModalUnboardingMaster(room);
+    displayModalUnboardingHost(room);
     isOnboarded = true;
   }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
@@ -217,17 +217,17 @@ export function displayRoom(room: IRoom): boolean {
   const currentEltIndex = room.tracks.findIndex(t => t.current);
   tracklistElt.parentElement.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
 
-  const membersListElt = document.querySelector(".members") as HTMLDivElement;
-  const membersToAppoveListElt = document.querySelector(".members-to-approve") as HTMLDivElement;
-  const memberElts = room.members.filter(m => m.isApproved).map((member) => `<li class="member ${member.isActive ? "active" : "inactive"}">${member.name}</li>`);
-  const memberToApproveElts = room.members.filter(m => !m.isApproved).map((member) => `<li class="member member-to-approve" data-id="${member.id}" data-name="${member.name}">${member.name}</li>`);
-  const hostElt = hostBuilder(room.master);
-  membersListElt.innerHTML = hostElt + memberElts.join("");
-  membersToAppoveListElt.innerHTML = isHost ? memberToApproveElts.join("") : "";
-  (document.getElementById("members-to-approve-header") as HTMLDivElement).style.display = (memberToApproveElts.length > 0 && isHost) ? "block" : "none";
+  const guestsListElt = document.querySelector(".guests") as HTMLDivElement;
+  const guestsToAppoveListElt = document.querySelector(".guests-to-approve") as HTMLDivElement;
+  const guestElts = room.guests.filter(g => g.isApproved).map((guest) => `<li class="member ${guest.isActive ? "active" : "inactive"}">${guest.name}</li>`);
+  const guestToApproveElts = room.guests.filter(g => !g.isApproved).map((guest) => `<li class="member guest-to-approve" data-id="${guest.id}" data-name="${guest.name}">${guest.name}</li>`);
+  const hostElt = hostBuilder(room.host);
+  guestsListElt.innerHTML = hostElt + guestElts.join("");
+  guestsToAppoveListElt.innerHTML = isHost ? guestToApproveElts.join("") : "";
+  (document.getElementById("guests-to-approve-header") as HTMLDivElement).style.display = (guestToApproveElts.length > 0 && isHost) ? "block" : "none";
   document.getElementById("room-name").textContent = room.name;
   const numTracks = room.tracks.filter(t => t.approved).length;
-  document.getElementById("host").innerHTML = `<span>created by ${room.master.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
+  document.getElementById("host").innerHTML = `<span>created by ${room.host.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
 
   document.querySelectorAll(".copy-to-clipboard").forEach(elt => {
@@ -325,7 +325,7 @@ export function displayRoom(room: IRoom): boolean {
     });
   })
 
-  document.querySelectorAll(".member-to-approve").forEach((elt) => {
+  document.querySelectorAll(".guest-to-approve").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
       // @ts-ignore
       gtag('event', "approve", {
@@ -335,16 +335,14 @@ export function displayRoom(room: IRoom): boolean {
       if (!isHost) return;
       const { id, name } = this.dataset;
       try {
-        const room = (await axios.get(`/room/approve-member/?id=${roomId}&userId=${user.id}&memberId=${id}`)).data.room;
+        const room = (await axios.get(`/room/approve-guest/?id=${roomId}&userId=${user.id}&guestId=${id}`)).data.room;
         displayMessage(`Lest's welcome ${name} to the rooom! 🎉`);
         displayRoom(room);
       } catch (err) {
         if (err.response && err.response.status === 422) {
-          displayMessage("Too many members in the rooom");
-          return console.log("Too many members in the rooom");
+          return displayMessage("Too many guests in the rooom");
         }
-        displayMessage("there was an error approving this member");
-        console.log("there was an error approving a member");
+        return displayMessage("there was an error approving this guest");
       }
     });
   });
@@ -358,8 +356,8 @@ export function displayRoom(room: IRoom): boolean {
     document.title = `${currentTrack.name} - ${currentTrack.artists.join(", ")} | ${room.name} `;
   }
 
-  if (isHost && room.members.filter(m => !m.isApproved).length > 0) {
-    displayMessage("there are members in the queue waiting for your approval");
+  if (isHost && room.guests.filter(m => !m.isApproved).length > 0) {
+    displayMessage("there are guests in the queue waiting for your approval");
   }
 
   setTimeout(() => {
@@ -627,7 +625,7 @@ function displayExistingRooms(rooms: IRoom[]) {
         ${room.name}
       </div>
       <div class="room-details">
-        <p>by ${room.master.name} - ${room.tracks.filter(track => track.approved && !track.removed).length} track(s)</p>
+        <p>by ${room.host.name} - ${room.tracks.filter(track => track.approved && !track.removed).length} track(s)</p>
       </div>
     </div>
     `;
@@ -693,10 +691,10 @@ async function getInRoom(id: string) {
   });
 }
 
-function displayModalUnboardingMember(room: IRoom) {
-  const modal = document.getElementById("onboarding-member") as HTMLDivElement;
+function displayModalUnboardingGuest(room: IRoom) {
+  const modal = document.getElementById("onboarding-guest") as HTMLDivElement;
   document.querySelectorAll(".modal-room-host").forEach((elt) => {
-    elt.textContent = room.master.name;
+    elt.textContent = room.host.name;
   });
   document.querySelectorAll(".modal-room-name").forEach((elt) => {
     elt.textContent = room.name;
@@ -707,10 +705,10 @@ function displayModalUnboardingMember(room: IRoom) {
   modal.style.display = "flex";
 }
 
-function displayModalUnboardingMaster(room: IRoom) {
+function displayModalUnboardingHost(room: IRoom) {
   const modal = document.getElementById("onboarding-host") as HTMLDivElement;
   document.querySelectorAll(".modal-room-host").forEach((elt) => {
-    elt.textContent = room.master.name;
+    elt.textContent = room.host.name;
   });
   document.querySelectorAll(".modal-room-name").forEach((elt) => {
     elt.textContent = room.name;

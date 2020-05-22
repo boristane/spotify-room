@@ -225,7 +225,7 @@ ol, ul {
   color: grey;
 }
 
-.member-to-approve {
+.guest-to-approve {
   opacity: 0.5; 
    -moz-opacity: 0.5;  
    -webkit-opacity: 0.5;
@@ -233,7 +233,7 @@ ol, ul {
    transition: all 0.2s ease-out;
 }
 
-.member-to-approve:hover {
+.guest-to-approve:hover {
   opacity: 0.9; 
    -moz-opacity: 0.9;  
    -webkit-opacity: 0.9;

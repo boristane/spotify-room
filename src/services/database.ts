@@ -44,16 +44,16 @@ export async function getRoom(id: string): Promise<IRoom> {
 
 export async function getRoomsByUser(id: string): Promise<IRoom[]> {
   return await Room.find().or([
-    { members: { $elemMatch: { id: id } }, isActive: true },
-    { "master.id": id },
+    { guests: { $elemMatch: { id: id } }, isActive: true },
+    { "host.id": id },
   ]);
 }
 
-export async function spawnRoom(name: string, master: IUser, token: string, deviceId: string): Promise<IRoom> {
+export async function spawnRoom(name: string, host: IUser, token: string, deviceId: string): Promise<IRoom> {
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
-    master: { id: master.id, token, name: master.display_name, deviceId },
-    members: [],
+    host: { id: host.id, token, name: host.display_name, deviceId },
+    guests: [],
     songs: [],
     name,
     isActive: true,
@@ -64,42 +64,42 @@ export async function spawnRoom(name: string, master: IUser, token: string, devi
 
 export async function addRoomMember(room: IRoom, user: IUser, token: string, deviceId: string): Promise<boolean> {
   let isNewUser = false;
-  const { members, master } = room;
-  if (master.id === user.id) {
-    if (master.token === token && master.deviceId === deviceId) return;
-    master.deviceId = deviceId;
-    master.token = token;
+  const { guests, host } = room;
+  if (host.id === user.id) {
+    if (host.token === token && host.deviceId === deviceId) return;
+    host.deviceId = deviceId;
+    host.token = token;
     room.isActive = true;
     await room.save();
     return isNewUser;
   }
-  const member = members.find((m) => m.id === user.id);
-  if (member) {
+  const guest = guests.find((m) => m.id === user.id);
+  if (guest) {
     const currentTrack = room.tracks.find(t => t.current);
-    if (member.token === token && member.deviceId === deviceId && member.currentTrack === currentTrack.uri) return;
-    member.token = token;
-    member.deviceId = deviceId;
-    member.currentTrack = currentTrack?.uri;
-    member.isActive = true;
+    if (guest.token === token && guest.deviceId === deviceId && guest.currentTrack === currentTrack.uri) return;
+    guest.token = token;
+    guest.deviceId = deviceId;
+    guest.currentTrack = currentTrack?.uri;
+    guest.isActive = true;
     await room.save();
     return isNewUser;
   }
   isNewUser = true;
-  members.push({ id: user.id, token, name: user.display_name, deviceId, isActive: false, isApproved: true, currentTrack: "" });
+  guests.push({ id: user.id, token, name: user.display_name, deviceId, isActive: true, isApproved: true, currentTrack: "" });
   await room.save();
   return isNewUser;
 }
 
-export async function removeRoomMember(room: IRoom, user: IUser): Promise<boolean> {
-  const { members, master } = room;
-  if (master.id === user.id) {
+export async function removeRoomGuest(room: IRoom, user: IUser): Promise<boolean> {
+  const { guests, host } = room;
+  if (host.id === user.id) {
     room.isActive = false;
     await room.save();
     return true;
   }
-  const member = members.find((m) => m.id === user.id);
-  if (member) {
-    member.isActive = false;
+  const guest = guests.find((m) => m.id === user.id);
+  if (guest) {
+    guest.isActive = false;
     await room.save();
     return true;
   }
@@ -137,7 +137,7 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
       current: true,
       approved: true,
       removed: false,
-      addedBy: room.master.name,
+      addedBy: room.host.name,
     });
     return await room.save();
   }
@@ -158,14 +158,14 @@ export async function setRoomCurrentTrack(room: IRoom, track: ISpotifyTrack) {
   return await room.save();
 }
 
-export async function getNextTrack(room: IRoom, userId: string, isMaster: boolean): Promise<{
+export async function getNextTrack(room: IRoom, userId: string, isHost: boolean): Promise<{
   uri: string;
   completed: boolean;
   approved: boolean;
   current: boolean;
   name: string; artists: string[]; image: string;
 } | undefined> {
-  if (isMaster) {
+  if (isHost) {
     const currentTrack = room.tracks.find(t => t.current);
     const index = room.tracks.findIndex(t => t.current);
     currentTrack.completed = true;
@@ -181,14 +181,14 @@ export async function getNextTrack(room: IRoom, userId: string, isMaster: boolea
     await room.save();
     return newCurrentTrack;
   }
-  const member = room.members.find(m => m.id === userId);
-  if (!member) return;
-  const currentTrackUri = member.currentTrack;
+  const guest = room.guests.find(m => m.id === userId);
+  if (!guest) return;
+  const currentTrackUri = guest.currentTrack;
   const currentTrackIndex = room.tracks.findIndex(t => t.uri === currentTrackUri);
   if (currentTrackIndex < 0) return;
   const nextTrack = room.tracks.find((t, i) => i > currentTrackIndex && t.approved && !t.removed && !t.completed);
   if (!nextTrack) return;
-  member.currentTrack = nextTrack.uri;
+  guest.currentTrack = nextTrack.uri;
   await room.save();
   return nextTrack;
 }
@@ -207,7 +207,7 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
     track.current = i === trackIndex;
   });
   const track = room.tracks[trackIndex];
-  room.members.forEach(m => m.currentTrack = track.uri);
+  room.guests.forEach(m => m.currentTrack = track.uri);
   if (shoudlSave) {
     await room.save();
   }
@@ -215,7 +215,7 @@ export async function getTrack(room: IRoom, uri: string, shoudlSave: boolean): P
 }
 
 export function getUserCurrentTrack(room: IRoom, user: IUser): {uri: string, index: number} | undefined {
-  const roomUser = room.members.find((member) => member.id === user.id);
+  const roomUser = room.guests.find((guest) => guest.id === user.id);
   if (!roomUser) return undefined;
   const uri = roomUser.currentTrack;
   const index = room.tracks.findIndex(t => t.uri === uri);
@@ -239,17 +239,17 @@ export async function approveTrack(room: IRoom, uri: string) {
   await room.save();
 }
 
-export async function approveMember(room: IRoom, memberId: string) {
-  const member = room.members.find(member => member.id === memberId);
-  if (!member) return;
-  member.isApproved = true;
-  member.isActive = true;
+export async function approveGuest(room: IRoom, guestId: string) {
+  const guest = room.guests.find(guest => guest.id === guestId);
+  if (!guest) return;
+  guest.isApproved = true;
+  guest.isActive = true;
   await room.save();
 }
 
-export async function setMemberCurrentTrack(room: IRoom, userId: string, uri: string) {
-  const member = room.members.find(m => m.id === userId);
-  if (!member) return;
-  member.currentTrack = uri;
+export async function setGuestCurrentTrack(room: IRoom, userId: string, uri: string) {
+  const guest = room.guests.find(g => g.id === userId);
+  if (!guest) return;
+  guest.currentTrack = uri;
   await room.save();
 }

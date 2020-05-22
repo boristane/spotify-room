@@ -3,8 +3,8 @@ import mongoose, { Document, Schema } from "mongoose";
 const RoomSchema: Schema = new Schema({
   _id: mongoose.Types.ObjectId,
   name: String,
-  master: { id: String, token: String, name: String, deviceId: String },
-  members: [{ id: String, token: String, name: String, deviceId: String, isActive: Boolean, currentTrack: String, isApproved: Boolean }],
+  host: { id: String, token: String, name: String, deviceId: String },
+  guests: [{ id: String, token: String, name: String, deviceId: String, isActive: Boolean, currentTrack: String, isApproved: Boolean }],
   duration: Number,
   isActive: Boolean,
   tracks: [{ uri: String,
@@ -21,8 +21,8 @@ const RoomSchema: Schema = new Schema({
 
 export interface IRoom extends Document {
   _id: string;
-  master: { id: string; token: string; name: string, deviceId: string };
-  members: { id: string; token: string; name: string, deviceId: string, isActive: boolean, currentTrack: string, isApproved: boolean; }[];
+  host: { id: string; token: string; name: string, deviceId: string };
+  guests: { id: string; token: string; name: string, deviceId: string, isActive: boolean, currentTrack: string, isApproved: boolean; }[];
   duration: number;
   name: string;
   isActive: boolean;
