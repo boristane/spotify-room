@@ -89,6 +89,7 @@
     <i data-feather="x" id="closeCookieConsent"></i>
   </div>
   <script>
+    feather.replace()
     document.getElementById("cookieConsent").style.opacity = "1";
     document.querySelector("#closeCookieConsent").addEventListener("click", () => {
       document.getElementById("cookieConsent").style.opacity = "0";
@@ -96,9 +97,6 @@
         document.getElementById("cookieConsent").style.zIndex = "-1000";
       }, 500);
     });
-  </script>
-  <script>
-    feather.replace()
   </script>
 </body>
 

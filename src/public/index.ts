@@ -615,7 +615,7 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
 }
 
 function displayExistingRooms(rooms: IRoom[]) {
-  const roomElts = rooms.length > 0 ? rooms.slice(0, 5).map(room => {
+  const roomElts = rooms.slice(0, 5).map(room => {
     return `
     <div class="existing-room" data-id=${room.id}>
     <div class="room-image-container">
@@ -629,9 +629,15 @@ function displayExistingRooms(rooms: IRoom[]) {
       </div>
     </div>
     `;
-  }).join("") : "<div></div><div></div><div style='text-aling: center'>none found</div><div></div><div></div>";
-  document.getElementById("existing-rooms").innerHTML = roomElts;
-  document.querySelectorAll(".existing-room").forEach((elt => {
+  }).join("");
+  if (rooms.length === 0) {
+    document.getElementById("existing-rooms").textContent = "none found";
+    document.getElementById("existing-rooms").style.textAlign = "center";
+    document.getElementById("existing-rooms").style.display = "block";
+  } else {
+    document.getElementById("existing-rooms").innerHTML = roomElts;
+  }
+    document.querySelectorAll(".existing-room").forEach((elt => {
     elt.addEventListener("click", async function (e) {
       // @ts-ignore
       gtag('event', "join-existing-room", {
