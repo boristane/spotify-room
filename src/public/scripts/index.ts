@@ -544,7 +544,6 @@ async function main() {
   } catch {
     displayPermanentMessage("<p>there was an issue getting your authentication token, please try again.</p>");
     return;
-    // return window.location.replace("/");
   }
 
   document.querySelector("body").addEventListener("click", (e) => {
@@ -858,10 +857,19 @@ export async function doIt() {
 }
 
 //@ts-ignore
-window.onSpotifyWebPlaybackSDKReady = () => {
+window.onSpotifyWebPlaybackSDKReady = async () => {
   const ios = isIOS();
   if(ios) {
     return displayPermanentMessage("<p>whoops! rooom is not available on your device. please try using a laptop/desktop.</p>");
+  }
+  if(!token) {
+    try {
+      console.log("getting the token");
+      token = await getToken();
+    } catch {
+      displayPermanentMessage("<p>there was an issue getting your authentication token, please try again.</p>");
+      return;
+    }
   }
 
   //@ts-ignore
