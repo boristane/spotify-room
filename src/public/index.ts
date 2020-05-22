@@ -498,6 +498,9 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
   });
   try {
     const roomName = (document.getElementById("create-room-name") as HTMLInputElement).value;
+    if (roomName === "" || roomName.includes("<") || roomName.includes(">")) {
+      return displayMessage("please enter a valid rooom name");
+    }
     await axios.post(`/room/create/`, {
       token,
       userId: user.id,
