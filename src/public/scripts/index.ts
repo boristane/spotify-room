@@ -61,7 +61,7 @@ async function getToken() {
   const state = params.get("state");
   let refreshToken = localStorage.getItem("refreshToken");
   let token;
-  if (!refreshToken) {
+  if (!refreshToken || refreshToken === "null") {
     const { access_token, refresh_token } = (await axios.get(
       `/spotify/get-token/?code=${code}&state=${state}`
     )).data;
@@ -861,7 +861,7 @@ export async function doIt() {
 window.onSpotifyWebPlaybackSDKReady = () => {
   const ios = isIOS();
   if(ios) {
-    return displayPermanentMessage("<p>>whoops! rooom is not available on your device. please try using a laptop/desktop.</p>");
+    return displayPermanentMessage("<p>whoops! rooom is not available on your device. please try using a laptop/desktop.</p>");
   }
 
   //@ts-ignore
