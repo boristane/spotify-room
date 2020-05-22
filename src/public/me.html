@@ -14,7 +14,7 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <link rel="icon" href="./rooom.png" />
   <link rel="stylesheet" href="./me.css" />
@@ -68,17 +68,13 @@
     <div id="user"></div>
     <button id="leave" class="room-block red-button">logout</button>
     <div class="form-inline" id="search-form-container">
-      <i class="material-icons" style="color: gray; font-size: 20px; padding-top: 5px;">
-        search
-      </i>
+      <i data-feather="search" style="color: gray; width: 20px; padding-top: 2px;"></i>
       <input type="text" id="search" placeholder="search songs to add to the rooom">
     </div>
   </div>
   <div class="mobile-only" id="show-users">
     <button id="show-users-button" class="green-button">
-      <i class="material-icons" style="padding-top: 5px;">
-        menu
-      </i>
+      <i data-feather="menu" style="padding-top: 4px; width: 15px;"></i>
     </button>
   </div>
   <div id="room">
@@ -116,9 +112,7 @@
             <div class="mobile-only mobile-button-container">
               <button style="display: none;" class="play room-block noselect green-button">play</button>
               <button id="more" class="green-button">
-                <i class="material-icons" style="padding-top: 5px;">
-                  more_horiz
-                </i>
+                <i data-feather="more-horizontal" style="padding-top: 4px;"></i>
               </button>
             </div>
             <div class="button-container">
@@ -170,7 +164,7 @@
               <input type="text" id="email-invites-1" style="margin: 0;" placeholder="jane.doe@mail.com, john.doe@mail.com">
             </form>
             <div class="icon-button" id="send-email-invites-1">
-              <i class="material-icons">group_add</i>
+              <i data-feather="user-plus"></i>
               <span>send email invites</span>
             </div>
           </div>
@@ -181,7 +175,7 @@
               <input type="text" id="text-to-copy-2" style="margin: 0;">
             </form>
             <div class="icon-button copy-to-clipboard">
-              <i class="material-icons">file_copy</i>
+              <i data-feather="clipboard"></i>
               <span>copy joining info</span>
             </div>
           </div>
@@ -201,14 +195,27 @@
       </div>
       <div class="modal-body">
         <div style="margin: 30px 0; overflow: hidden;">
-          <p>rooom is better with friends! invite yours to join <span class="modal-room-name">the rooom</span>! 🎉</p>
-          <p style="margin-top: 15px">share this info with your friends and they can join the rooom!</p>
-          <form action="" class="form-inline" style="margin: 15px 0px;">
-            <input type="text" id="text-to-copy-3" style="margin: 0;">
-          </form>
-          <div class="icon-button copy-to-clipboard">
-            <i class="material-icons">file_copy</i>
-            <span>copy joining info</span>
+          <p style="text-align: center;">rooom is better with friends! 🎉</p>
+          <div style="margin-top: 15px">
+            <p>invite your friends via email</p>
+            <form action="" class="form-inline" style="margin: 15px 0px;">
+              <input type="text" id="email-invites-2" style="margin: 0;" placeholder="jane.doe@mail.com, john.doe@mail.com">
+            </form>
+            <div class="icon-button" id="send-email-invites-2">
+              <i data-feather="user-plus"></i>
+              <span>send email invites</span>
+            </div>
+          </div>
+          <div class="divider" style="border-color: lightgray;"></div>
+          <div>
+            <p>or share this info with your friends and they can join the rooom!</p>
+            <form action="" class="form-inline" style="margin: 15px 0px;">
+              <input type="text" id="text-to-copy-3" style="margin: 0;">
+            </form>
+            <div class="icon-button copy-to-clipboard">
+              <i data-feather="clipboard"></i>
+              <span>copy joining info</span>
+            </div>
           </div>
         </div>
       </div>
@@ -228,8 +235,7 @@
         <div style="margin: 30px 0">
           <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span class="modal-room-name">the rooom</span>! 🎉</p>
           <p style="margin-top: 15px">the rooom host <span class="modal-room-host"></span> controls the music, and the rooom guests listen to the same track simultaneously and in sync. 🤖</p>
-          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i class="material-icons" style="font-size: 16px;">search</i> ) or simply using the recommendations at the bottom of the page.</p>
-          <!-- <p style="margin-top: 15px">once <span class="modal-room-host">the rooom host</span> has approved your tracks, they will be added to the play queue.</p> -->
+          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i data-feather="search"></i> ) or simply using the recommendations at the bottom of the page.</p>
           <p style="margin-top: 15px">when you are ready, just click on the play button ⏯️ and start jamming with <span class="modal-room-host">the rooom host</span>!</p>
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>
         </div>
@@ -250,11 +256,8 @@
         <div style="margin: 30px 0;">
           <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span class="modal-room-name">the rooom</span>! 🎉</p>
           <p style="margin-top: 15px">you are the rooom host, you control the music, and the rooom guests listen to the same track simultaneously and in sync. 🤖</p>
-          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i class="material-icons" style="font-size: 16px;">search</i> ) or simply using the recommendations at the bottom of the page.</p>
+          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i data-feather="search"></i> ) or simply using the recommendations at the bottom of the page.</p>
           <p style="margin-top: 15px">when you are ready, invite your friends to the rooom by clicking the "invite friends" button to the left of the page! 📨</p>
-          <!-- <p style="margin-top: 15px">as the rooom host, with great power comes great responsibility. 💯</p> -->
-          <!-- <p style="margin-top: 15px">once your friends join the rooom, approve them by clicking on their name to the left of the page.</p> -->
-          <!-- <p style="margin-top: 15px">when they add tracks to the rooom, approve those by clicking on them in the play queue. 🎶</p> -->
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>
         </div>
       </div>
@@ -286,6 +289,9 @@
 
   <script src="https://sdk.scdn.co/spotify-player.js" crossorigin="anonymous"></script>
   <script src="index.ts"></script>
+  <script>
+    feather.replace()
+  </script>
 </body>
 
 </html>

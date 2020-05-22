@@ -619,10 +619,6 @@ ol, ul {
     visibility: hidden;
   }
 
-  #show-users-button .material-icons {
-    font-size: 15px;
-  }
-
   .left-panel {
     padding-top: 50px;
     visibility: hidden;

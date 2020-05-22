@@ -245,38 +245,7 @@ export function displayRoom(room: IRoom): boolean {
       displayMessage("rooom url copied to clipboard");
     });
   });
-
-  document.getElementById("send-email-invites-1").addEventListener("click", async (e: MouseEvent) => {
-    // @ts-ignore
-    gtag('event', "invite-friends", {
-      event_category: "email",
-      event_label: "invinte-friends-button"
-    });
-    const inputElt = document.getElementById("email-invites-1") as HTMLInputElement;
-    const data = (inputElt.value.split(",").map(elt => elt.split(" "))).reduce((acc, val) => acc.concat(val), []).filter(elt => elt !== "");
-    try {
-      await axios.post(`/room/email-invite/?id=${roomId}&userId=${user.id}`, { emails: data });
-      inputElt.value = "";
-      closeModals();
-      displayMessage("email invite(s) sent");
-    } catch (err) {
-      displayMessage("there was an error sending the email invite(s)");
-    }
-  });
-
-  document.getElementById("invite-friends").addEventListener("click", (e) => {
-    e.stopPropagation();
-    // @ts-ignore
-    gtag('event', "share-room", {
-      event_category: "room",
-      event_label: "invite"
-    });
-    const inputElt = document.getElementById("text-to-copy-2") as HTMLInputElement;
-    inputElt.value = document.getElementById("room-id").textContent;
-    const modal = document.getElementById("invite-friends-modal");
-    modal.style.display = "flex";
-  });
-
+ 
   document.querySelectorAll(".track").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
       if (!isHost) {
@@ -701,17 +670,8 @@ async function getInRoom(id: string) {
   const recommendations = await getRecommendations(room);
   displayRecommendations(recommendations);
   document.getElementById("get-in-room").style.display = "none";
-  document.getElementById("refresh-recommendations").addEventListener("click", async () => {
-    // @ts-ignore
-    gtag('event', "refresh-recommendations", {
-      event_category: "room",
-      event_label: "recommendations",
-    });
-    const room = await getRoom(id, user.id);
-    const recommendations = await getRecommendations(room);
-    displayRecommendations(recommendations);
-  });
   (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+  addEventListeners(id);
 
   setTimeout(() => {
     if (isHost) {
@@ -771,6 +731,68 @@ function displayModalRoomIsBetter(room: IRoom) {
   modal.style.display = "flex";
 }
 
+function addEventListeners(id: string) {
+  document.getElementById("send-email-invites-1").addEventListener("click", async (e: MouseEvent) => {
+    // @ts-ignore
+    gtag('event', "invite-friends", {
+      event_category: "email",
+      event_label: "invinte-friends-button"
+    });
+    const inputElt = document.getElementById("email-invites-1") as HTMLInputElement;
+    const data = (inputElt.value.split(",").map(elt => elt.split(" "))).reduce((acc, val) => acc.concat(val), []).filter(elt => elt !== "");
+    try {
+      await axios.post(`/room/email-invite/?id=${id}&userId=${user.id}`, { emails: data });
+      inputElt.value = "";
+      closeModals();
+      displayMessage("email invite(s) sent");
+    } catch (err) {
+      displayMessage("there was an error sending the email invite(s)");
+    }
+  });
+
+  document.getElementById("send-email-invites-2").addEventListener("click", async (e: MouseEvent) => {
+    // @ts-ignore
+    gtag('event', "invite-friends", {
+      event_category: "email",
+      event_label: "room-is-better-with-friends"
+    });
+    const inputElt = document.getElementById("email-invites-2") as HTMLInputElement;
+    const data = (inputElt.value.split(",").map(elt => elt.split(" "))).reduce((acc, val) => acc.concat(val), []).filter(elt => elt !== "");
+    try {
+      await axios.post(`/room/email-invite/?id=${id}&userId=${user.id}`, { emails: data });
+      inputElt.value = "";
+      closeModals();
+      displayMessage("email invite(s) sent");
+    } catch (err) {
+      displayMessage("there was an error sending the email invite(s)");
+    }
+  });
+
+  document.getElementById("invite-friends").addEventListener("click", (e) => {
+    e.stopPropagation();
+    // @ts-ignore
+    gtag('event', "share-room", {
+      event_category: "room",
+      event_label: "invite"
+    });
+    const inputElt = document.getElementById("text-to-copy-2") as HTMLInputElement;
+    inputElt.value = document.getElementById("room-id").textContent;
+    const modal = document.getElementById("invite-friends-modal");
+    modal.style.display = "flex";
+  });
+
+  document.getElementById("refresh-recommendations").addEventListener("click", async () => {
+    // @ts-ignore
+    gtag('event', "refresh-recommendations", {
+      event_category: "room",
+      event_label: "recommendations",
+    });
+    const room = await getRoom(id, user.id);
+    const recommendations = await getRecommendations(room);
+    displayRecommendations(recommendations);
+  });
+}
+
 export async function doIt() {
   let id;
   try {
@@ -783,7 +805,6 @@ export async function doIt() {
   } catch {
     displayPermanentMessage("<p>there was an issue getting your profile from Spotify, please try again.</p>");
     return;
-    // return window.location.replace("/");
   }
 
   user = (await axios.get(`/user/me/?id=${id}`)).data.user as IUser;

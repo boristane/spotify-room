@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="./index.css" />
   <link rel="stylesheet" href="./form.css" />
   <link rel="stylesheet" href="./cookie-banner.css" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
   <title>rooom</title>
   <meta name="description" content="your music, your friends, in sync, powered by Spotify." />
   <meta property="og:title" content="rooom - your music, your friends, in sync" />
@@ -79,9 +79,7 @@
       We use cookies to ensure that we give you the best experience possible on our website. By visiting rooom, you
       accept our <a style="font-weight: normal;" href="https://docs.google.com/document/d/12mC-51kUiVC8YU_c_q7gInPweeZHvXvAwypd7Lnj3ck/edit?usp=sharing" target="_blank">privacy policy</a>.
     </p>
-      <i class="material-icons" id="closeCookieConsent">
-        close
-      </i>
+    <i data-feather="x" id="closeCookieConsent"></i>
   </div>
   <script>
     document.getElementById("cookieConsent").style.opacity = "1";
@@ -91,6 +89,9 @@
         document.getElementById("cookieConsent").style.zIndex = "-1000";
       }, 500);
     });
+  </script>
+  <script>
+    feather.replace()
   </script>
 </body>
 

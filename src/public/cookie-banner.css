@@ -16,7 +16,7 @@
   z-index: 99999;
 
     display: grid;
-    grid-template-columns: 5fr 1fr;
+    grid-template-columns: calc(100% - 40px) 40px;
     grid-template-rows: 1fr;
     grid-column-gap: 0px;
     grid-row-gap: 0px;
@@ -26,7 +26,8 @@
   text-decoration: underline;
 }
 #closeCookieConsent {
-  margin: auto 15px;
+  width: 100%;
+  margin: auto 0px;
   text-align: right;
   cursor: pointer;
   font-weight: bold;
