@@ -497,7 +497,7 @@ ol, ul {
   height: 20px;
 }
 
-#twitter-share {
+.social-share-button {
   padding-left: 10px;
   padding-top: 2px;
   color: grey;
@@ -505,7 +505,7 @@ ol, ul {
   cursor: pointer;
 }
 
-#twitter-share:hover {
+.social-share-button:hover {
   color: white;
 }
 

@@ -797,6 +797,11 @@ function addEventListeners(id: string) {
 		const tweet = "Join my remote music listening session!";
     tweetIt(tweet, `https://rooom.click?id=${id}`);
   });
+
+  document.getElementById("facebook-share").addEventListener("click", async(e) => {
+    e.preventDefault();
+    shareOnFacebook(`https://rooom.click?id=${id}`);
+  });
 }
 
 export async function doIt() {
@@ -917,4 +922,9 @@ function tweetIt(text: string, url:string="", hashtag:string=""){
   const h = encodeURIComponent(hashtag);
   const tweetUrl = `https://twitter.com/share?text=${t}&url=${u}&hashtags=${h}`;
   window.open(tweetUrl);
+}
+
+function shareOnFacebook(url: string) {
+  const u = encodeURIComponent(url);
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${u}`, 'facebook-share-dialog','width=626,height=436');
 }
