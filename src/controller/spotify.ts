@@ -77,7 +77,7 @@ export async function getToken(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-export async function refreshToken(req: Request, res: Response) {
+export async function refreshToken(req: Request, res: Response, next: NextFunction) {
   const token = req.query.refresh_token;
   const auth = "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
   const data = {
@@ -97,7 +97,9 @@ export async function refreshToken(req: Request, res: Response) {
       dataString,
       axiosConfig
     );
+    res.locals.body = response.data;
     res.status(200).json(response.data);
+    return next();
   } catch(error) {
     logger.error("Invalid refresh token", { error });
     res.status(500).json({ error: "invalid_token" });
@@ -148,7 +150,7 @@ export async function searchTrack(req: Request, res: Response, next: NextFunctio
   }
 }
 
-export async function generatePlaylist(req: Request, res: Response) {
+export async function generatePlaylist(req: Request, res: Response, next: NextFunction) {
   const { uris, userId, name } = req.body;
   const { token } = req.query;
   try {

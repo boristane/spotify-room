@@ -64,7 +64,6 @@ function getCreateRoomEmailData(data: ICreateRoomData): mailgun.messages.SendTem
       roomName: data.roomName,
       roomId: data.roomId,
     }),
-    "h:Reply-To": process.env.MAILGUN_REPLY_TO,
     "o:tag": "create-room",
   };
   return emailData;
@@ -95,7 +94,6 @@ function getCreateAccountEmailData(data: ICreateAccountData): mailgun.messages.S
     "h:X-Mailgun-Variables": JSON.stringify({
       name: data.name.trim().split(" ")[0],
     }),
-    "h:Reply-To": process.env.MAILGUN_REPLY_TO,
     "o:tag": "create-account",
   };
   return emailData;
