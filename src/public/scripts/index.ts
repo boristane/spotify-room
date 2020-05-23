@@ -33,7 +33,6 @@ function startWorker() {
         return displayMessage(event.data.message);
       }
       if (typeof event.data.isPlaying !== "undefined") {
-        console.log(event.data.isPlaying);
         isPlaying = event.data.isPlaying;
         document.querySelectorAll(".play").forEach(elt => elt.textContent = isPlaying ? "pause" : "play");
         return;
@@ -619,7 +618,9 @@ function displayExistingRooms(rooms: IRoom[]) {
     <div class="room-image-container">
       <img class="room-image" src=${room.cover ?? "https://d1apvrodb6vxub.cloudfront.net/covers/default-cover.png"}>
     </div>
-      <div class="room-name">
+      <div class="room-name" style="white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;">
         ${room.name}
       </div>
       <div class="room-details">
