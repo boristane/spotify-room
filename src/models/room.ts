@@ -4,9 +4,10 @@ const RoomSchema: Schema = new Schema({
   _id: mongoose.Types.ObjectId,
   name: String,
   host: { id: String, token: String, name: String, deviceId: String },
-  guests: [{ id: String, token: String, name: String, deviceId: String, isActive: Boolean, currentTrack: String, isApproved: Boolean }],
+  guests: [{ id: String, token: String, name: String, deviceId: String, isActive: Boolean, currentTrack: String, isApproved: Boolean, isPlaying: Boolean, }],
   duration: Number,
   isActive: Boolean,
+  cover: String,
   tracks: [{ uri: String,
     completed: Boolean,
     approved: Boolean,
@@ -22,10 +23,11 @@ const RoomSchema: Schema = new Schema({
 export interface IRoom extends Document {
   _id: string;
   host: { id: string; token: string; name: string, deviceId: string };
-  guests: { id: string; token: string; name: string, deviceId: string, isActive: boolean, currentTrack: string, isApproved: boolean; }[];
+  guests: { id: string; token: string; name: string, deviceId: string, isActive: boolean, currentTrack: string, isApproved: boolean; isPlaying: boolean; }[];
   duration: number;
   name: string;
   isActive: boolean;
+  cover: string;
   tracks: {
     uri: string;
     completed: boolean;

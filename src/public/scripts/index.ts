@@ -4,7 +4,8 @@ import { IRoom } from "../../models/room";
 import { ISpotifyTrack, ISpotifyUser } from "../../typings/spotify";
 import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
 import { IUser } from "../../models/user";
-import { shareOnFacebook, tweetIt, isIOS } from "../utils/utils";
+import { shareOnFacebook, tweetIt, isIOS, debounce } from "../utils/utils";
+import { setBackground } from "./colors";
 
 let token: string;
 let user: IUser;
@@ -16,17 +17,6 @@ let isPlaying = false;
 let isOnboarded = false;
 let refreshRoomTimeoutId;
 const browserNotSupportedHtml = "<p>whoops! rooom is not available on your browser. please try using the latest version of <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
-
-const debounce = (func: Function, delay: number) => {
-  let debounceTimer
-  return function () {
-    const context = this
-    const args = arguments
-    clearTimeout(debounceTimer)
-    debounceTimer
-      = setTimeout(() => func.apply(context, args), delay)
-  }
-}
 
 let w;
 
@@ -41,6 +31,12 @@ function startWorker() {
       }
       if (event.data.message) {
         return displayMessage(event.data.message);
+      }
+      if (typeof event.data.isPlaying !== "undefined") {
+        console.log(event.data.isPlaying);
+        isPlaying = event.data.isPlaying;
+        document.querySelectorAll(".play").forEach(elt => elt.textContent = isPlaying ? "pause" : "play");
+        return;
       }
     };
   } else {
@@ -112,8 +108,7 @@ document.querySelector("body").addEventListener("click", () => {
   document.querySelector("#search-results").innerHTML = "";
   (document.getElementById("search") as HTMLInputElement).value = "";
   (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "none";
-  (document.querySelector(".user-container") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 400px) 100px 300px";
-  (document.querySelector(".user-container") as HTMLDivElement).style.right = "20px";
+  (document.querySelector(".user-container") as HTMLDivElement).style.right = "0px";
   (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
   (document.querySelector(".button-container") as HTMLDivElement).style.padding = "0px";
   isSearchTrayOpened = false;
@@ -142,13 +137,14 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
     (document.querySelector(".small-room") as HTMLDivElement).style.gridTemplateColumns = "100% 0";
     (document.querySelector(".left-panel") as HTMLDivElement).style.visibility = "visible";
     (document.querySelector(".right-panel") as HTMLDivElement).style.display = "none";
+    (document.querySelector(".user-container") as HTMLDivElement).style.display = "none";
   } else {
     // @ts-ignore
     e.target.style.left = "10px";
     (document.querySelector(".small-room") as HTMLDivElement).style.gridTemplateColumns = "0px calc(100%)";
     (document.querySelector(".left-panel") as HTMLDivElement).style.visibility = "hidden";
     (document.querySelector(".right-panel") as HTMLDivElement).style.display = "block";
-
+    (document.querySelector(".user-container") as HTMLDivElement).style.display = "flex";
   }
   isUsersTrayOpened = !isUsersTrayOpened;
 });
@@ -184,7 +180,7 @@ document.getElementById("no-email").addEventListener("click", (e) => {
   }
 });
 
-export function displayRoom(room: IRoom): boolean {
+export async function displayRoom(room: IRoom): Promise<boolean> {
   const waitingElt = document.getElementById("waiting");
   if (room === null) {
     return;
@@ -207,14 +203,16 @@ export function displayRoom(room: IRoom): boolean {
   }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
   const trackElts = room.tracks.map((track) => trackBuilder(track, isHost));
-  (document.getElementById("add-songs") as HTMLDivElement).style.display = "none";
   tracklistElt.innerHTML = trackElts.join("");
-  if (tracklistElt.innerHTML === "") {
-    (document.getElementById("add-songs") as HTMLDivElement).style.display = "block";
+  if(trackElts.length === 0) {
+    tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>let's start by adding songs!</p><p>you can use the search bar on the top-right or the recommendations below</p></div>"
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.current);
   tracklistElt.parentElement.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
+  if (currentEltIndex > -1) {
+    await setBackground("#cont", room.tracks[currentEltIndex].image);
+  }
 
   const guestsListElt = document.querySelector(".guests") as HTMLDivElement;
   const guestsToAppoveListElt = document.querySelector(".guests-to-approve") as HTMLDivElement;
@@ -443,7 +441,6 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
 
 document.getElementById("search").addEventListener("click", (e: MouseEvent) => {
   e.stopPropagation();
-  (document.querySelector(".user-container") as HTMLDivElement).style.gridTemplateColumns = "calc(100% - 420px) 100px 320px";
 });
 
 document.getElementById("search").addEventListener('keyup', debounce(async (e: KeyboardEvent) => {
@@ -620,7 +617,7 @@ function displayExistingRooms(rooms: IRoom[]) {
     return `
     <div class="existing-room" data-id=${room.id}>
     <div class="room-image-container">
-      <img class="room-image" src="https://d1apvrodb6vxub.cloudfront.net/rooom.png"/>
+      <img class="room-image" src=${room.cover ?? "https://d1apvrodb6vxub.cloudfront.net/covers/default-cover.png"}>
     </div>
       <div class="room-name">
         ${room.name}

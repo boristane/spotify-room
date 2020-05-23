@@ -43,14 +43,23 @@ html, body {
   padding-right: 10px;
 }
 
+#leave {
+  margin-right: 10px;
+}
+
 .user-container{
   transition: all 0.2s ease-out;
   position: absolute;
-  top: 10px;
-  right: 20px;
+  top: 0px;
+  right: 0px;
+  padding: 5px 10px;
   visibility: hidden;
-  display: grid;
-  grid-template-columns: calc(100% - 400px) 100px 300px;
+  height: 35px;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 #room {
@@ -63,24 +72,23 @@ html, body {
 
 #cont {
   display: grid;
-  grid-template-columns: 200px calc(100% - 200px);
-  padding-top: 35px;
-  padding-bottom: 20px;
+  grid-template-columns: 250px calc(100% - 200px);
+  transition: all 0.2s ease-out;
+  padding-top: 60px;
+  padding-bottom: 15px;
   background: rgb(60,57,57);
-  background: linear-gradient(180deg, rgba(60,57,57,1) 0%, rgba(0,0,0,1) 100%);
 }
 
 #search {
-  margin: 0 !important;
+  margin: 0 0 0 -20px !important;
   height: 10px;
   padding-left: 25px;
 }
 
 #search-form-container {
-  display: grid;
-  grid-template-columns: 0px 100%;
-  margin-left: 0;
-  width: 100%
+  display: flex;
+  flex-direction: row;
+  margin: 0;
 }
 
 #close-search-tray {
@@ -120,13 +128,15 @@ html, body {
 
 #username {
   padding-left: 6px;
-  padding-top: 8px;
+  padding-top: 7px;
 }
 
 .button-container {
   margin-top: 10px;
-  display: grid;
-  grid-template-columns: 110px 170px;
+  display: flex !important;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 #host {
@@ -181,7 +191,7 @@ html, body {
   transition: all 0.2s ease-out;
   min-width: 100px;
   height: 35px;
-  margin-right: auto;
+  margin-right: 10px;
   padding: 0 20px;
 }
 
@@ -213,6 +223,7 @@ ol, ul {
   transition: all 0.2s ease-out;
   width: 250px;
   height: 100%;
+  padding-top: 35px;
   background-color: #000;
 }
 
@@ -246,12 +257,13 @@ ol, ul {
 }
 
 .tracklist-container {
-  height: calc(100vh - 255px);
+  height: calc(100vh - 275px);
   overflow-y: scroll;
   padding-bottom: 0;
   padding-top: 0;
   width: 100%;
   transition: all 0.2s ease-out;
+  background: linear-gradient(180deg, rgb(34, 32, 32) 0%, rgb(0,0,0) 100%);
 }
 
 .track {
@@ -292,7 +304,7 @@ ol, ul {
 }
 
 .track:hover {
-  background-color: #191414 !important;
+  background-color: #333333 !important;
 }
 
 .track.current {
@@ -310,7 +322,6 @@ ol, ul {
 }
 
 .track.approved {
-  background-color: #282828;
   opacity: 1; 
    -moz-opacity: 1;  
    -webkit-opacity: 1;
@@ -403,14 +414,24 @@ ol, ul {
 }
 
 .logo-container {
-  width: 200px;
+  width: 150px;
   margin: auto;
 }
 
 .logo {
+  width: 150px;
+  margin: auto;
+}
+
+.cover-container {
   width: 200px;
   margin: auto;
-  /* box-shadow: 0 8px 16px 0 rgba(0,0,0,.8),0 6px 20px 0 rgba(0,0,0,.19); */
+}
+
+.cover {
+  width: 200px;
+  margin: auto;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,.8),0 6px 20px 0 rgba(0,0,0,.19);
 }
 
 #waiting {
@@ -455,7 +476,6 @@ ol, ul {
 }
 
 .room-image-container {
-  box-shadow: 0 10px 30px 0 rgba(0,0,0,.3),0 1px 2px 0 rgba(0,0,0,.2);
   margin-bottom: 10px;
 }
 
@@ -555,8 +575,13 @@ ol, ul {
     font-weight: bold;
   }
 
+  #room-description {
+    padding-top: 0px;
+  }
+
   #cont {
-    grid-template-columns: 100px calc(100% - 100px);
+    grid-template-columns: 120px calc(100% - 100px);
+    padding-top: 55px;
   }
 
   .logo-container {
@@ -567,12 +592,20 @@ ol, ul {
     width: 100px;
   }
 
+  .cover-container {
+    width: 100px;
+  }
+
+  .cover {
+    width: 100px;
+  }
+
   .small-room {
     grid-template-columns: 0px calc(100%);
   }
 
   .tracklist-container {
-    height: calc(100vh - 200px);
+    height: calc(100vh - 180px);
   }
 
   .button-container {
@@ -587,8 +620,8 @@ ol, ul {
   }
 
   .mobile-button-container {
-    display: grid !important;
-    grid-template-columns: 110px 50px;
+    display: flex !important;
+    flex-direction: row;
     margin-top: 10px;
   }
 
@@ -616,7 +649,7 @@ ol, ul {
   #show-users {
     position: absolute;
     left: 10px;
-    top: 10px;
+    top: 5px;
   }
 
   #show-users-button {
@@ -662,11 +695,11 @@ ol, ul {
   }
 
   #user {
-    visibility: hidden;
+    display: none !important;
   }
 
   #leave {
-    visibility: hidden;
+    display: none !important;
   } 
 
   .existing-room {

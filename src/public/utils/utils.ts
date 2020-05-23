@@ -16,3 +16,14 @@ export function isIOS() {
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   return val;
 }
+
+export const debounce = (func: Function, delay: number) => {
+  let debounceTimer
+  return function () {
+    const context = this
+    const args = arguments
+    clearTimeout(debounceTimer)
+    debounceTimer
+      = setTimeout(() => func.apply(context, args), delay)
+  }
+}

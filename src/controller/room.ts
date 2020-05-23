@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setGuestCurrentTrack, approveGuest, removeRoomGuest, removeTrack, getRoomsByUser, getUserCurrentTrack } from "../services/database";
+import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setGuestCurrentTrack, approveGuest, removeRoomGuest, removeTrack, getRoomsByUser, getUserCurrentTrack, setGuestIsPlaying } from "../services/database";
 import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -213,12 +213,12 @@ export async function hostGoToTrack(req: Request, res: Response, next: NextFunct
       res.status(404).json(response);
       return next();
     }
-    await play(room.host.token, currentTrack.uri, 0, room.host.deviceId);
+    play(room.host.token, currentTrack.uri, 0, room.host.deviceId);
     for (let i = 0; i < room.guests.length; i += 1) {
       const guest = room.guests[i];
-      if (!guest.isActive || !guest.isApproved) continue;
+      if (!guest.isActive || !guest.isApproved || !guest.isPlaying) continue;
       try {
-        await play(guest.token, currentTrack.uri, 0, guest.deviceId);
+        play(guest.token, currentTrack.uri, 0, guest.deviceId);
       } catch (error) {
         logger.error("There was an error playing the track for a user", { error, guest });
         continue;
@@ -493,9 +493,11 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       play(hostToken, uri, progress, deviceId);
       for (let i = 0; i < room.guests.length; i += 1) {
         const guest = room.guests[i];
-        if (!guest.isActive || !guest.isApproved) continue;
+        console.log(guest);
+        if (!guest.isActive || !guest.isApproved || !guest.isPlaying) continue;
+        console.log({anotherOne: guest})
         try {
-          await play(guest.token, uri, progress, guest.deviceId);
+          play(guest.token, uri, progress, guest.deviceId);
         } catch (error) {
           logger.error("There was an error playing the track for a user", { error, guest });
           continue;
@@ -526,6 +528,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
     await play(guest.token, currentTrack.item.uri, currentTrack.progress_ms + networkDelay, guest.deviceId);
     await setGuestCurrentTrack(room, user.id, currentTrack.item.uri);
+    await setGuestIsPlaying(room, guest.id, true);
     const response = {
       message: "Playing the track for room guest", room: prepareRoomForResponse(room)
     };
@@ -563,9 +566,9 @@ export async function pauseRoom(req: Request, res: Response, next: NextFunction)
       pause(hostToken, deviceId);
       for (let i = 0; i < room.guests.length; i += 1) {
         const guest = room.guests[i];
-        if (!guest.isActive || !guest.isApproved) continue;
+        if (!guest.isActive || !guest.isApproved || !guest.isPlaying) continue;
         try {
-          await pause(guest.token, guest.deviceId);
+          pause(guest.token, guest.deviceId);
         } catch (error) {
           logger.error("There was an error pausing the track for a uuser", { error, guest });
           continue;
@@ -587,6 +590,7 @@ export async function pauseRoom(req: Request, res: Response, next: NextFunction)
       return next();
     }
     await pause(guest.token, guest.deviceId);
+    await setGuestIsPlaying(room, guest.id, false);
     const response = {
       message: "Pausing the track for room guest", room: prepareRoomForResponse(room)
     };
@@ -648,6 +652,7 @@ export function prepareRoomForResponse(room: IRoom) {
     host: _.omit(room.host, ["token"]),
     guests: room.guests.map((m) => _.omit(m, ["token"])),
     tracks: room.tracks.filter(t => !t.removed),
+    cover: room.cover,
     name: room.name,
     id: room.id,
     isActive: room.isActive,

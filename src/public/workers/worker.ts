@@ -32,6 +32,7 @@ async function getCurrentLoop() {
   const loopTime = 10 * 1000;
   try {
     const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}&userId=${userId}`)).data;
+    sendMessage({ isPlaying: track.is_playing });
     if (track?.item?.duration_ms - track?.progress_ms <= loopTime) {
       setTimeout(() => {
         goToNextTrack();

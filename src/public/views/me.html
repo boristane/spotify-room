@@ -34,8 +34,7 @@
   <meta property="og:title" content="rooom - your music, your friends, in sync" />
   <meta property="og:url" content="https://rooom.click" />
   <meta property="og:description" content="your music, your friends, in sync, powered by Spotify." />
-  <meta property="og:image"
-    content="https://d1apvrodb6vxub.cloudfront.net/social-image.png" />
+  <meta property="og:image" content="https://d1apvrodb6vxub.cloudfront.net/social-image.png" />
 </head>
 
 <body>
@@ -87,6 +86,11 @@
   <div id="room">
     <div class="small-room">
       <div class="left-panel">
+        <div class="logo-container">
+          <a href="/">
+            <img src="../assets/logo.png" alt="logo" class="logo" />
+          </a>
+        </div>
         <div>
           <ul class="guests">
           </ul>
@@ -98,16 +102,15 @@
           <ul class="guests-to-approve">
           </ul>
         </div>
-        <div >
-          <button id="invite-friends" class="green-button" style="display: block; margin: auto; margin-top: 15px;">invite friends</button>
+        <div>
+          <button id="invite-friends" class="green-button"
+            style="display: block; margin: auto; margin-top: 15px;">invite friends</button>
         </div>
       </div>
       <div class="right-panel">
         <div id="cont">
-          <div class="logo-container">
-            <a href="/">
-              <img src="../assets/logo.png" alt="logo" class="logo" />
-            </a>
+          <div class="cover-container">
+            <img src="https://d1apvrodb6vxub.cloudfront.net/covers/default-cover.png" alt="header" class="cover" />
           </div>
           <div id="room-description">
             <div style="display: flex; flex-direction: row; margin-right: 10px;">
@@ -121,7 +124,7 @@
               </div>
             </div>
             <div id="host"></div>
-            <div id="room-id" class="copy-to-clipboard"></div>
+            <div id="room-id" class="copy-to-clipboard" style="display: none;"></div>
             <div class="mobile-only mobile-button-container">
               <button style="display: none;" class="play room-block noselect green-button">play</button>
               <button id="more" class="green-button">
@@ -130,16 +133,16 @@
             </div>
             <div class="button-container">
               <button style="display: none;" class="play room-block noselect green-button not-mobile">play</button>
-              <button id="playlist" style="display: none;" class="room-block noselect green-button">export to playlist</button>
+              <button id="playlist" style="display: none;" class="room-block noselect green-button">export to
+                playlist</button>
             </div>
           </div>
         </div>
-
-        <div style="display: none; text-align: center; margin-top: 30px;" id="add-songs">start by adding songs to the room</div>
         <div class="tracklist-container">
           <ul class="tracklist">
           </ul>
-          <div style="margin-top: 50px; padding: 0 18px; font-weight: bolder; display: grid; grid-template-columns: calc(100% - 102px) 102px;">
+          <div
+            style="margin-top: 50px; padding: 0 18px; font-weight: bolder; display: grid; grid-template-columns: calc(100% - 102px) 102px;">
             <div> Recommendations </div>
             <button id="refresh-recommendations" class="green-button" style="font-size: 10px;">refresh</button>
           </div>
@@ -164,17 +167,16 @@
   <div id="invite-friends-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div style="display: grid; grid-template-columns: 55px 100%">
-          <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
-          <h2 style="padding: 10px;" class="modal-header-text">invite your friends</h2>
-        </div>
+        <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+        <h2 style="padding: 10px;" class="modal-header-text">invite your friends</h2>
       </div>
       <div class="modal-body">
         <div style="margin: 30px 0; overflow: hidden;">
           <div>
             <p>invite your friends via email</p>
             <form action="" class="form-inline" style="margin: 15px 0px;">
-              <input type="text" id="email-invites-1" style="margin: 0;" placeholder="jane.doe@mail.com, john.doe@mail.com">
+              <input type="text" id="email-invites-1" style="margin: 0;"
+                placeholder="jane.doe@mail.com, john.doe@mail.com">
             </form>
             <div class="icon-button" id="send-email-invites-1">
               <i data-feather="user-plus"></i>
@@ -201,10 +203,8 @@
   <div id="room-is-better-with-friends" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div style="display: grid; grid-template-columns: 55px 100%">
-          <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
-          <h2 style="padding: 10px;" class="modal-header-text">rooom is better with friends!</h2>
-        </div>
+        <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+        <h2 style="padding: 10px;" class="modal-header-text">rooom is better with friends!</h2>
       </div>
       <div class="modal-body">
         <div style="margin: 30px 0; overflow: hidden;">
@@ -212,7 +212,8 @@
           <div style="margin-top: 15px">
             <p>invite your friends via email</p>
             <form action="" class="form-inline" style="margin: 15px 0px;">
-              <input type="text" id="email-invites-2" style="margin: 0;" placeholder="jane.doe@mail.com, john.doe@mail.com">
+              <input type="text" id="email-invites-2" style="margin: 0;"
+                placeholder="jane.doe@mail.com, john.doe@mail.com">
             </form>
             <div class="icon-button" id="send-email-invites-2">
               <i data-feather="user-plus"></i>
@@ -239,17 +240,21 @@
   <div id="onboarding-guest" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div style="display: grid; grid-template-columns: 55px 100%">
-          <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
-          <h2 style="padding: 10px;" class="modal-header-text">welcome in <div class="modal-room-name" style="display: inline-block;">the rooom</div></h2>
-        </div>
+        <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+        <h2 style="padding: 10px;" class="modal-header-text">welcome in <div class="modal-room-name"
+            style="display: inline-block;">the rooom</div>
+        </h2>
       </div>
       <div class="modal-body">
         <div style="margin: 30px 0">
-          <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span class="modal-room-name">the rooom</span>! 🎉</p>
-          <p style="margin-top: 15px">the rooom host <span class="modal-room-host"></span> controls the music, and the rooom guests listen to the same track simultaneously and in sync. 🤖</p>
-          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i data-feather="search"></i> ) or simply using the recommendations at the bottom of the page.</p>
-          <p style="margin-top: 15px">when you are ready, just click on the play button ⏯️ and start jamming with <span class="modal-room-host">the rooom host</span>!</p>
+          <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span
+              class="modal-room-name">the rooom</span>! 🎉</p>
+          <p style="margin-top: 15px">the rooom host <span class="modal-room-host"></span> controls the music, and the
+            rooom guests listen to the same track simultaneously and in sync. 🤖</p>
+          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i
+              data-feather="search"></i> ) or simply using the recommendations at the bottom of the page.</p>
+          <p style="margin-top: 15px">when you are ready, just click on the play button ⏯️ and start jamming with <span
+              class="modal-room-host">the rooom host</span>!</p>
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>
         </div>
       </div>
@@ -260,17 +265,21 @@
   <div id="onboarding-host" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div style="display: grid; grid-template-columns: 55px 100%">
-          <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
-          <h2 style="padding: 10px;" class="modal-header-text">welcome in <div class="modal-room-name" style="display: inline-block;">the rooom</div></h2>
-        </div>
+        <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+        <h2 style="padding: 10px;" class="modal-header-text">welcome in <div class="modal-room-name"
+            style="display: inline-block;">the rooom</div>
+        </h2>
       </div>
       <div class="modal-body">
         <div style="margin: 30px 0;">
-          <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span class="modal-room-name">the rooom</span>! 🎉</p>
-          <p style="margin-top: 15px">you are the rooom host, you control the music, and the rooom guests listen to the same track simultaneously and in sync. 🤖</p>
-          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i data-feather="search"></i> ) or simply using the recommendations at the bottom of the page.</p>
-          <p style="margin-top: 15px">when you are ready, invite your friends to the rooom by clicking the "invite friends" button to the left of the page! 📨</p>
+          <p style="margin-top: 15px">hi <span class="modal-user-name"></span>, welcome in <span
+              class="modal-room-name">the rooom</span>! 🎉</p>
+          <p style="margin-top: 15px">you are the rooom host, you control the music, and the rooom guests listen to the
+            same track simultaneously and in sync. 🤖</p>
+          <p style="margin-top: 15px">you can add tracks to the rooom by using the search bar (clicking on <i
+              data-feather="search"></i> ) or simply using the recommendations at the bottom of the page.</p>
+          <p style="margin-top: 15px">when you are ready, invite your friends to the rooom by clicking the "invite
+            friends" button to the left of the page! 📨</p>
           <p style="margin-top: 15px">enjoy your remote listening session! 🥳</p>
         </div>
       </div>
@@ -281,16 +290,15 @@
   <div id="ask-for-email" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div style="display: grid; grid-template-columns: 55px 100%">
-          <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
-          <h2 style="padding: 10px;" class="modal-header-text">let's keep in touch</h2>
-        </div>
+        <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+        <h2 style="padding: 10px;" class="modal-header-text">let's keep in touch</h2>
       </div>
       <div class="modal-body">
         <div style="margin: 30px 0;">
-          <p style="margin-top: 15px">hey <span class="modal-user-name"></span>, we would like to keep in touch with updates on your activity on rooom.</p>
+          <p style="margin-top: 15px">hey <span class="modal-user-name"></span>, we would like to keep in touch with
+            updates on your activity on rooom.</p>
           <p style="margin-top: 15px">just say the word and we will email you semi-regularly.</p>
-          <div style="display: grid; grid-template-columns: 140px 100px; margin: 20px auto;">
+          <div style="display: flex; flex-direction: row; margin: 20px auto;">
             <button id="yes-email" style="width: 140px; color: rgb(80, 80, 80)" class="green-button">of course</button>
             <button id="no-email" style="width: 90px; color: rgb(80, 80, 80)" class="red-button">no thanks</button>
           </div>

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { ISpotifyUser, ISpotifyTrack } from "../typings/spotify";
 import User, { IUser } from "../models/user";
 import Room, { IRoom } from "../models/room";
+import { generateCoverUrl } from "./cover";
 
 export async function saveUser(spotifyUser: ISpotifyUser) {
   const user = await User.findOne({ id: spotifyUser.id });
@@ -50,12 +51,14 @@ export async function getRoomsByUser(id: string): Promise<IRoom[]> {
 }
 
 export async function spawnRoom(name: string, host: IUser, token: string, deviceId: string): Promise<IRoom> {
+  const cover = await generateCoverUrl();
   const room = new Room({
     _id: mongoose.Types.ObjectId(),
     host: { id: host.id, token, name: host.display_name, deviceId },
     guests: [],
     songs: [],
     name,
+    cover,
     isActive: true,
   });
 
@@ -85,7 +88,7 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     return isNewUser;
   }
   isNewUser = true;
-  guests.push({ id: user.id, token, name: user.display_name, deviceId, isActive: true, isApproved: true, currentTrack: "" });
+  guests.push({ id: user.id, token, name: user.display_name, deviceId, isActive: true, isApproved: true, currentTrack: "", isPlaying: false });
   await room.save();
   return isNewUser;
 }
@@ -100,6 +103,7 @@ export async function removeRoomGuest(room: IRoom, user: IUser): Promise<boolean
   const guest = guests.find((m) => m.id === user.id);
   if (guest) {
     guest.isActive = false;
+    guest.isPlaying = false;
     await room.save();
     return true;
   }
@@ -253,3 +257,11 @@ export async function setGuestCurrentTrack(room: IRoom, userId: string, uri: str
   guest.currentTrack = uri;
   await room.save();
 }
+
+export async function setGuestIsPlaying(room: IRoom, userId: string, isPlaying: boolean) {
+  const guest = room.guests.find(g => g.id === userId);
+  if (!guest) return;
+  guest.isPlaying = isPlaying;
+  await room.save();
+}
+
