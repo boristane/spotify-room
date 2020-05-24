@@ -3,6 +3,7 @@ require("dotenv").config();
 import spotifyRouter from "./router/spotify";
 import roomRouter from "./router/room";
 import userRouter from "./router/user";
+import internalRouter from "./router/internal";
 
 import cookieParser from "cookie-parser";
 import express, { Response, Request, NextFunction } from "express";
@@ -18,6 +19,7 @@ const app = express()
 import winston from "winston";
 import morgan from "morgan";
 import json from "morgan-json"
+import { apiAuth } from "./auth/auth";
 const format = json({
   method: ':method',
   url: ':url',
@@ -108,6 +110,7 @@ app.use(requestLogger);
 app.use("/spotify", spotifyRouter);
 app.use("/room", roomRouter);
 app.use("/user", userRouter);
+app.use("/internal", apiAuth, internalRouter);
 app.use(responseLogger);
 app.get("/you", (req: Request, res: Response) => {
   res.status(200).sendFile(path.join(__dirname + "/../dist/me.html"));
