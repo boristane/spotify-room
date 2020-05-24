@@ -655,6 +655,11 @@ async function getInRoom(id: string) {
   }
   refreshRoomLoop();
 
+  const maxTime = 4 * 60 * 60 * 1000;
+  setTimeout(function () {
+    this.clearTimeout(refreshRoomTimeoutId);
+  }, maxTime);
+
   document.getElementById("get-in-room").style.display = "none";
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
   (document.querySelector("body")).style.overflow = "hidden";

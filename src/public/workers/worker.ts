@@ -61,6 +61,10 @@ onmessage = async function (e) {
       this.clearTimeout(getCurrentTrackTimeoutId);
     }
     getCurrentLoop();
+    const maxTime = 4 * 60 * 60 * 1000;
+    setTimeout(function () {
+      this.clearTimeout(getCurrentTrackTimeoutId);
+    }, maxTime);
   }
   if (e.data.stopPlaying) {
     if (getCurrentTrackTimeoutId) {
