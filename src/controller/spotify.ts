@@ -124,15 +124,20 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function getCurrentTrack(req: Request, res: Response, next: NextFunction) {
-  const { token } = req.query;
+  const { token } : {token: string}= req.query;
+  const blockedToken = "BQB-zsLhR6sgPU8cXgYxG11M3LV941HHRVYIALJwNnwNGK1_JSf4d4M1AoDBGE6WviwZGB0kbj9XvWYkbgvQWevrygb34eqmiztpYnLZCNTAdzgj9MCXeAP_4ZPTq0uKsJxR8HT7gWUJQdzGeGdBRDxR4E8xJCqY3JwcWqcn6gBT1WZUQbWR0cMvw5cgTvt6pJoNPRzMxOS9JqU6T0TkkOnkQtq8VPh3VQ"
+  if(token.includes(blockedToken)) {
+    res.status(200).json({ message: "Blocked" });
+    return next();
+  }
   try {
     const track = await getCurrentlyPalyingTrack(token);
     res.locals.body = track;
     res.status(200).json({ track });
     return next();
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: "Unexpected error.", err: err.stack });
+    return next();
   }
 }
 

@@ -28,6 +28,7 @@ async function getToken() {
   return token;
 }
 
+
 async function getCurrentLoop() {
   const loopTime = 10 * 1000;
   try {
@@ -39,7 +40,7 @@ async function getCurrentLoop() {
       }, track.item.duration_ms - track.progress_ms);
     }
   } catch (error) {
-    console.log(error);
+    await refreshRoomToken();
   }
   getCurrentTrackTimeoutId = setTimeout(getCurrentLoop, loopTime);
 }
