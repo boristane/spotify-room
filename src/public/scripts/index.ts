@@ -6,6 +6,7 @@ import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommenda
 import { IUser } from "../../models/user";
 import { shareOnFacebook, tweetIt, isIOS, debounce } from "../utils/utils";
 import { setBackground } from "./colors";
+import api from "./api";
 
 let token: string;
 let user: IUser;
@@ -57,16 +58,12 @@ async function getToken() {
   let refreshToken = localStorage.getItem("refreshToken");
   let token;
   if (!refreshToken || refreshToken === "null") {
-    const { access_token, refresh_token } = (await axios.get(
-      `/spotify/get-token/?code=${code}&state=${state}`
-    )).data;
+    const { access_token, refresh_token } = (await api.getToken(code, state)).data;
     token = access_token;
     refreshToken = refresh_token;
     localStorage.setItem("refreshToken", refreshToken);
   } else {
-    const { access_token } = (await axios.get(
-      `/spotify/refresh-token/?refresh_token=${refreshToken}`
-    )).data;
+    const { access_token } = (await api.refreshToken(refreshToken)).data;
     token = access_token;
   }
   w.postMessage({ refreshToken });
@@ -76,7 +73,7 @@ async function getToken() {
 async function refreshRoomToken() {
   token = await getToken();
   try {
-    await axios.put(`/room/join/?id=${roomId}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+    await api.joinRoom(roomId, token, user.id, deviceId);
   } catch (error) {
     displayMessage("there was an error when refreshing the token of the rooom");
     return;
@@ -662,7 +659,7 @@ async function getInRoom(id: string) {
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
   (document.querySelector("body")).style.overflow = "hidden";
   try {
-    await axios.put(`/room/join/?id=${id}&token=${token}&userId=${user.id}&deviceId=${deviceId}`);
+    await api.joinRoom(id, token, user.id, deviceId);
   } catch (error) {
     displayMessage("there was an error when joining the rooom");
     displayPermanentMessage("<p>there was an error when joining the rooom. please retry.</p>")

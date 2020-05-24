@@ -1,6 +1,7 @@
 import axios from "axios";
 import 'babel-polyfill';
 import { ICurrentTrackResponse } from "../../typings/spotify";
+import api from "../scripts/api";
 const sendMessage: any = self.postMessage;
 
 let roomId;
@@ -14,7 +15,7 @@ async function refreshRoomToken() {
   token = await getToken();
   try {
     if (!deviceId) throw new Error();
-    await axios.put(`/room/join/?id=${roomId}&token=${token}&userId=${userId}&deviceId=${deviceId}`);
+    await api.joinRoom(roomId, token, userId, deviceId);
   } catch (error) {
     sendMessage({ message: "There was an error when refreshing the token of the rooom" }, "");
     return;
@@ -22,9 +23,7 @@ async function refreshRoomToken() {
 }
 
 async function getToken() {
-  const { access_token: token } = (await axios.get(
-    `/spotify/refresh-token/?refresh_token=${refreshToken}`
-  )).data;
+  const { access_token: token } = (await api.refreshToken(refreshToken)).data;
   return token;
 }
 
