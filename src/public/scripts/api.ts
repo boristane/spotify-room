@@ -2,14 +2,17 @@ import axios, { AxiosResponse } from "axios";
 import { IRoom } from "../../models/room";
 
 async function joinRoom(roomId: string, token: string, userId: string, deviceId: string) {
-  const response = await axios.put<{ message: string, room: IRoom }>("/room/join", {}, {
-    params: {
-      id: roomId,
-      token,
-      userId,
-      deviceId,
-    }
-  });
+  const body = {
+    token,
+    userId,
+    deviceId,
+  };
+  const response = await axios.put<{ message: string, room: IRoom }>("/room/join", body,
+    {
+      params: {
+        id: roomId,
+      }
+    });
   return response;
 }
 
@@ -32,8 +35,22 @@ async function refreshToken(refreshToken: string) {
   return response;
 }
 
+async function refreshTokenInRoom(roomId: string, userId: string, token: string) {
+  const body = {
+    userId,
+    token
+  }
+  const response = await axios.put<{ message: string, room: IRoom }>("/room/update-token", body, {
+    params: {
+      id: roomId
+    }
+  });
+  return response;
+}
+
 export default {
   joinRoom,
   getToken,
   refreshToken,
+  refreshTokenInRoom,
 }

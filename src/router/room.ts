@@ -15,11 +15,13 @@ import {
   getRoomUser,
   hostCheckUsers,
   inviteViaEmail,
+  updateTokenRoom,
 } from "../controller/room";
 
 const router = express.Router();
 
 router.put("/join/", joinRoom);
+router.put("/update-token/", updateTokenRoom);
 router.get("/user/", getRoomUser);
 router.put("/leave/", leaveRoom);
 router.post("/create", createRoom);

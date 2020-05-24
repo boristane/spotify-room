@@ -1,6 +1,23 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import { getUser, spawnRoom, getRoom, addRoomMember, getTrack, addTrackToRoomInDb, getNextTrack, approveTrack, setGuestCurrentTrack, approveGuest, removeRoomGuest, removeTrack, getRoomsByUser, getUserCurrentTrack, setGuestIsPlaying } from "../services/database";
+import {
+  updateTokenInRoom,
+  getUser,
+  spawnRoom,
+  getRoom,
+  addRoomMember,
+  getTrack,
+  addTrackToRoomInDb,
+  getNextTrack,
+  approveTrack,
+  setGuestCurrentTrack,
+  approveGuest,
+  removeRoomMember,
+  removeTrack,
+  getRoomsByUser,
+  getUserCurrentTrack,
+  setGuestIsPlaying,
+} from "../services/database";
 import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
@@ -8,7 +25,8 @@ import { sendEmail, emailType } from "../services/emails";
 import { validateEmail } from "../utils";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
-  const { id, token, userId, deviceId } = req.query;
+  const { id } = req.query;
+  const { token, userId, deviceId } = req.body;
   try {
     if (!id || !userId) {
       const response = { message: "Not found" };
@@ -38,6 +56,37 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
   }
 }
 
+export async function updateTokenRoom(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.query;
+  const { token, userId } = req.body;
+  try {
+    if (!id || !userId) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room || !user) {
+      const response = { message: "Not found" };
+      res.locals.body = response;
+      res.status(404).json(response);
+      return next();
+    }
+    await updateTokenInRoom(room, user, token);
+    res.status(200).json({
+      message: "All good", room: prepareRoomForResponse(room),
+    });
+    return next();
+  } catch (error) {
+    const message = "There was a problem updating the token of a user in the room"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
 export async function leaveRoom(req: Request, res: Response, next: NextFunction) {
   const { id, userId } = req.query;
   try {
@@ -49,7 +98,7 @@ export async function leaveRoom(req: Request, res: Response, next: NextFunction)
       res.status(404).json(response);
       return next();
     }
-    await removeRoomGuest(room, user);
+    await removeRoomMember(room, user);
     logger.info("User left a room", { id, userId });
     res.clearCookie("rooom_id");
     res.status(200).json({
@@ -164,7 +213,7 @@ export async function inviteViaEmail(req: Request, res: Response, next: NextFunc
     }
 
     emails.forEach((email) => {
-      if(!validateEmail(email)) return;
+      if (!validateEmail(email)) return;
       const emailData = {
         email,
         name: user.display_name,
@@ -263,7 +312,7 @@ export async function hostCheckUsers(req: Request, res: Response, next: NextFunc
       const { index } = getUserCurrentTrack(room, u);
       if (index < roomCurrentTrackIndex - 2) {
         try {
-          await removeRoomGuest(room, u);
+          await removeRoomMember(room, u);
         } catch (error) {
           logger.error("There was an error making a user inactive", { error, guest });
           continue;
@@ -478,7 +527,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       const roomCurrentTrack = room.tracks.find((t) => t.current);
       if (roomCurrentTrack) {
         const currentTrack = await getCurrentlyPalyingTrack(hostToken);
-        if(roomCurrentTrack.uri === currentTrack?.item?.uri) {
+        if (roomCurrentTrack.uri === currentTrack?.item?.uri) {
           progress = currentTrack.progress_ms;
         }
         uri = roomCurrentTrack.uri;
@@ -495,7 +544,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         const guest = room.guests[i];
         console.log(guest);
         if (!guest.isActive || !guest.isApproved || !guest.isPlaying) continue;
-        console.log({anotherOne: guest})
+        console.log({ anotherOne: guest })
         try {
           play(guest.token, uri, progress, guest.deviceId);
         } catch (error) {

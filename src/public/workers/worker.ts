@@ -14,8 +14,7 @@ let token;
 async function refreshRoomToken() {
   token = await getToken();
   try {
-    if (!deviceId) throw new Error();
-    await api.joinRoom(roomId, token, userId, deviceId);
+    await api.refreshTokenInRoom(roomId, token, userId);
   } catch (error) {
     sendMessage({ message: "There was an error when refreshing the token of the rooom" }, "");
     return;
