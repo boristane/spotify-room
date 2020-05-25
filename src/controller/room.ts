@@ -243,7 +243,7 @@ export async function hostGoToTrack(req: Request, res: Response, next: NextFunct
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
+    if (!room || !user || !room.isActive) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);
@@ -513,7 +513,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
+    if (!room || !user || !room.isActive) {
       const response = { message: "Not found" };
       res.locals.body = response;
       res.status(404).json(response);

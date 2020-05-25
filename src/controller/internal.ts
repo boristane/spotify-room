@@ -1,6 +1,6 @@
 import logger from "logger";
 import { NextFunction, Response, Request } from "express";
-import * as _ from "lodash";
+import moment from "moment";
 import Room from "../models/room";
 import { getDate } from "../utils";
 import User from "../models/user";
@@ -101,6 +101,46 @@ export async function getGuests(req: Request, res: Response, next: NextFunction)
     return next();
   } catch (error) {
     const message = "There was a problem getting the guests"
+    logger.error(message, { error });
+    res.status(500).json({ message });
+    return next();
+  }
+}
+
+export async function checkStaleRooms(req: Request, res: Response, next: NextFunction) {
+  const { from, to } = req.query;
+  try {
+    const { fromDate, toDate } = getDate(from, to);
+    const rooms = await Room.find({ createdAt: { $gte: fromDate, $lte: toDate } });
+    const oneHourAgo = moment().subtract(1, "hour");
+    const staleRooms = rooms.filter(room => room.isActive && moment(room.updatedAt).isBefore(oneHourAgo));
+    staleRooms.forEach((room) => {
+      room.isActive = false;
+      room.sessions?.forEach(session => {
+        if (!session.endDate) {
+          session.endDate = moment().toDate();
+        }
+      });
+      room.guests.forEach(guest => {
+        guest.isActive = false;
+        guest.isPlaying = false;
+        guest.sessions?.forEach((session) => {
+          if (!session.endDate) {
+            session.endDate = moment().toDate();
+          }
+        });
+      });
+      room.save();
+    });
+    const response = {
+      message: "Updated rooms",
+      staleRooms: staleRooms.map(room => room.id),
+    }
+    res.locals.body = response
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem updating stale rooms"
     logger.error(message, { error });
     res.status(500).json({ message });
     return next();

@@ -84,6 +84,8 @@ export interface IRoom extends Document {
     startDate: Date,
     endDate: Date;
   }>;
+  updatedAt: Date,
+  createdAt: Date,
 }
 
 export default mongoose.model<IRoom>("Room", RoomSchema);
