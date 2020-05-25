@@ -16,7 +16,7 @@ const app = express()
   .use(express.json())
   .use(cookieParser());
 // Todo change this
-import winston from "winston";
+import winston, { loggers } from "winston";
 import morgan from "morgan";
 import json from "morgan-json"
 import { apiAuth } from "./auth/auth";
@@ -106,6 +106,7 @@ function responseLogger(
 
 connectToDb();
 
+app.use(logger.bindExpressMiddleware);
 app.use(requestLogger);
 app.use("/spotify", spotifyRouter);
 app.use("/room", roomRouter);
