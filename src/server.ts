@@ -16,7 +16,7 @@ const app = express()
   .use(express.json())
   .use(cookieParser());
 // Todo change this
-import winston, { loggers } from "winston";
+import winston from "winston";
 import morgan from "morgan";
 import json from "morgan-json"
 import { apiAuth } from "./auth/auth";

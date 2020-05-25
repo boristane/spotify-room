@@ -236,8 +236,8 @@ export async function getNextTrack(room: IRoom, userId: string, isHost: boolean)
   current: boolean;
   name: string; artists: string[]; image: string;
 } | undefined> {
-  const validTracks = room.tracks.filter((t, i) => t.approved && !t.removed && !t.completed);
   if (isHost) {
+    const validTracks = room.tracks.filter((t, i) => t.approved && !t.removed && !t.completed);
     const currentTrack = room.tracks.find(t => t.current);
     const index = validTracks.findIndex(t => t.current);
     currentTrack.completed = true;
@@ -255,18 +255,23 @@ export async function getNextTrack(room: IRoom, userId: string, isHost: boolean)
     await room.save();
     return newCurrentTrack;
   }
+  const validTracks = room.tracks.filter((t, i) => t.approved && !t.removed);
   const guest = room.guests.find(m => m.id === userId);
   if (!guest) return;
   const currentTrackUri = guest.currentTrack;
   const currentTrackIndex = validTracks.findIndex(t => t.uri === currentTrackUri);
-  if (currentTrackIndex < 0) return;
+  if (currentTrackIndex < 0) {
+    return;
+  }
   let nextTrack;
   if (currentTrackIndex >= validTracks.length - 1) {
-    nextTrack = room.tracks.filter((t, i) => t.approved && !t.removed)[0];
+    nextTrack = validTracks[0];
   } else {
     nextTrack = validTracks.find((t, i) => i > currentTrackIndex);
   }
-  if (!nextTrack) return;
+  if (!nextTrack) {
+    return;
+  }
   guest.currentTrack = nextTrack.uri;
   await room.save();
   return nextTrack;
