@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164184841-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-164184841-1');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/feather-icons"></script>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="icon" href="../assets/rooom.png" />
+  <link rel="stylesheet" href="../styles/me.css" />
+  <link rel="stylesheet" href="../styles/form.css" />
+  <link rel="stylesheet" href="../styles/loader.css" />
+  <link rel="stylesheet" href="../styles/modal.css" />
+
+  <title>rooom</title>
+  <meta name="description" content="your music, your friends, in sync, powered by Spotify." />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@BorisTane">
+  <meta name="twitter:title" content="rooom">
+  <meta name="twitter:description" content="your music, your friends, in sync, powered by Spotify.">
+  <meta name="twitter:creator" content="@BorisTane">
+  <meta name="twitter:image" content="https://d1apvrodb6vxub.cloudfront.net/social-image.png">
+  <meta name="twitter:domain" content="rooom.click">
+  <meta property="og:title" content="rooom - your music, your friends, in sync" />
+  <meta property="og:url" content="https://rooom.click" />
+  <meta property="og:description" content="your music, your friends, in sync, powered by Spotify." />
+  <meta property="og:image" content="https://d1apvrodb6vxub.cloudfront.net/social-image.png" />
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div class="loader"></div>
+  <div id="message"></div>
+  <section id="get-in-room" style="display: none;">
+    <div id="create-room-section">
+      <div class="logo-container" style="display: flex; flex-direction: row;">
+        <a href="/">
+          <img src="../assets/logo.png" alt="logo" class="logo" />
+        </a>
+        <div class="beta">BETA</div>
+      </div>
+      <div style="margin-bottom: 50px;">
+        <p>
+          your music, your friends,
+        </p>
+        <p>in sync.</p>
+        <div id="result"></div>
+      </div>
+      <div class="form-inline">
+        <input type="text" placeholder="enter the name of your rooom" id="create-room-name">
+        <button id="create">create a rooom</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div>
+      or jump back in your recent roooms
+    </div>
+    <div id="existing-rooms">
+
+    </div>
+  </section>
+
+  <div class="user-container">
+    <div id="user"></div>
+    <button id="leave" class="room-block red-button">logout</button>
+    <div class="form-inline" id="search-form-container">
+      <i data-feather="search" style="color: gray; width: 20px; padding-top: 2px;"></i>
+      <input type="text" id="search" placeholder="search songs to add to the rooom">
+    </div>
+  </div>
+  
+  <div id="waiting" style="display: none;">waiting to be added to the rooom by the host...</div>
+
+  <script src="../scripts/home.ts"></script>
+  <script>
+    feather.replace()
+  </script>
+</body>
+
+</html>

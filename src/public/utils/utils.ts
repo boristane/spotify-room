@@ -27,3 +27,19 @@ export const debounce = (func: Function, delay: number) => {
       = setTimeout(() => func.apply(context, args), delay)
   }
 }
+
+export function getCookies(): Record<string, string> {
+  const pairs = document.cookie.split(";");
+  const cookies = {};
+  for (let i = 0; i < pairs.length; i++) {
+    const pair = pairs[i].split("=");
+    cookies[(pair[0] + '').trim()] = unescape(pair.slice(1).join('='));
+  }
+  return cookies;
+}
+
+export function closeModals() {
+  document.querySelectorAll(".modal").forEach(elt => {
+    (elt as HTMLDivElement).style.display = "none";
+  });
+}

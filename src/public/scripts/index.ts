@@ -1,12 +1,22 @@
 import axios from "axios";
+
 import "babel-polyfill";
 import { IRoom } from "../../models/room";
 import { ISpotifyTrack, ISpotifyUser } from "../../typings/spotify";
 import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
 import { IUser } from "../../models/user";
-import { shareOnFacebook, tweetIt, isIOS, debounce } from "../utils/utils";
+import {
+  shareOnFacebook,
+  tweetIt,
+  isIOS,
+  debounce,
+  closeModals,
+  getCookies,
+} from "../utils/utils";
 import { setBackground } from "./colors";
-import api from "./api";
+import roomApi from "./apis/room";
+import userApi from "./apis/user";
+import spotifyApi from "./apis/spotify";
 import messages from "./messages";
 
 let token: string;
@@ -58,12 +68,12 @@ async function getToken() {
   let refreshToken = localStorage.getItem("refreshToken");
   let token;
   if (!refreshToken || refreshToken === "null") {
-    const { access_token, refresh_token } = (await api.getToken(code, state)).data;
+    const { access_token, refresh_token } = (await spotifyApi.getToken(code, state)).data;
     token = access_token;
     refreshToken = refresh_token;
     localStorage.setItem("refreshToken", refreshToken);
   } else {
-    const { access_token } = (await api.refreshToken(refreshToken)).data;
+    const { access_token } = (await spotifyApi.refreshToken(refreshToken)).data;
     token = access_token;
   }
   w.postMessage({ refreshToken });
@@ -73,7 +83,7 @@ async function getToken() {
 async function refreshRoomToken() {
   token = await getToken();
   try {
-    await api.refreshTokenInRoom(roomId, user.id, token);
+    await roomApi.refreshTokenInRoom(roomId, user.id, token);
   } catch (error) {
     displayMessage(messages.errors.refreshToken);
     return;
@@ -82,7 +92,7 @@ async function refreshRoomToken() {
 
 export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
   try {
-    return (await axios.get(`/room/?id=${roomId}&userId=${userId}`)).data.room as IRoom;
+    return (await roomApi.getRoom(roomId, userId)).data.room as IRoom;
   } catch (err) {
     if (err.response && err.response.status === 401) {
       return null;
@@ -93,7 +103,7 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
 
 export async function checkUsers(roomId: string, userId: string): Promise<IRoom> {
   try {
-    return (await axios.get(`/room/check/?id=${roomId}&userId=${userId}`)).data.room as IRoom;
+    return (await roomApi.checkRoom(roomId, userId)).data.room as IRoom;
   } catch (err) {
     return null;
   }
@@ -144,14 +154,14 @@ document.getElementById("show-users-button").addEventListener("click", (e) => {
   isUsersTrayOpened = !isUsersTrayOpened;
 });
 
-document.getElementById("yes-email").addEventListener("click", (e) => {
+document.getElementById("yes-email").addEventListener("click", async (e) => {
   e.stopPropagation();
   // @ts-ignore
   gtag('event', "accept-emails", {
     event_category: "user",
   });
   try {
-    axios.put(`/user/email-subscription/?id=${user.id}`, { isEmailSubscriber: true });
+    await userApi.addToMailingList(user.id, true);
     displayMessage(messages.infos.addedToTheMailingList);
   } catch (e) {
     displayMessage(messages.errors.addedToMailingList);
@@ -160,14 +170,14 @@ document.getElementById("yes-email").addEventListener("click", (e) => {
   }
 });
 
-document.getElementById("no-email").addEventListener("click", (e) => {
+document.getElementById("no-email").addEventListener("click", async (e) => {
   e.stopPropagation();
   // @ts-ignore
   gtag('event', "reject-emails", {
     event_category: "user",
   });
   try {
-    axios.put(`/user/email-subscription/?id=${user.id}`, { isEmailSubscriber: false });
+    await userApi.addToMailingList(user.id, false);
   } catch (e) {
     return;
   } finally {
@@ -261,7 +271,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
         let numAttempts = 0;
         while (!success && numAttempts < maxNumAttempts) {
           try {
-            const room = (await axios.get(`/room/go-to/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
+            const room = (await roomApi.goToTrack(roomId, user.id, uri)).data.room;
             isPlaying = true;
             w.postMessage({ startPlaying: true });
             document.querySelectorAll(".play").forEach(elt => elt.textContent = "pause");
@@ -282,7 +292,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
           event_category: "track",
         });
         try {
-          const room = (await axios.get(`/room/approve/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
+          const room = (await roomApi.approveTrack(roomId, user.id, uri)).data.room;
           displayMessage(messages.infos.approvedTrack);
           displayRoom(room);
           const recommendations = await getRecommendations(room);
@@ -547,21 +557,9 @@ async function main() {
   });
 }
 
-function closeModals() {
-  document.querySelectorAll(".modal").forEach(elt => {
-    (elt as HTMLDivElement).style.display = "none";
-  });
-}
 
-function getCookies(): Record<string, string> {
-  const pairs = document.cookie.split(";");
-  const cookies = {};
-  for (let i = 0; i < pairs.length; i++) {
-    const pair = pairs[i].split("=");
-    cookies[(pair[0] + '').trim()] = unescape(pair.slice(1).join('='));
-  }
-  return cookies;
-}
+
+
 
 async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
   if (!room) return [];
@@ -655,7 +653,7 @@ async function getInRoom(id: string) {
   (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
   (document.querySelector("body")).style.overflow = "hidden";
   try {
-    await api.joinRoom(id, token, user.id, deviceId);
+    await roomApi.joinRoom(id, token, user.id, deviceId);
   } catch (error) {
     displayMessage(messages.errors.joinRoom);
     displayPermanentMessage(messages.permanent.joinRoomError);

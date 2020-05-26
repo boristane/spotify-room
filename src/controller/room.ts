@@ -239,7 +239,8 @@ export async function inviteViaEmail(req: Request, res: Response, next: NextFunc
 }
 
 export async function hostGoToTrack(req: Request, res: Response, next: NextFunction) {
-  const { id, userId, uri } = req.query;
+  const { id } = req.query;
+  const { userId, uri } = req.body;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
@@ -372,7 +373,8 @@ export async function hostRemoveTrack(req: Request, res: Response, next: NextFun
 }
 
 export async function hostApproveTrack(req: Request, res: Response, next: NextFunction) {
-  const { id, userId, uri } = req.query;
+  const { id } = req.query;
+  const { userId, uri } = req.body;
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
