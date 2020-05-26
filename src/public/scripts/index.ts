@@ -7,6 +7,7 @@ import { IUser } from "../../models/user";
 import { shareOnFacebook, tweetIt, isIOS, debounce } from "../utils/utils";
 import { setBackground } from "./colors";
 import api from "./api";
+import messages from "./messages";
 
 let token: string;
 let user: IUser;
@@ -17,7 +18,6 @@ let oldRoom: IRoom;
 let isPlaying = false;
 let isOnboarded = false;
 let refreshRoomTimeoutId;
-const browserNotSupportedHtml = "<p>whoops! rooom is not available on your browser. please try using the latest version of <a href='https://www.mozilla.org'>Mozilla Firefox</a> or <a href='https://www.google.com/chrome/'>Google Chrome</a>, preferably on desktop/laptop.</p>";
 
 let w;
 
@@ -40,7 +40,7 @@ function startWorker() {
       }
     };
   } else {
-    displayPermanentMessage(browserNotSupportedHtml);
+    displayPermanentMessage(messages.permanent.browserNotSupported);
   }
 }
 
@@ -75,7 +75,7 @@ async function refreshRoomToken() {
   try {
     await api.refreshTokenInRoom(roomId, user.id, token);
   } catch (error) {
-    displayMessage("there was an error when refreshing the token of the rooom");
+    displayMessage(messages.errors.refreshToken);
     return;
   }
 }
@@ -87,8 +87,7 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
     if (err.response && err.response.status === 401) {
       return null;
     }
-    displayMessage("there was a problem getting the rooom");
-    console.log("there was a problem getting the room", err);
+    displayMessage(messages.errors.gettingTheRoom);
   }
 }
 
@@ -153,9 +152,9 @@ document.getElementById("yes-email").addEventListener("click", (e) => {
   });
   try {
     axios.put(`/user/email-subscription/?id=${user.id}`, { isEmailSubscriber: true });
-    displayMessage("you have been added to the mailing list 📧")
+    displayMessage(messages.infos.addedToTheMailingList);
   } catch (e) {
-    displayMessage("there was a problem adding you to the mailing list, please try again");
+    displayMessage(messages.errors.addedToMailingList);
   } finally {
     closeModals();
   }
@@ -235,7 +234,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
       inputElt.setSelectionRange(0, 99999);
       document.execCommand("copy");
       inputElt.blur();
-      displayMessage("rooom url copied to clipboard");
+      displayMessage(messages.infos.urlCopied);
     });
   });
 
@@ -247,7 +246,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
           event_category: "track",
           event_label: "non-host"
         });
-        displayMessage("Only the rooom host can skip tracks 😅");
+        displayMessage(messages.infos.cannotSkipTracks);
         return;
       };
       const { uri, approved } = this.dataset;
@@ -275,7 +274,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
           numAttempts += 1;
         }
         if (!success) {
-          displayMessage("there was an error going to this track");
+          displayMessage(messages.errors.masterSkipTrack);
         }
       } else {
         // @ts-ignore
@@ -284,13 +283,12 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
         });
         try {
           const room = (await axios.get(`/room/approve/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
-          displayMessage("This track has been approved in the rooom");
+          displayMessage(messages.infos.approvedTrack);
           displayRoom(room);
           const recommendations = await getRecommendations(room);
           displayRecommendations(recommendations);
         } catch (err) {
-          displayMessage("there was an error approving to this track");
-          console.log("there was an error approving to a track");
+          displayMessage(messages.errors.approvedTrack);
         }
       }
     });
@@ -307,13 +305,12 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
       try {
         const { uri } = this.dataset;
         const room = (await axios.delete(`/room/remove/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
-        displayMessage("This track has been removed from the rooom");
+        displayMessage(messages.infos.removedTrack);
         displayRoom(room);
         const recommendations = await getRecommendations(room);
         displayRecommendations(recommendations);
       } catch (error) {
-        displayMessage("there was an error removing this track");
-        console.log("there was an error removing a track");
+        displayMessage(messages.errors.removedTrack);
       }
     });
   })
@@ -329,13 +326,13 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
       const { id, name } = this.dataset;
       try {
         const room = (await axios.get(`/room/approve-guest/?id=${roomId}&userId=${user.id}&guestId=${id}`)).data.room;
-        displayMessage(`Lest's welcome ${name} to the rooom! 🎉`);
+        displayMessage(messages.infos.approveGuest(name));
         displayRoom(room);
       } catch (err) {
         if (err.response && err.response.status === 422) {
-          return displayMessage("Too many guests in the rooom");
+          return displayMessage(messages.infos.tooManyGuestsInRoom);
         }
-        return displayMessage("there was an error approving this guest");
+        return displayMessage(messages.errors.approvedGuest);
       }
     });
   });
@@ -350,7 +347,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   }
 
   if (isHost && room.guests.filter(m => !m.isApproved).length > 0) {
-    displayMessage("there are guests in the queue waiting for your approval");
+    displayMessage(messages.infos.guestsAwaiting);
   }
 
   setTimeout(() => {
@@ -411,8 +408,7 @@ document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", 
     isPlaying = !isPlaying;
     displayRoom(r);
   } catch (error) {
-    displayMessage("there was problem playing the track");
-    console.log("there was problem playing the track", error);
+    displayMessage(messages.errors.playedTrack);
   }
 }));
 
@@ -427,11 +423,10 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
     const uris = room.tracks.filter(t => t.approved).map(t => t.uri);
     const name = room.name;
     await axios.post(`/spotify/generate-playlist/?token=${token}`, { uris, userId: user.id, name });
-    displayMessage("Playlist succesfully created 🥳 ! Check your Spotify account !");
+    displayMessage(messages.infos.playlistCreated);
     displayRoom(room);
   } catch (error) {
-    displayMessage("there was problem creating the playlist");
-    console.log("there was problem creating the playlist", error);
+    displayMessage(messages.errors.playlistCreated);
   }
 });
 
@@ -474,8 +469,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
       });
     });
   } catch (err) {
-    displayMessage("there was a problem getting your search results");
-    console.log("there was an error getting the search result from spotify", err);
+    displayMessage(messages.errors.searchResults);
   }
 }, 500));
 
@@ -491,7 +485,7 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
   try {
     const roomName = (document.getElementById("create-room-name") as HTMLInputElement).value;
     if (roomName === "" || roomName.includes("<") || roomName.includes(">")) {
-      return displayMessage("please enter a valid rooom name");
+      return displayMessage(messages.errors.invalidRoomName);
     }
     await axios.post(`/room/create/`, {
       token,
@@ -501,8 +495,7 @@ document.getElementById("create").addEventListener("click", async (e: MouseEvent
     });
     window.location.reload();
   } catch (error) {
-    displayMessage("there was a problem creating the rooom 😥");
-    console.log("there was problem creating the room", error);
+    displayMessage(messages.errors.createRoom);
   }
 });
 
@@ -521,8 +514,7 @@ async function leaveRoom() {
     await axios.put(`/room/leave/?id=${roomId}&userId=${user.id}`);
     window.location.reload();
   } catch (error) {
-    displayMessage("there was problem leaving the room");
-    console.log("there was problem leaving the room", error);
+    displayMessage(messages.errors.leaveRoom);
   }
 }
 
@@ -533,7 +525,7 @@ async function main() {
   try {
     token = await getToken();
   } catch {
-    displayPermanentMessage("<p>there was an issue getting your authentication token, please try again.</p>");
+    displayPermanentMessage(messages.permanent.authTokenError);
     return;
   }
 
@@ -579,8 +571,7 @@ async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
     const tracks = (await axios.put(`/spotify/recommendations/?token=${token}`, { uris })).data;
     return tracks;
   } catch (err) {
-    console.log("Error getting the recommendations", err);
-    displayMessage("there was an issue getting the track recommendations");
+    displayMessage(messages.errors.getTrackRecommendations);
   }
 }
 
@@ -588,14 +579,14 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
   const { uri, name, artists, image } = elt.dataset;
   const uris = oldRoom.tracks.map(t => t.uri);
   if (uris.indexOf(uri) >= 0) {
-    displayMessage("This track is already in the rooom");
+    displayMessage(messages.infos.trackAlreadyInRoom);
     return;
   }
   try {
     const room = (await axios.post(`/room/add-track/?id=${roomId}`, {
       uri, name, artists: artists.split(","), image, userId: user.id,
     })).data.room as IRoom;
-    displayMessage("track added to the room!");
+    displayMessage(messages.infos.addTrack);
     displayRoom(room);
     if (room.tracks.filter((track) => track.addedBy === user.display_name).length === 1) {
       setTimeout(() => {
@@ -604,7 +595,7 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
     }
     return room;
   } catch (err) {
-    displayMessage("there was a problem adding a track to the room");
+    displayMessage(messages.errors.addTrack);
   }
 }
 
@@ -666,8 +657,8 @@ async function getInRoom(id: string) {
   try {
     await api.joinRoom(id, token, user.id, deviceId);
   } catch (error) {
-    displayMessage("there was an error when joining the rooom");
-    displayPermanentMessage("<p>there was an error when joining the rooom. please retry.</p>")
+    displayMessage(messages.errors.joinRoom);
+    displayPermanentMessage(messages.permanent.joinRoomError);
     return;
   }
   const room = await getRoom(id, user.id);
@@ -749,9 +740,9 @@ function addEventListeners(id: string) {
       await axios.post(`/room/email-invite/?id=${id}&userId=${user.id}`, { emails: data });
       inputElt.value = "";
       closeModals();
-      displayMessage("email invite(s) sent");
+      displayMessage(messages.infos.sendEmailInvites);
     } catch (err) {
-      displayMessage("there was an error sending the email invite(s)");
+      displayMessage(messages.errors.sendEmailInvites);
     }
   });
 
@@ -767,9 +758,9 @@ function addEventListeners(id: string) {
       await axios.post(`/room/email-invite/?id=${id}&userId=${user.id}`, { emails: data });
       inputElt.value = "";
       closeModals();
-      displayMessage("email invite(s) sent");
+      displayMessage(messages.infos.sendEmailInvites);
     } catch (err) {
-      displayMessage("there was an error sending the email invite(s)");
+      displayMessage(messages.errors.sendEmailInvites);
     }
   });
 
@@ -799,12 +790,22 @@ function addEventListeners(id: string) {
 
   document.getElementById("twitter-share").addEventListener("click", async (e) => {
     e.preventDefault();
+    // @ts-ignore
+    gtag('event', "share-twitter", {
+      event_category: "room",
+      event_label: "twitter",
+    });
     const tweet = "Join my remote music listening session!";
     tweetIt(tweet, `https://rooom.click?id=${id}`);
   });
 
   document.getElementById("facebook-share").addEventListener("click", async (e) => {
     e.preventDefault();
+    // @ts-ignore
+    gtag('event', "share-facebook", {
+      event_category: "room",
+      event_label: "facebook",
+    });
     shareOnFacebook(`https://rooom.click?id=${id}`);
   });
 }
@@ -814,12 +815,12 @@ export async function doIt() {
   try {
     const spotifyUser = (await axios.get(`/spotify/me/?token=${token}`)).data.user as ISpotifyUser;
     if (spotifyUser.product !== "premium") {
-      displayPermanentMessage("<p>unfortunately rooom is available only for <a href='https://www.spotify.com/uk/premium/'>Spotify Premium</a> users</p>");
+      displayPermanentMessage(messages.permanent.notPremiumError);
       return;
     }
     id = spotifyUser.id;
   } catch {
-    displayPermanentMessage("<p>there was an issue getting your profile from Spotify, please try again.</p>");
+    displayPermanentMessage(messages.permanent.spotifyProfileError);
     return;
   }
 
@@ -858,7 +859,7 @@ export async function doIt() {
 window.onSpotifyWebPlaybackSDKReady = () => {
   const ios = isIOS();
   if(ios) {
-    return displayPermanentMessage("<p>whoops! rooom is not available on your device. please try using a laptop/desktop.</p>");
+    return displayPermanentMessage(messages.permanent.deviceNotSupported);
   }
   
   setTimeout(() => {
@@ -869,18 +870,18 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     });
   
     player.addListener('initialization_error', ({ message }) => {
-      displayPermanentMessage(browserNotSupportedHtml);
+      displayPermanentMessage(messages.permanent.browserNotSupported);
       return;
     });
     player.addListener('authentication_error', ({ message }) => {
-      displayPermanentMessage(`<p>whoops! we could not authenticate you from spotify. please refresh the page and retry again.</p>`);
+      displayPermanentMessage(messages.permanent.authTokenError);
       return;
     });
     player.addListener('account_error', ({ message }) => {
-      displayPermanentMessage(`<p>there was an error with your account. please refresh the page.</p>`);
+      displayPermanentMessage(messages.permanent.accountError);
       console.error(message);
     });
-    player.addListener('playback_error', ({ message }) => { displayMessage("there was an error with the web player. please refresh the page."); console.error(message); })
+    player.addListener('playback_error', ({ message }) => { displayMessage(messages.errors.playback); console.error(message); })
   
     player.addListener('ready', ({ device_id }) => {
       deviceId = device_id;
@@ -889,7 +890,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     });
   
     player.addListener('not_ready', ({ device_id }) => {
-      displayPermanentMessage(`<p>the device with device id ${deviceId} has gone offline. please refresh the page</p>`);
+      displayPermanentMessage(messages.permanent.offlineDevice);
     });
   
     player.connect();
