@@ -77,18 +77,22 @@ async function goToNextTrack() {
   let success = false;
   let numAttempts = 0;
   const maxNumAttempts = 5;
+  let errorMessage: string;
   while (!success && numAttempts < maxNumAttempts) {
     try {
-      const room = (await axios.get(`/room/next/?id=${roomId}&userId=${userId}`)).data.room;
+      const room = (await roomApi.goToNextTrack(roomId, userId)).data.room;
       sendMessage({ room });
       success = true;
     } catch (error) {
-      console.log("There was a problem moving to the next track");
-      await refreshRoomToken();
+      if (error.response && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      // await refreshRoomToken();
     }
     numAttempts += 1;
   }
   if (!success) {
-    sendMessage({ message: "There was a problem moving to the next track" });
+    console.log(errorMessage)
+    sendMessage({ message: errorMessage ?? "There was a problem moving to the next track", permanent: true });
   }
 }

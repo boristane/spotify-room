@@ -23,6 +23,7 @@ import * as _ from "lodash";
 import { IRoom } from "../models/room";
 import { sendEmail, emailType } from "../services/emails";
 import { validateEmail } from "../utils";
+import { send404, send401 } from "../helpers/httpResponses";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
@@ -154,30 +155,30 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "The rooom could not be found")
+      return next();
+    }
+    if (!user) {
+      send404(res, "The user could not be found")
       return next();
     }
     let roomMember;
-    const isHost = room.host.id === userId
+    const isHost = room.host.id === userId;
     if (isHost) roomMember = room.host;
     else roomMember = room.guests.find(m => m.id === userId);
     if (!roomMember) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send401(res, "You are not a member of this rooom, please refresh the page to join the rooom");
       return next();
     }
-    const currentTrack = await getNextTrack(room, roomMember.id, isHost);
-    if (!currentTrack) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    let nextTrack;
+    try {
+      nextTrack = await getNextTrack(room, roomMember.id, isHost);
+    } catch(error) {
+      send404(res, error.message);
       return next();
     }
-    await play(roomMember.token, currentTrack.uri, 0, roomMember.deviceId);
+    await play(roomMember.token, nextTrack.uri, 0, roomMember.deviceId);
     const response = {
       message: "Went to next track", room: prepareRoomForResponse(room),
     };

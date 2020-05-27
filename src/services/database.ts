@@ -96,7 +96,7 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     host.token = token;
     room.isActive = true;
     const previousSession = room.sessions[room.sessions.length - 1];
-    if(previousSession && !previousSession.endDate) {
+    if (previousSession && !previousSession.endDate) {
       previousSession.endDate = new Date();
     }
     room.sessions.push({
@@ -114,11 +114,11 @@ export async function addRoomMember(room: IRoom, user: IUser, token: string, dev
     guest.deviceId = deviceId;
     guest.currentTrack = currentTrack?.uri;
     guest.isActive = true;
-    if(!guest.sessions) {
+    if (!guest.sessions) {
       guest.sessions = [];
     }
     const previousSession = guest.sessions[guest.sessions.length - 1];
-    if(previousSession && !previousSession.endDate) {
+    if (previousSession && !previousSession.endDate) {
       previousSession.endDate = new Date();
     }
     guest.sessions.push({
@@ -155,7 +155,7 @@ export async function removeRoomMember(room: IRoom, user: IUser): Promise<boolea
     const session = room.sessions[room.sessions.length - 1];
     session.endDate = new Date();
     room.guests.forEach(g => {
-      if(g.sessions.length >= 1) {
+      if (g.sessions.length >= 1) {
         const session = g.sessions[g.sessions.length - 1];
         session.endDate = new Date();
       }
@@ -167,7 +167,7 @@ export async function removeRoomMember(room: IRoom, user: IUser): Promise<boolea
   if (guest) {
     guest.isActive = false;
     guest.isPlaying = false;
-    if(guest.sessions.length >= 1) {
+    if (guest.sessions.length >= 1) {
       const session = guest.sessions[guest.sessions.length - 1];
       session.endDate = new Date();
     }
@@ -235,7 +235,7 @@ export async function getNextTrack(room: IRoom, userId: string, isHost: boolean)
   approved: boolean;
   current: boolean;
   name: string; artists: string[]; image: string;
-} | undefined> {
+}> {
   if (isHost) {
     const validTracks = room.tracks.filter((t, i) => t.approved && !t.removed && !t.completed);
     const currentTrack = room.tracks.find(t => t.current);
@@ -249,7 +249,7 @@ export async function getNextTrack(room: IRoom, userId: string, isHost: boolean)
       return room.tracks.filter((t, i) => t.approved && !t.removed)[0];
     }
     const newCurrentTrack = validTracks.find((t, i) => i > index);
-    if (!newCurrentTrack) return;
+    if (!newCurrentTrack) throw new Error("There are no more tracks to continue playing in this rooom.");
     newCurrentTrack.current = true;
     newCurrentTrack.completed = false;
     await room.save();
@@ -257,20 +257,24 @@ export async function getNextTrack(room: IRoom, userId: string, isHost: boolean)
   }
   const validTracks = room.tracks.filter((t, i) => t.approved && !t.removed);
   const guest = room.guests.find(m => m.id === userId);
-  if (!guest) return;
-  const currentTrackUri = guest.currentTrack;
-  const currentTrackIndex = validTracks.findIndex(t => t.uri === currentTrackUri);
-  if (currentTrackIndex < 0) {
-    return;
+  if (!guest) throw new Error("You are not a guest in this rooom. Please refresh the page to join the rooom.");
+  if (!room.isActive) throw new Error("The host of this rooom left, the listening session is over...");
+  const guestCurrentTrackIndex = validTracks.findIndex(t => t.uri === guest.currentTrack);
+  const roomCurrentTrackIndex = validTracks.findIndex(t => t.current);
+  if (guestCurrentTrackIndex < 0) {
+    throw new Error("There are no more tracks to continue playing in this rooom.");
+  }
+  if (guestCurrentTrackIndex > roomCurrentTrackIndex + 3) {
+    throw new Error("You are not in sync with the other members of this rooom. Please refresh the page to sync back in.");
   }
   let nextTrack;
-  if (currentTrackIndex >= validTracks.length - 1) {
+  if (guestCurrentTrackIndex >= validTracks.length - 1) {
     nextTrack = validTracks[0];
   } else {
-    nextTrack = validTracks.find((t, i) => i > currentTrackIndex);
+    nextTrack = validTracks.find((t, i) => i > guestCurrentTrackIndex);
   }
   if (!nextTrack) {
-    return;
+    throw new Error("There are no more tracks to continue playing in this rooom.");
   }
   guest.currentTrack = nextTrack.uri;
   await room.save();

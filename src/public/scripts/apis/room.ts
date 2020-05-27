@@ -48,11 +48,20 @@ async function approveTrack(roomId: string, userId: string, uri: string) {
   return response;
 }
 
+async function goToNextTrack(roomId: string, userId: string) {
+  const response = await axios.get<{ message: string, room: IRoom }>("/room/next", {
+    params: { id: roomId, userId }
+  });
+  return response;
+}
+
 export default {
   joinRoom,
   getRoom,
   checkRoom,
   refreshTokenInRoom,
   goToTrack,
-  approveTrack
+  approveTrack,
+  goToNextTrack,
+  
 }

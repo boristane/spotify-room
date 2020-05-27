@@ -41,6 +41,9 @@ function startWorker() {
         return displayRoom(event.data.room);
       }
       if (event.data.message) {
+        if (event.data.permanent) {
+          return displayPermanentMessage(event.data.message);
+        }
         return displayMessage(event.data.message);
       }
       if (typeof event.data.isPlaying !== "undefined") {

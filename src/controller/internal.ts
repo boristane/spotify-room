@@ -111,7 +111,7 @@ export async function checkStaleRooms(req: Request, res: Response, next: NextFun
   const { from, to } = req.query;
   try {
     const { fromDate, toDate } = getDate(from, to);
-    const rooms = await Room.find({ createdAt: { $gte: fromDate, $lte: toDate } });
+    const rooms = await Room.find({ updatedAt: { $gte: fromDate, $lte: toDate } });
     const oneHourAgo = moment().subtract(1, "hour");
     const staleRooms = rooms.filter(room => room.isActive && moment(room.updatedAt).isBefore(oneHourAgo));
     staleRooms.forEach((room) => {
