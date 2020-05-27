@@ -17,16 +17,19 @@ async function refreshRoomToken() {
   try {
     await roomApi.refreshTokenInRoom(roomId, token, userId);
   } catch (error) {
-    sendMessage({ message: "There was an error when refreshing the token of the rooom" }, "");
+    sendMessage({ message: "There was an error when refreshing the token of the rooom" });
     return;
   }
 }
 
 async function getToken() {
-  const { access_token: token } = (await spotifyApi.refreshToken(refreshToken)).data;
-  return token;
+  try {
+    const { access_token: token } = (await spotifyApi.refreshToken(refreshToken)).data;
+    return token;
+  } catch(error) {
+    return "";
+  }
 }
-
 
 async function getCurrentLoop() {
   const loopTime = 10 * 1000;
@@ -87,7 +90,7 @@ async function goToNextTrack() {
       if (error.response && error.response.data.message) {
         errorMessage = error.response.data.message;
       }
-      // await refreshRoomToken();
+      await refreshRoomToken();
     }
     numAttempts += 1;
   }

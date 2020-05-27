@@ -3,7 +3,6 @@ import { ISpotifyUser, ISpotifyTrack } from "../typings/spotify";
 import User, { IUser } from "../models/user";
 import Room, { IRoom } from "../models/room";
 import { generateCoverUrl } from "./cover";
-import logger from "logger";
 
 export async function saveUser(spotifyUser: ISpotifyUser) {
   const user = await User.findOne({ id: spotifyUser.id });

@@ -796,7 +796,7 @@ function addEventListeners(id: string) {
       event_category: "room",
       event_label: "twitter",
     });
-    const tweet = "Join my remote music listening session!";
+    const tweet = "Join my remote music listening session on @rooomclick!";
     tweetIt(tweet, `https://rooom.click?id=${id}`);
   });
 
