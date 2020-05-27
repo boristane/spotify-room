@@ -210,13 +210,14 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
     isOnboarded = true;
   }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
-  const trackElts = room.tracks.map((track) => trackBuilder(track, isHost));
+  const currentTrack = isHost ? room.tracks.find(t => t.current) : room.tracks.find(t => t.uri === room.guests.find(g => g.id === user.id).currentTrack);
+  const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack.uri));
   tracklistElt.innerHTML = trackElts.join("");
   if(trackElts.length === 0) {
     tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>let's start by adding songs!</p><p>you can use the search bar on the top-right or the recommendations below</p></div>"
   }
 
-  const currentEltIndex = room.tracks.findIndex(t => t.current);
+  const currentEltIndex = room.tracks.findIndex(t => t.uri === currentTrack.uri);
   tracklistElt.parentElement.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
   if (currentEltIndex > -1) {
     await setBackground("#cont", room.tracks[currentEltIndex].image);
@@ -354,7 +355,6 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
     elt.style.display = "block";
   });
 
-  const currentTrack = room.tracks[currentEltIndex]
   if (currentTrack) {
     document.title = `${currentTrack.name} - ${currentTrack.artists.join(", ")} | ${room.name} `;
   }
