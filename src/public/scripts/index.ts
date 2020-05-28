@@ -215,7 +215,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack.uri));
   tracklistElt.innerHTML = trackElts.join("");
   if(trackElts.length === 0) {
-    tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>let's start by adding songs!</p><p>you can use the search bar on the top-right or the recommendations below</p></div>"
+    tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>let's start by adding songs!</p><p>You can use the search bar on the top-right or the recommendations below</p></div>"
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.uri === currentTrack.uri);
@@ -904,7 +904,7 @@ function displayMessage(message: string) {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
     messageElt.style.bottom = `-300px`;
-  }, 2000);
+  }, 4000);
 }
 
 function displayPermanentMessage(innerHtml: string) {
