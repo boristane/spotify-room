@@ -614,7 +614,7 @@ function displayExistingRooms(rooms: IRoom[]) {
     `;
   }).join("");
   if (rooms.length === 0) {
-    document.getElementById("existing-rooms").textContent = "none found";
+    document.getElementById("existing-rooms").textContent = "Pretty emty here... Let's start with creating a rooom!";
     document.getElementById("existing-rooms").style.textAlign = "center";
     document.getElementById("existing-rooms").style.display = "block";
   } else {
