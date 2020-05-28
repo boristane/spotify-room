@@ -526,6 +526,10 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       let progress = 0;
       const hostToken = room.host.token;
       const roomCurrentTrack = room.tracks.find((t) => t.current);
+      if (room.tracks.length <= 0) {
+        send404(res, "Please start by adding tracks to the rooom.");
+        return next();
+      }
       if (roomCurrentTrack) {
         const currentTrack = await getCurrentlyPalyingTrack(hostToken);
         if (roomCurrentTrack.uri === currentTrack?.item?.uri) {
@@ -535,7 +539,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         room.guests.forEach(m => m.currentTrack = roomCurrentTrack.uri);
         await room.save();
       } else {
-        send404(res, "The rooom does not have a current track, please contact support.");
+        send404(res, "The rooom does not have a current track, Please contact support.");
         return next();
       }
       play(hostToken, uri, progress, deviceId);

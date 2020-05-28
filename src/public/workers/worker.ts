@@ -35,7 +35,7 @@ async function getCurrentLoop() {
   const loopTime = 10 * 1000;
   try {
     const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}&userId=${userId}`)).data;
-    // sendMessage({ isPlaying: !track.is_playing });
+    sendMessage({ isPlaying: track.is_playing.toString() });
     if (track?.item?.duration_ms - track?.progress_ms <= loopTime) {
       setTimeout(() => {
         goToNextTrack();
@@ -61,17 +61,18 @@ onmessage = async function (e) {
   }
   if (e.data.startPlaying) {
     if (getCurrentTrackTimeoutId) {
-      this.clearTimeout(getCurrentTrackTimeoutId);
+      clearTimeout(getCurrentTrackTimeoutId);
     }
-    getCurrentLoop();
+    getCurrentTrackTimeoutId = setTimeout(getCurrentLoop, 1000);
     const maxTime = 4 * 60 * 60 * 1000;
     setTimeout(function () {
-      this.clearTimeout(getCurrentTrackTimeoutId);
+      clearTimeout(getCurrentTrackTimeoutId);
     }, maxTime);
   }
   if (e.data.stopPlaying) {
+    console.log(getCurrentTrackTimeoutId)
     if (getCurrentTrackTimeoutId) {
-      this.clearTimeout(getCurrentTrackTimeoutId);
+      clearTimeout(getCurrentTrackTimeoutId);
     }
   }
 };

@@ -47,9 +47,9 @@ function startWorker() {
         }
         return displayMessage(event.data.message);
       }
-      if (typeof event.data.isPlaying !== "undefined") {
-        isPlaying = event.data.isPlaying;
-        document.querySelectorAll(".play").forEach(elt => elt.innerHTML = isPlaying ? feather.icons["play"].toSvg() : feather.icons["pause"].toSvg());
+      if (event.data.isPlaying) {
+        isPlaying = event.data.isPlaying === "true";
+        document.querySelectorAll(".play").forEach(elt => elt.innerHTML = isPlaying ? feather.icons["pause"].toSvg() : feather.icons["play"].toSvg());
         return;
       }
     };
@@ -215,7 +215,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack.uri));
   tracklistElt.innerHTML = trackElts.join("");
   if(trackElts.length === 0) {
-    tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>let's start by adding songs!</p><p>You can use the search bar on the top-right or the recommendations below</p></div>"
+    tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>Let's start by adding songs!</p><p>You can use the search bar on the top-right or the recommendations below</p></div>"
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.uri === currentTrack.uri);
@@ -399,7 +399,7 @@ function addEventsToRecommendations() {
 }
 
 document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", async (e: MouseEvent) => {
-  const analyticsLabel = isPlaying ? "pause-button" : "play-button"
+  const analyticsLabel = isPlaying ? "pause-button" : "play-button";
   // @ts-ignore
   gtag('event', analyticsLabel, {
     event_category: "player",
@@ -420,7 +420,7 @@ document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", 
     isPlaying = !isPlaying;
     displayRoom(r);
   } catch (error) {
-    handleApiException(error, messages.errors.masterSkipTrack, true);
+    handleApiException(error, messages.errors.masterSkipTrack);
   }
 }));
 
