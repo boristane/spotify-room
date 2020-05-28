@@ -9,6 +9,7 @@ import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
 import * as _ from "lodash";
+import { send500 } from "../helpers/httpResponses";
 
 require("dotenv").config();
 
@@ -43,8 +44,9 @@ export async function getToken(req: Request, res: Response, next: NextFunction) 
   const storedState = req.cookies ? req.cookies[stateKey] : undefined;
 
   if (state === undefined || state !== storedState) {
-    logger.error("State mismatch", { state, storedState });
-    res.status(500).json({ error: "state_mismatch" });
+    const message = "The state of your application does not match our records, please refresh the page."; 
+    logger.error(message, { state, storedState });
+    send500(res, message);
     return next();
   }
 
@@ -71,8 +73,9 @@ export async function getToken(req: Request, res: Response, next: NextFunction) 
     res.status(200).json(response.data);
     return next();
   } catch (err) {
-    logger.error("Invalid token", { error: err });
-    res.status(500).json({ error: "invalid_token" });
+    const message = "The authentication token is invalid. Please refresh the page.";
+    logger.error(message, { error: err });
+    send500(res, message);
     return next();
   }
 }
@@ -101,8 +104,10 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
     res.status(200).json(response.data);
     return next();
   } catch(error) {
-    logger.error("Invalid refresh token", { error });
-    res.status(500).json({ error: "invalid_token" });
+    const message = "The refresh authentication token is invalid. Please refresh the page.";
+    logger.error(message, { error });
+    send500(res, message);
+    return next();
   }
 }
 
@@ -118,25 +123,24 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
     res.status(200).json({ user: _.omit(user, ["email", "birthdate"]) });
     return next();
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+    const message = "The authentication token is invalid. Please refresh the page.";
+    logger.error(message, { error: err });
+    send500(res, message);
+    return next();
   }
 }
 
 export async function getCurrentTrack(req: Request, res: Response, next: NextFunction) {
-  const { token } : {token: string}= req.query;
-  const blockedToken = "BQB-zsLhR6sgPU8cXgYxG11M3LV941HHRVYIALJwNnwNGK1_JSf4d4M1AoDBGE6WviwZGB0kbj9XvWYkbgvQWevrygb34eqmiztpYnLZCNTAdzgj9MCXeAP_4ZPTq0uKsJxR8HT7gWUJQdzGeGdBRDxR4E8xJCqY3JwcWqcn6gBT1WZUQbWR0cMvw5cgTvt6pJoNPRzMxOS9JqU6T0TkkOnkQtq8VPh3VQ"
-  if(token.includes(blockedToken)) {
-    res.status(200).json({ message: "Blocked" });
-    return next();
-  }
+  const { token } : {token: string} = req.query;
   try {
     const track = await getCurrentlyPalyingTrack(token);
     res.locals.body = track;
     res.status(200).json({ track });
     return next();
   } catch (err) {
-    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+    const message = "There was a problem getting your current track from Spotify.";
+    logger.error(message, { error: err });
+    send500(res, message);
     return next();
   }
 }
@@ -149,9 +153,9 @@ export async function searchTrack(req: Request, res: Response, next: NextFunctio
     res.status(200).json(response);
     return next();
   } catch (err) {
-    logger.error("There was an error searching fo a track");
-    res.status(500).json({ error: "Unexpected error." });
-    return next();
+    const message = "We could not find that track. Please try again.";
+    logger.error(message, { error: err });
+    send500(res, message);
   }
 }
 
@@ -163,8 +167,9 @@ export async function generatePlaylist(req: Request, res: Response, next: NextFu
     const playlistSnapshot = await addTracksToPlaylist(token, playlistId, uris);
     res.status(200).json({ playlistId, playlistSnapshot });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+    const message = "We could notgenerate your playlist. Please try again.";
+    logger.error(message, { error: err });
+    send500(res, message);
   }
 }
 
@@ -179,7 +184,8 @@ export async function getRecommendation(req: Request, res: Response) {
     const tracks = await getRecommendations(token, uris);
     res.status(200).json(tracks);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Unexpected error.", err: err.stack });
+    const message = "There was an issue getting your recommendations, do not worry we will try again.";
+    logger.error(message, { error: err });
+    send500(res, message);
   }
 }

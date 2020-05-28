@@ -23,24 +23,20 @@ import * as _ from "lodash";
 import { IRoom } from "../models/room";
 import { sendEmail, emailType } from "../services/emails";
 import { validateEmail } from "../utils";
-import { send404, send401 } from "../helpers/httpResponses";
+import { send404, send401, send500,send400 } from "../helpers/httpResponses";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
   const { token, userId, deviceId } = req.body;
   try {
-    if (!id || !userId) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
-      return next();
-    }
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     await addRoomMember(room, user, token, deviceId);
@@ -52,7 +48,7 @@ export async function joinRoom(req: Request, res: Response, next: NextFunction) 
   } catch (error) {
     const message = "There was a problem joining a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -61,18 +57,14 @@ export async function updateTokenRoom(req: Request, res: Response, next: NextFun
   const { id } = req.query;
   const { token, userId } = req.body;
   try {
-    if (!id || !userId) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
-      return next();
-    }
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     await updateTokenInRoom(room, user, token);
@@ -83,7 +75,7 @@ export async function updateTokenRoom(req: Request, res: Response, next: NextFun
   } catch (error) {
     const message = "There was a problem updating the token of a user in the room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -93,10 +85,12 @@ export async function leaveRoom(req: Request, res: Response, next: NextFunction)
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     await removeRoomMember(room, user);
@@ -109,7 +103,7 @@ export async function leaveRoom(req: Request, res: Response, next: NextFunction)
   } catch (error) {
     const message = "There was a problem joining a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -119,9 +113,7 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
     const { userId, token, deviceId, name } = req.body;
     const user = await getUser(userId);
     if (!user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     const room = await spawnRoom(name, user, token, deviceId);
@@ -145,7 +137,7 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
   } catch (error) {
     const message = "There was a problem creating a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -156,11 +148,11 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
     const user = await getUser(userId);
     const room = await getRoom(id);
     if (!room) {
-      send404(res, "The rooom could not be found")
+      send404(res, "We could not find this rooom...");
       return next();
     }
     if (!user) {
-      send404(res, "The user could not be found")
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     let roomMember;
@@ -188,7 +180,7 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
   } catch (error) {
     const message = "There was a problem going to next track in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -199,17 +191,17 @@ export async function inviteViaEmail(req: Request, res: Response, next: NextFunc
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
 
     if (emails?.length === 0) {
-      const response = { message: "Bad request" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send400(res, "Please provide emails for the invitiations.")
       return next();
     }
 
@@ -224,7 +216,6 @@ export async function inviteViaEmail(req: Request, res: Response, next: NextFunc
       sendEmail(emailData, emailType.inviteToRoom);
     });
 
-
     const response = {
       message: "Sent email invites", room: prepareRoomForResponse(room),
     };
@@ -234,7 +225,7 @@ export async function inviteViaEmail(req: Request, res: Response, next: NextFunc
   } catch (error) {
     const message = "There was a problem going to next track in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -245,23 +236,21 @@ export async function hostGoToTrack(req: Request, res: Response, next: NextFunct
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user || !room.isActive) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     if (room.host.id !== userId) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send401(res, "You cannot perform this task because you are not the rooom host.");
       return next();
     }
     const currentTrack = await getTrack(room, uri, true);
     if (!currentTrack) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send401(res, "We could not find the track you are trying to go to. Please try again.");
       return next();
     }
     play(room.host.token, currentTrack.uri, 0, room.host.deviceId);
@@ -284,7 +273,7 @@ export async function hostGoToTrack(req: Request, res: Response, next: NextFunct
   } catch (error) {
     const message = "There was a problem skipping a track in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -294,16 +283,16 @@ export async function hostCheckUsers(req: Request, res: Response, next: NextFunc
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     if (room.host.id !== userId) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send401(res, "You cannot perform this task because you are not the rooom host.");
       return next();
     }
     const roomCurrentTrackIndex = room.tracks.findIndex((track) => track.current);
@@ -330,7 +319,7 @@ export async function hostCheckUsers(req: Request, res: Response, next: NextFunc
   } catch (error) {
     const message = "There was a problem checking the users in the room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -340,23 +329,21 @@ export async function hostRemoveTrack(req: Request, res: Response, next: NextFun
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     if (room.host.id !== userId) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send401(res, "You cannot perform this task because you are not the rooom host.");
       return next();
     }
     const removed = await removeTrack(room, uri);
     if (!removed) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send404(res, "We could not find the track to remove from the rooom. Please try again.");
       return next();
     }
     const response = {
@@ -366,9 +353,9 @@ export async function hostRemoveTrack(req: Request, res: Response, next: NextFun
     res.status(200).json(response);
     return next();
   } catch (error) {
-    const message = "There was a problem skipping a track in a room"
+    const message = "There was a problem skipping a track in a room";
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -379,16 +366,16 @@ export async function hostApproveTrack(req: Request, res: Response, next: NextFu
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     if (room.host.id !== userId) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send401(res, "You cannot perform this task because you are not the rooom host.");
       return next();
     }
     await approveTrack(room, uri);
@@ -401,7 +388,7 @@ export async function hostApproveTrack(req: Request, res: Response, next: NextFu
   } catch (error) {
     const message = "There was a problem approving a track in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -411,20 +398,20 @@ export async function hostApproveGuest(req: Request, res: Response, next: NextFu
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     if (room.host.id !== userId) {
-      const response = { message: "Unauthorized" };
-      res.locals.body = response;
-      res.status(401).json(response);
+      send401(res, "You cannot perform this task because you are not the rooom host.");
       return next();
     }
     if (room.guests.length >= 20) {
-      const response = { message: "Too many guests" };
+      const response = { message: "There are too many guests in the rooom." };
       res.locals.body = response;
       res.status(422).json(response);
       return next();
@@ -439,7 +426,7 @@ export async function hostApproveGuest(req: Request, res: Response, next: NextFu
   } catch (error) {
     const message = "There was a problem approving a guest in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -450,10 +437,12 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     const isHost = room.host.id === user.id;
@@ -466,9 +455,7 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
     } else {
       const guest = room.guests.find(m => m.id === userId);
       if (!guest || !guest.isApproved) {
-        response = { message: "Unauthorised" }
-        res.locals.body = response;
-        res.status(401).json(response);
+        send401(res, "You cannot perform this task because you are not an approved guest of this rooom.");
         return next();
       } else {
         response = {
@@ -483,32 +470,37 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
   } catch (error) {
     const message = "There was a problem getting in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
 
 export async function getRoomUser(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
-  const user = await getUser(id);
-  if (!user) {
-    const response = { message: "Not found" };
+  try { 
+    const user = await getUser(id);
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
+      return next();
+    }
+    const rooms = (await getRoomsByUser(id)).reverse();
+    const response = {
+      message: "User found",
+      user: {
+        rooms: rooms.map(prepareRoomForResponse),
+        info: user.id,
+      }
+    };
+  
     res.locals.body = response;
-    res.status(404).json(response);
+    res.status(200).json(response);
+    return next();
+  } catch(error) {
+    const message = "There was a problem getting a room user";
+    logger.error(message, { error });
+    send500(res, message);
     return next();
   }
-  const rooms = (await getRoomsByUser(id)).reverse();
-  const response = {
-    message: "User found",
-    user: {
-      rooms: rooms.map(prepareRoomForResponse),
-      info: user.id,
-    }
-  };
-
-  res.locals.body = response;
-  res.status(200).json(response);
-  return next();
 }
 
 export async function playRoom(req: Request, res: Response, next: NextFunction) {
@@ -516,14 +508,20 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user || !room.isActive) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     const networkDelay = 1000;
     if (room.host.id === userId) {
+      if(!room.isActive) {
+        send404(res, "The rooom is not active, please refresh the browser.");
+        return next();
+      }
       let uri: string;
       let progress = 0;
       const hostToken = room.host.token;
@@ -537,17 +535,13 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         room.guests.forEach(m => m.currentTrack = roomCurrentTrack.uri);
         await room.save();
       } else {
-        const response = { message: "Not found" };
-        res.locals.body = response;
-        res.status(404).json(response);
+        send404(res, "The rooom does not have a current track, please contact support.");
         return next();
       }
       play(hostToken, uri, progress, deviceId);
       for (let i = 0; i < room.guests.length; i += 1) {
         const guest = room.guests[i];
-        console.log(guest);
         if (!guest.isActive || !guest.isApproved || !guest.isPlaying) continue;
-        console.log({ anotherOne: guest })
         try {
           play(guest.token, uri, progress, guest.deviceId);
         } catch (error) {
@@ -563,19 +557,19 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       return next();
     }
 
+    if(!room.isActive) {
+      send404(res, "The host has left the listening session...");
+      return next();
+    }
     const guest = room.guests.find((m) => m.id === user.id);
     if (!guest || !guest.isApproved || !guest.isActive) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send404(res, "We could not find you in this rooom. Please make sure you have joined and you are approved.");
       return next();
     }
     const hostToken = room.host.token;
     const currentTrack = await getCurrentlyPalyingTrack(hostToken);
     if (!currentTrack?.is_playing || currentTrack?.item?.uri !== room.tracks.find((t) => t.current)?.uri) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send404(res, "The host has left the rooom, the session is over...");
       return next();
     }
     await play(guest.token, currentTrack.item.uri, currentTrack.progress_ms + networkDelay, guest.deviceId);
@@ -588,9 +582,9 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     res.status(200).json(response);
     return next();
   } catch (error) {
-    const message = "There was a problem playing a track in a room"
+    const message = "There was a problem playing a track in a room";
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -600,19 +594,19 @@ export async function pauseRoom(req: Request, res: Response, next: NextFunction)
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     if (room.host.id === userId) {
       const hostToken = room.host.token;
       const roomCurrentTrack = room.tracks.find((t) => t.current);
       if (!roomCurrentTrack) {
-        const response = { message: "Not found" };
-        res.locals.body = response;
-        res.status(404).json(response);
+        send404(res, "This rooom does not have a current track. Please contact support.");
         return next();
       }
       pause(hostToken, deviceId);
@@ -636,9 +630,7 @@ export async function pauseRoom(req: Request, res: Response, next: NextFunction)
 
     const guest = room.guests.find((m) => m.id === user.id);
     if (!guest || !guest.isApproved || !guest.isActive) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send404(res, "We could not find you in this rooom. Please make sure you have joined and you are approved.");
       return next();
     }
     await pause(guest.token, guest.deviceId);
@@ -652,7 +644,7 @@ export async function pauseRoom(req: Request, res: Response, next: NextFunction)
   } catch (error) {
     const message = "There was a problem pausing a track in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -663,10 +655,12 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
   try {
     const user = await getUser(userId);
     const room = await getRoom(id);
-    if (!room || !user) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
       return next();
     }
     const isHost = room.host.id === userId;
@@ -680,9 +674,7 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
 
     const guest = room.guests.find((m) => m.id === user.id);
     if (!guest) {
-      const response = { message: "Not found" };
-      res.locals.body = response;
-      res.status(404).json(response);
+      send404(res, "We could not find you in this rooom. Please make sure you have joined and you are approved.");
       return next();
     }
     await addTrackToRoomInDb(room, uri, name, artists, image, true, guest.name);
@@ -694,7 +686,7 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
   } catch (error) {
     const message = "There was a problem adding a track in a room"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }

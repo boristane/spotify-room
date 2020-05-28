@@ -8,7 +8,6 @@ export async function apiAuth(req: Request, res: Response, next: NextFunction) {
     if (!token) {
       throw new Error("No token found in the headers");
     }
-    console.log(token, apiToken);
     if(token !== apiToken) {
       throw new Error("Bad Token");
     }

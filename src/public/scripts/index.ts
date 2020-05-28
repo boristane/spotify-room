@@ -1,4 +1,5 @@
 import axios from "axios";
+import feather from "feather-icons";
 
 import "babel-polyfill";
 import { IRoom } from "../../models/room";
@@ -48,7 +49,7 @@ function startWorker() {
       }
       if (typeof event.data.isPlaying !== "undefined") {
         isPlaying = event.data.isPlaying;
-        document.querySelectorAll(".play").forEach(elt => elt.textContent = isPlaying ? "pause" : "play");
+        document.querySelectorAll(".play").forEach(elt => elt.innerHTML = isPlaying ? feather.icons["play"].toSvg() : feather.icons["pause"].toSvg());
         return;
       }
     };
@@ -88,7 +89,7 @@ async function refreshRoomToken() {
   try {
     await roomApi.refreshTokenInRoom(roomId, user.id, token);
   } catch (error) {
-    displayMessage(messages.errors.refreshToken);
+    handleApiException(error, messages.errors.refreshToken);
     return;
   }
 }
@@ -100,7 +101,7 @@ export async function getRoom(roomId: string, userId: string): Promise<IRoom> {
     if (err.response && err.response.status === 401) {
       return null;
     }
-    displayMessage(messages.errors.gettingTheRoom);
+    handleApiException(err, messages.errors.gettingTheRoom);
   }
 }
 
@@ -167,7 +168,7 @@ document.getElementById("yes-email").addEventListener("click", async (e) => {
     await userApi.addToMailingList(user.id, true);
     displayMessage(messages.infos.addedToTheMailingList);
   } catch (e) {
-    displayMessage(messages.errors.addedToMailingList);
+    handleApiException(e, messages.errors.addedToMailingList);
   } finally {
     closeModals();
   }
@@ -273,22 +274,23 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
         let success = false;
         const maxNumAttempts = 5;
         let numAttempts = 0;
+        let e;
         while (!success && numAttempts < maxNumAttempts) {
           try {
             const room = (await roomApi.goToTrack(roomId, user.id, uri)).data.room;
             isPlaying = true;
             w.postMessage({ startPlaying: true });
-            document.querySelectorAll(".play").forEach(elt => elt.textContent = "pause");
+            document.querySelectorAll(".play").forEach(elt => elt.innerHTML = feather.icons["pause"].toSvg());
             displayRoom(room);
             success = true;
           } catch (error) {
-            console.log("there was an error going to a track");
+            e = error;
             await refreshRoomToken();
           }
           numAttempts += 1;
         }
         if (!success) {
-          displayMessage(messages.errors.masterSkipTrack);
+          handleApiException(e, messages.errors.masterSkipTrack);
         }
       } else {
         // @ts-ignore
@@ -302,7 +304,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
           const recommendations = await getRecommendations(room);
           displayRecommendations(recommendations);
         } catch (err) {
-          displayMessage(messages.errors.approvedTrack);
+          handleApiException(err, messages.errors.approvedTrack);
         }
       }
     });
@@ -318,13 +320,13 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
       if (!isHost) return;
       try {
         const { uri } = this.dataset;
-        const room = (await axios.delete(`/room/remove/?id=${roomId}&userId=${user.id}&uri=${uri}`)).data.room;
+        const room = (await roomApi.removeTrack(roomId, user.id, uri)).data.room;
         displayMessage(messages.infos.removedTrack);
         displayRoom(room);
         const recommendations = await getRecommendations(room);
         displayRecommendations(recommendations);
       } catch (error) {
-        displayMessage(messages.errors.removedTrack);
+        handleApiException(error, messages.errors.removedTrack);
       }
     });
   })
@@ -339,14 +341,11 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
       if (!isHost) return;
       const { id, name } = this.dataset;
       try {
-        const room = (await axios.get(`/room/approve-guest/?id=${roomId}&userId=${user.id}&guestId=${id}`)).data.room;
+        const room = (await roomApi.approveGuest(roomId, user.id, id)).data.room;
         displayMessage(messages.infos.approveGuest(name));
         displayRoom(room);
       } catch (err) {
-        if (err.response && err.response.status === 422) {
-          return displayMessage(messages.infos.tooManyGuestsInRoom);
-        }
-        return displayMessage(messages.errors.approvedGuest);
+        handleApiException(err, messages.errors.approvedGuest);
       }
     });
   });
@@ -408,20 +407,20 @@ document.querySelectorAll(".play").forEach(elt => elt.addEventListener("click", 
   });
 
   try {
-    let r: IRoom;
-    if (isPlaying) {
-      r = (await axios.post(`/room/pause/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
-      document.querySelectorAll(".play").forEach(elt => elt.innerHTML = "play");
-      w.postMessage({ stopPlaying: true });
-    } else {
-      r = (await axios.post(`/room/play/?id=${roomId}&userId=${user.id}&deviceId=${deviceId}`)).data.room;
-      document.querySelectorAll(".play").forEach(elt => elt.innerHTML = "pause");
+    let r;
+    if (!isPlaying) {
+      r = (await roomApi.playRoom(roomId, user.id, deviceId)).data.room;
+      document.querySelectorAll(".play").forEach(elt => elt.innerHTML = feather.icons["pause"].toSvg());
       w.postMessage({ startPlaying: true });
+    } else {
+      r = (await roomApi.pauseRoom(roomId, user.id, deviceId)).data.room;
+      document.querySelectorAll(".play").forEach(elt => elt.innerHTML = feather.icons["play"].toSvg());
+      w.postMessage({ stopPlaying: true });
     }
     isPlaying = !isPlaying;
     displayRoom(r);
   } catch (error) {
-    displayMessage(messages.errors.playedTrack);
+    handleApiException(error, messages.errors.masterSkipTrack, true);
   }
 }));
 
@@ -435,11 +434,11 @@ document.getElementById("playlist").addEventListener("click", async (e: MouseEve
     const room = await getRoom(roomId, user.id);
     const uris = room.tracks.filter(t => t.approved).map(t => t.uri);
     const name = room.name;
-    await axios.post(`/spotify/generate-playlist/?token=${token}`, { uris, userId: user.id, name });
+    await spotifyApi.generatePlaylist(token, uris, user.id, name);
     displayMessage(messages.infos.playlistCreated);
     displayRoom(room);
   } catch (error) {
-    displayMessage(messages.errors.playlistCreated);
+    handleApiException(error, messages.errors.playlistCreated);
   }
 });
 
@@ -457,7 +456,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
     return (document.querySelector(".search-results-container") as HTMLDivElement).style.display = "none";
   }
   try {
-    const result = (await axios.get(`/spotify/search?token=${token}&query=${q}`)).data as { tracks: { href: string; items: ISpotifyTrack[] } };
+    const result = (await spotifyApi.searchForSongs(token, q, user.id)).data;
     const resultElts = result.tracks.items.sort((a, b) => b.popularity - a.popularity).map((track) => {
       return searchResultBuilder({
         uri: track.uri,
@@ -466,7 +465,7 @@ document.getElementById("search").addEventListener('keyup', debounce(async (e: K
         image: track.album.images[0].url
       });
     });
-    searchResultElt.innerHTML = resultElts.join("");
+    searchResultElt.innerHTML = resultElts.join("") || `<p style="padding: 15px">No results found for "${q}"</p>`;
     searchResultContainer.style.display = "block";
     document.querySelectorAll(".track-search-result-item").forEach((elt) => {
       elt.addEventListener("click", async function (e: MouseEvent) {
@@ -559,10 +558,6 @@ async function main() {
     });
   });
 }
-
-
-
-
 
 async function getRecommendations(room: IRoom): Promise<ISpotifyTrack[]> {
   if (!room) return [];
@@ -928,4 +923,12 @@ async function refreshRoomLoop() {
     console.log(error);
   }
   refreshRoomTimeoutId = setTimeout(refreshRoomLoop, 10 * 1000);
+}
+
+function handleApiException(error: any, defaultMessage: string, permanent:boolean = false) {
+  const message = error?.response?.data?.message ?? defaultMessage
+  if(permanent) {
+    return displayPermanentMessage(message);
+  }
+  return displayMessage(message);
 }

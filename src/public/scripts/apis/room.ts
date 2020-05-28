@@ -55,6 +55,35 @@ async function goToNextTrack(roomId: string, userId: string) {
   return response;
 }
 
+async function removeTrack(roomId: string, userId: string, uri: string) {
+  const response = await axios.delete<{ message: string, room: IRoom }>("/room/remove", {
+    params: { id: roomId, userId, uri }
+  });
+  return response;
+}
+
+async function approveGuest(roomId: string, userId: string, guestId: string) {
+  const response = await axios.get<{ message: string, room: IRoom }>("/room/approve-guest", {
+    params: { id: roomId, userId, guestId }
+  });
+  return response;
+}
+
+async function playRoom(roomId: string, userId: string, deviceId: string) {
+  const response = await axios.post<{ message: string, room: IRoom }>("/room/play", {}, {
+    params: { id: roomId, userId, deviceId }
+  });
+  return response;
+}
+
+async function pauseRoom(roomId: string, userId: string, deviceId: string) {
+  const response = await axios.post<{ message: string, room: IRoom }>("/room/pause", {}, {
+    params: { id: roomId, userId, deviceId }
+  });
+  return response;
+}
+
+
 export default {
   joinRoom,
   getRoom,
@@ -63,5 +92,8 @@ export default {
   goToTrack,
   approveTrack,
   goToNextTrack,
-  
+  removeTrack,
+  approveGuest,
+  playRoom,
+  pauseRoom
 }

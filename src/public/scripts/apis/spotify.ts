@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ISpotifyTrack } from "../../../typings/spotify";
 
 async function getToken(code: string, state: string) {
   const response = await axios.get<{ access_token: string, refresh_token: string }>("/spotify/get-token", {
@@ -14,7 +15,24 @@ async function refreshToken(refreshToken: string) {
   return response;
 }
 
+async function searchForSongs(token: string, query: string, userId: string) {
+  const response = await axios.get<{ tracks: { href: string; items: ISpotifyTrack[] }}>("/spotify/search", {
+    params: { token, query, userId }
+  });
+  return response;
+}
+
+async function generatePlaylist(token: string, uris: string[], userId: string, name: string) {
+  const response = await axios.post("/spotify/generate-playlist", { uris, userId, name }, {
+    params: { token }
+  });
+  return response;
+}
+
+
 export default {
   getToken,
   refreshToken,
+  searchForSongs,
+  generatePlaylist
 }

@@ -199,6 +199,45 @@ html, body {
   background-color: #1DB954;
 }
 
+.grey-button {
+  color: grey;
+  font-weight: bold;
+  border: grey 1px solid;
+  background-color: transparent;
+  border-radius: 100px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  min-width: 100px;
+  height: 35px;
+  margin-right: 10px;
+  padding: 0 20px;
+}
+
+.grey-button:hover {
+  background-color: white;
+  color: black;
+}
+
+
+.play-button {
+  color: white;
+  font-weight: bold;
+  border: #1DB954 1px solid;
+  background-color: transparent;
+  border-radius: 50px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  margin-right: 30px;
+  padding: 10px 0 10px 0px;
+  width: 50px;
+}
+
+.play-button:hover {
+  background-color: #1DB954;
+}
+
 #message {
   text-align: center;
   position: fixed;

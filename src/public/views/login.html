@@ -35,6 +35,7 @@
   <script>function createDynamicURL() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
+      if (!id) return "/spotify/login";
       return `/spotify/login/?id=${id}`;
     }
 
@@ -47,7 +48,7 @@
 </head>
 
 <body>
-<noscript>You need to enable JavaScript to run this app.</noscript>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
   <section id="get-in-room" style>
     <div class="logo-container">
       <a href="/">
@@ -62,8 +63,12 @@
       <p>in sync.</p>
       <p class="info">powered by <a class="me" href="http://spotify.com">Spotify</a>.</p>
     </div>
+    <div class="info" id="invited" style="margin: 15px 0">
+      <p>You have been invited to a music listening session.</p>
+      <p>Log in with Spotify to join.</p>
+    </div>
     <div class="button-container">
-      <a id="primaryButton" href="#" onclick="RedirectURL();return false;">log in with Spotify</a>
+      <a id="primaryButton" href="#" onclick="RedirectURL();return false;">Log in with Spotify</a>
     </div>
     <div class="mobile">
       <p class="info">
@@ -79,6 +84,11 @@
     </div>
     <p class="info">a project by <a class="me" href="http://boristane.com">Boris Tane</a>.</p>
   </section>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) document.getElementById("invited").style.display = "none";
+  </script>
 </body>
 
 </html>

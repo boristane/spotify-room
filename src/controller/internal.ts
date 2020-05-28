@@ -4,6 +4,7 @@ import moment from "moment";
 import Room from "../models/room";
 import { getDate } from "../utils";
 import User from "../models/user";
+import { send500 } from "../helpers/httpResponses";
 
 export async function getHosts(req: Request, res: Response, next: NextFunction) {
   const { from, to } = req.query;
@@ -50,7 +51,7 @@ export async function getHosts(req: Request, res: Response, next: NextFunction) 
   } catch (error) {
     const message = "There was a problem getting the hosts"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -102,7 +103,7 @@ export async function getGuests(req: Request, res: Response, next: NextFunction)
   } catch (error) {
     const message = "There was a problem getting the guests"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
@@ -142,7 +143,7 @@ export async function checkStaleRooms(req: Request, res: Response, next: NextFun
   } catch (error) {
     const message = "There was a problem updating stale rooms"
     logger.error(message, { error });
-    res.status(500).json({ message });
+    send500(res, message);
     return next();
   }
 }
