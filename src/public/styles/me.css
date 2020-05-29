@@ -230,7 +230,7 @@ html, body {
   cursor: pointer;
   transition: all 0.2s ease-out;
   margin-right: 30px;
-  padding: 10px 0 10px 0px;
+  padding: 12px 0 10px 0px;
   width: 50px;
 }
 
@@ -267,8 +267,23 @@ ol, ul {
 }
 
 .member {
-  cursor: pointer;
   padding: 15px;
+}
+
+.guest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.make-host {
+  color: grey;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.make-host:hover {
+  color: white;
 }
 
 .member.inactive {

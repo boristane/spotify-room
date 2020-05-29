@@ -18,6 +18,7 @@ const messages = {
     joinRoom: "There was an error when joining the rooom",
     sendEmailInvites: "There was an error sending the email invite(s)",
     playback: "There was an error with the web player. Please refresh the page.",
+    makeHost: "There was a problem promoting a new host",
   },
   infos: {
     addedToTheMailingList: "You have been added to the mailing list 📧",
@@ -31,6 +32,7 @@ const messages = {
     trackAlreadyInRoom: "This track is already in the rooom",
     addTrack: "You added a track to the rooom!",
     sendEmailInvites: "We sent your rmail invite(s)!",
+    makeHost: "You promoted a new host!",
     approveGuest: (name: string) => `Lest's welcome ${name} to the rooom! 🎉`,
   },
   permanent: {

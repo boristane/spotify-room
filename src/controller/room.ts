@@ -24,6 +24,7 @@ import { IRoom } from "../models/room";
 import { sendEmail, emailType } from "../services/emails";
 import { validateEmail } from "../utils";
 import { send404, send401, send500,send400 } from "../helpers/httpResponses";
+import user from "../models/user";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
@@ -272,6 +273,92 @@ export async function hostGoToTrack(req: Request, res: Response, next: NextFunct
     return next();
   } catch (error) {
     const message = "There was a problem skipping a track in a room"
+    logger.error(message, { error });
+    send500(res, message);
+    return next();
+  }
+}
+
+export async function hostMakeHost(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.query;
+  const { hostId, userId } = req.body;
+  try {
+    const host = await getUser(hostId);
+    const room = await getRoom(id);
+    const guest = await getUser(userId);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!host) {
+      send404(res, "We could not find any user matching your details...");
+      return next();
+    }
+    if (!guest) {
+      send404(res, `We could not find any user matching the details of the guest...`);
+      return next();
+    }
+    if (room.host.id !== hostId) {
+      send401(res, "You cannot perform this task because you are not the rooom host.");
+      return next();
+    }
+    const guestInRoom = room.guests.find(g => g.id === guest.id); 
+    if(!guestInRoom) {
+      send404(res, "We could not find the guest to be promoted to host in the rooom...");
+      return next();
+    }
+    if(!guestInRoom.isActive || !guestInRoom.isApproved) {
+      send404(res, "The guest to be promoted to host is not currently active in the rooom...");
+      return next();
+    }
+    // TODO all ths should be moved to the db service
+    const hostInGuests = room.guests.find(g => g.id === host.id);
+    if(!hostInGuests) {
+      room.guests.push({
+        id: host.id,
+        token: room.host.token,
+        name: host.display_name,
+        deviceId: room.host.deviceId,
+        isActive: true,
+        isApproved: true,
+        currentTrack: room.tracks.find(t => t.current).uri,
+        isPlaying: false,
+        createdAt: new Date(),
+        sessions: [{
+          startDate: new Date(),
+          endDate: undefined,
+        }],
+      });
+    } else {
+      hostInGuests.token = room.host.token;
+      hostInGuests.deviceId = room.host.deviceId;
+      hostInGuests.isActive = true;
+      if(hostInGuests.sessions.length >= 1 && !hostInGuests.sessions[hostInGuests.sessions.length - 1].endDate) {
+        hostInGuests.sessions[hostInGuests.sessions.length - 1].endDate = new Date();
+      }
+      hostInGuests.sessions.push({
+        startDate: new Date(),
+        endDate: undefined,
+      })
+    }
+    room.host.id = guest.id;
+    room.host.token = guestInRoom.token;
+    room.host.deviceId = guestInRoom.deviceId;
+    room.host.name = guestInRoom.name;
+
+    guestInRoom.isActive = false;
+    if(guestInRoom.sessions.length >= 1 && !guestInRoom.sessions[guestInRoom.sessions.length - 1].endDate) {
+      guestInRoom.sessions[guestInRoom.sessions.length - 1].endDate = new Date();
+    }
+    await room.save();
+    const response = {
+      message: "Promoted guest to host", room: prepareRoomForResponse(room),
+    };
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+  } catch (error) {
+    const message = "There was a problem promoting  a user to host"
     logger.error(message, { error });
     send500(res, message);
     return next();

@@ -4,7 +4,7 @@ import feather from "feather-icons";
 import "babel-polyfill";
 import { IRoom } from "../../models/room";
 import { ISpotifyTrack, ISpotifyUser } from "../../typings/spotify";
-import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder } from "./builders";
+import { userBuilder, hostBuilder, trackBuilder, searchResultBuilder, recommendationBuilder, guestBuilder } from "./builders";
 import { IUser } from "../../models/user";
 import {
   shareOnFacebook,
@@ -214,7 +214,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   const currentTrack = isHost ? room.tracks.find(t => t.current) : room.tracks.find(t => t.uri === room.guests.find(g => g.id === user.id).currentTrack);
   const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack.uri));
   tracklistElt.innerHTML = trackElts.join("");
-  if(trackElts.length === 0) {
+  if (trackElts.length === 0) {
     tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>Let's start by adding songs!</p><p>You can use the search bar on the top-right or the recommendations below</p></div>"
   }
 
@@ -226,7 +226,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
 
   const guestsListElt = document.querySelector(".guests") as HTMLDivElement;
   const guestsToAppoveListElt = document.querySelector(".guests-to-approve") as HTMLDivElement;
-  const guestElts = room.guests.filter(g => g.isApproved).map((guest) => `<li class="member ${guest.isActive ? "active" : "inactive"}">${guest.name}</li>`);
+  const guestElts = room.guests.filter(g => g.isApproved && g.id !== room.host.id).map((g) => guestBuilder(g, isHost));
   const guestToApproveElts = room.guests.filter(g => !g.isApproved).map((guest) => `<li class="member guest-to-approve" data-id="${guest.id}" data-name="${guest.name}">${guest.name}</li>`);
   const hostElt = hostBuilder(room.host);
   guestsListElt.innerHTML = hostElt + guestElts.join("");
@@ -329,7 +329,24 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
         handleApiException(error, messages.errors.removedTrack);
       }
     });
-  })
+  });
+
+  document.querySelectorAll(".make-host").forEach((elt) => {
+    elt.addEventListener("click", async function (e) {
+      // @ts-ignore
+      gtag('event', "make-host", {
+        event_category: "room",
+      });
+      const { userid } = this.dataset;
+      try {
+        const room = (await roomApi.makeHost(roomId, user.id, userid,)).data.room;
+        displayMessage(messages.infos.makeHost);
+        displayRoom(room);
+      } catch(error) {
+        handleApiException(error, messages.errors.makeHost);
+      }
+    });
+  });
 
   document.querySelectorAll(".guest-to-approve").forEach((elt) => {
     elt.addEventListener("click", async function (e) {
@@ -854,17 +871,17 @@ export async function doIt() {
 //@ts-ignore
 window.onSpotifyWebPlaybackSDKReady = () => {
   const ios = isIOS();
-  if(ios) {
+  if (ios) {
     return displayPermanentMessage(messages.permanent.deviceNotSupported);
   }
-  
+
   setTimeout(() => {
     //@ts-ignore
     const player = new Spotify.Player({
       name: 'rooom',
       getOAuthToken: cb => { cb(token); }
     });
-  
+
     player.addListener('initialization_error', ({ message }) => {
       displayPermanentMessage(messages.permanent.browserNotSupported);
       return;
@@ -878,17 +895,17 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       console.error(message);
     });
     player.addListener('playback_error', ({ message }) => { displayMessage(messages.errors.playback); console.error(message); })
-  
+
     player.addListener('ready', ({ device_id }) => {
       deviceId = device_id;
       w.postMessage({ deviceId });
       doIt();
     });
-  
+
     player.addListener('not_ready', ({ device_id }) => {
       displayPermanentMessage(messages.permanent.offlineDevice);
     });
-  
+
     player.connect();
   }, 500);
 };
@@ -925,9 +942,9 @@ async function refreshRoomLoop() {
   refreshRoomTimeoutId = setTimeout(refreshRoomLoop, 10 * 1000);
 }
 
-function handleApiException(error: any, defaultMessage: string, permanent:boolean = false) {
+function handleApiException(error: any, defaultMessage: string, permanent: boolean = false) {
   const message = error?.response?.data?.message ?? defaultMessage
-  if(permanent) {
+  if (permanent) {
     return displayPermanentMessage(message);
   }
   return displayMessage(message);

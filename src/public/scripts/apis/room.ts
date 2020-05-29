@@ -48,6 +48,14 @@ async function approveTrack(roomId: string, userId: string, uri: string) {
   return response;
 }
 
+async function makeHost(roomId: string, hostId: string, userId: string) {
+  const body = { userId, hostId }
+  const response = await axios.put<{ message: string, room: IRoom }>("/room/make-host", body, {
+    params: { id: roomId }
+  });
+  return response;
+}
+
 async function goToNextTrack(roomId: string, userId: string) {
   const response = await axios.get<{ message: string, room: IRoom }>("/room/next", {
     params: { id: roomId, userId }
@@ -95,5 +103,6 @@ export default {
   removeTrack,
   approveGuest,
   playRoom,
-  pauseRoom
+  pauseRoom,
+  makeHost,
 }

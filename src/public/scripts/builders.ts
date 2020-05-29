@@ -13,8 +13,8 @@ export function userBuilder(user: ISpotifyUser): string {
 
 export function hostBuilder(host): string {
   return `<li class="host member">
-                ${host.name} <spam style="font-size: 8px;">HOST</span>     
-           </li>`
+                ${host.name} <spam style="font-size: 10px;">HOST</span>     
+           </li>`;
 }
 
 export function trackBuilder(track: {
@@ -42,7 +42,7 @@ export function trackBuilder(track: {
             <div>
               <button class="noselect red-button remove-track" style="display: ${isHost && !track.current ? "block" : "none"}; font-size: 10px;" data-uri="${track.uri}">remove</button>
             </div>
-          </li>`
+          </li>`;
 }
 
 export function recommendationBuilder(track: ISpotifyTrack): string {
@@ -58,7 +58,7 @@ export function recommendationBuilder(track: ISpotifyTrack): string {
             <div>
               <button class="noselect green-button add-track" style="width: 40px; font-size: 10px;" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.album.images[0].url}" data-artists="${artistNames}">add</button>
             </div>
-          </li>`
+          </li>`;
 }
 
 export function searchResultBuilder(track: {
@@ -77,5 +77,16 @@ export function searchResultBuilder(track: {
               <div class="track-name">${track.name}</div><div class="artist-name">${artistNames.join(", ")}</div>
 
             </div>
-          </li>`
+          </li>`;
+}
+
+export function guestBuilder(guest: {
+  name: string,
+  isActive: boolean,
+  id: string;
+}, isUserHost: boolean) {
+  if (isUserHost) {
+    return `<li class="member ${guest.isActive ? "active" : "inactive"} guest"><p>${guest.name}</p><p data-userId="${guest.id}" class="make-host">Make host</p></li>`;
+  }
+  return `<li class="member ${guest.isActive ? "active" : "inactive"} guest"><p>${guest.name}</p></li>`;
 }
