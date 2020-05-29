@@ -4,7 +4,7 @@ import User, { IUser } from "../models/user";
 import Room, { IRoom } from "../models/room";
 import { generateCoverUrl } from "./cover";
 
-export async function saveUser(spotifyUser: ISpotifyUser) {
+export async function saveUser(spotifyUser: ISpotifyUser): Promise<boolean> {
   const user = await User.findOne({ id: spotifyUser.id });
   if (!user) {
     const user = new User({
@@ -12,7 +12,8 @@ export async function saveUser(spotifyUser: ISpotifyUser) {
       ...spotifyUser,
       isEmailSubscriber: true,
     });
-    return await user.save();
+    await user.save();
+    return true;
   }
   let shouldSave = false;
   Object.keys(spotifyUser).forEach((key, i) => {
@@ -26,7 +27,7 @@ export async function saveUser(spotifyUser: ISpotifyUser) {
     return false;
   }
   await user.save();
-  return true;
+  return false;
 }
 
 export async function updateUserEmailSubscription(user: IUser, value: boolean): Promise<boolean> {

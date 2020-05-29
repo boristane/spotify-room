@@ -23,8 +23,8 @@ const stateKey = "spotify_auth_state";
 export function login(req: Request, res: Response) {
   const state = generateRandomString(16);
   const { id } = req.query;
+  res.cookie(stateKey, state);
   if(id) {
-    res.cookie(stateKey, state);
     res.cookie("rooom_id", id);
   }
   const scope = "user-read-private user-top-read user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public";
