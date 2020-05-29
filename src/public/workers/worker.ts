@@ -70,7 +70,6 @@ onmessage = async function (e) {
     }, maxTime);
   }
   if (e.data.stopPlaying) {
-    console.log(getCurrentTrackTimeoutId)
     if (getCurrentTrackTimeoutId) {
       clearTimeout(getCurrentTrackTimeoutId);
     }
