@@ -192,17 +192,6 @@ document.getElementById("no-email").addEventListener("click", async (e) => {
   }
 });
 
-document.getElementById("get-playlist").addEventListener("click", async () => {
-  try {
-    playlistSelectPage = 0;
-    const playlists = (await spotifyApi.getPlaylists(token, user.id, 10, playlistSelectPage)).data;
-    document.getElementById("display-playlists").style.display = "flex";
-    displayPlaylists(playlists.items);
-  } catch (err) {
-    handleApiException(err, "There was an error getting your playlists from Spotify, please try again.")
-  }
-});
-
 document.getElementById("spotify-playlist-next").addEventListener("click", async () => {
   try {
     playlistSelectPage += 1;
@@ -228,7 +217,7 @@ document.getElementById("spotify-playlist-previous").addEventListener("click", a
 
 function displayPlaylists(playlists: any[]) {
   const listContainer = document.getElementById("playlists-list");
-  const elts = playlists.map(playlist => `<li data-id="${playlist.id}" class="playlist-item">${playlist.name}</li>`);
+  const elts = playlists.map(playlist => `<li data-id="${playlist.id}" class="playlist-item">${playlist.name} - <span style="color: grey">${playlist.tracks.total} track(s)</span></li>`);
   listContainer.innerHTML = elts.join("");
   document.querySelectorAll(".playlist-item").forEach(elt => {
     elt.addEventListener("click", async () => {
@@ -236,6 +225,11 @@ function displayPlaylists(playlists: any[]) {
       try {
         displayLoader();
         const room = (await roomApi.addPlaylistToRoom(roomId, user.id, playlistId, token)).data.room;
+        if(room.guests.length < 5) {
+          setTimeout(() => {
+            displayModalRoomIsBetter(room);
+          }, 0.5 * 60 * 1000);
+        }
         hideLoader();
         displayRoom(room);
         closeModals();
@@ -272,7 +266,8 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack?.uri));
   tracklistElt.innerHTML = trackElts.join("");
   if (trackElts.length === 0) {
-    tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>Let's start by adding songs!</p><p>You can use the search bar on the top-right or the recommendations below</p></div>"
+    const importPlaylistButtonHtml = `<button style="padding-top: 5px; margin: 15px auto;" class="room-flex noselect grey-button get-playlist">${feather.icons["music"].toSvg({ width: 20 })}<span style="padding-left: 5px; display: block; padding-top: 2px;">Import playlist</span></button>`;
+    tracklistElt.innerHTML = `<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>Let's start by adding songs!</p><p margin-top: 10px;>You can use the search bar on the top-right, or start with one of your playlists!</p>${importPlaylistButtonHtml}</div>`;
   }
 
   const currentEltIndex = room.tracks.findIndex(t => t.uri === currentTrack.uri);
@@ -420,6 +415,19 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
         displayRoom(room);
       } catch (err) {
         handleApiException(err, messages.errors.approvedGuest);
+      }
+    });
+  });
+
+  document.querySelectorAll(".get-playlist").forEach(elt => {
+    elt.addEventListener("click", async () => {
+      try {
+        playlistSelectPage = 0;
+        const playlists = (await spotifyApi.getPlaylists(token, user.id, 10, playlistSelectPage)).data;
+        document.getElementById("display-playlists").style.display = "flex";
+        displayPlaylists(playlists.items);
+      } catch (err) {
+        handleApiException(err, "There was an error getting your playlists from Spotify, please try again.")
       }
     });
   });
@@ -848,17 +856,6 @@ function addEventListeners(id: string) {
     modal.style.display = "flex";
   });
 
-  document.getElementById("refresh-recommendations").addEventListener("click", async () => {
-    // @ts-ignore
-    gtag('event', "refresh-recommendations", {
-      event_category: "room",
-      event_label: "recommendations",
-    });
-    const room = await getRoom(id, user.id);
-    const recommendations = await getRecommendations(room);
-    displayRecommendations(recommendations);
-  });
-
   document.getElementById("twitter-share").addEventListener("click", async (e) => {
     e.preventDefault();
     // @ts-ignore
@@ -880,6 +877,17 @@ function addEventListeners(id: string) {
     shareOnFacebook(`https://rooom.click?id=${id}`);
   });
 }
+
+document.getElementById("refresh-recommendations").addEventListener("click", async () => {
+  // @ts-ignore
+  gtag('event', "refresh-recommendations", {
+    event_category: "room",
+    event_label: "recommendations",
+  });
+  const room = await getRoom(roomId, user.id);
+  const recommendations = await getRecommendations(room);
+  displayRecommendations(recommendations);
+});
 
 export async function doIt() {
   let id;

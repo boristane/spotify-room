@@ -150,7 +150,7 @@ export async function createPlaylist(token: string, userId: string, name: string
     {
       name: name,
       public: true,
-      description: `From https://rooom.click, created on ${new Date().toDateString()}`
+      description: `We made a playlist from your listening session on rooom on ${new Date().toDateString()}!`,
     },
     {
       headers: {
