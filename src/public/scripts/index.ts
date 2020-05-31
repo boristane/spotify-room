@@ -747,6 +747,7 @@ async function getInRoom(id: string) {
   displayRecommendations(recommendations);
   document.getElementById("get-in-room").style.display = "none";
   hideLoader();
+  addEventListeners(id);
 
   setTimeout(() => {
     if (isHost) {
