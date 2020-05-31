@@ -551,7 +551,7 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
         };
       }
     }
-    res.locals.body = response;
+    res.locals.body = { message: response.message };
     res.status(200).json(response);
     return next();
   } catch (error) {
@@ -807,8 +807,8 @@ export async function addPlaylistToRoom(req: Request, res: Response, next: NextF
     for (let i = 0; i < tracks.length; i += 1) {
       const track = tracks[i].track as ISpotifyTrack;
       const isAlreadyInRoom = room.tracks.map(t => t.uri).includes(track.uri);
-      if(isAlreadyInRoom) continue;
-      if(track.is_local) continue;
+      if (isAlreadyInRoom) continue;
+      if (track.is_local) continue;
       const artists = track.artists.map(a => a.name);
       const image = track.album.images[0]?.url;
       await addTrackToRoomInDb(room, track.uri, track.name, artists, image, true, addedBy);

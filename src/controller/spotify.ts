@@ -24,7 +24,7 @@ export function login(req: Request, res: Response) {
   const state = generateRandomString(16);
   const { id } = req.query;
   res.cookie(stateKey, state);
-  if(id) {
+  if (id) {
     res.cookie("rooom_id", id);
   }
   const scope = "user-read-private user-top-read user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public playlist-read-private";
@@ -46,7 +46,7 @@ export async function getToken(req: Request, res: Response, next: NextFunction) 
   const storedState = req.cookies ? req.cookies[stateKey] : undefined;
 
   if (state === undefined || state !== storedState) {
-    const message = "The state of your application does not match our records, please refresh the page."; 
+    const message = "The state of your application does not match our records, please refresh the page.";
     logger.error(message, { state, storedState });
     send500(res, message);
     return next();
@@ -105,7 +105,7 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
     res.locals.body = response.data;
     res.status(200).json(response.data);
     return next();
-  } catch(error) {
+  } catch (error) {
     const message = "The refresh authentication token is invalid. Please refresh the page.";
     logger.error(message, { error });
     send500(res, message);
@@ -133,10 +133,10 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function getCurrentTrack(req: Request, res: Response, next: NextFunction) {
-  const { token } : {token: string} = req.query;
+  const { token, userId }: { token: string, userId: string } = req.query;
   try {
     const track = await getCurrentlyPalyingTrack(token);
-    res.locals.body = track;
+    res.locals.body = { message: "Got the current track" };
     res.status(200).json({ track });
     return next();
   } catch (err) {
@@ -193,12 +193,12 @@ export async function getRecommendation(req: Request, res: Response) {
 }
 
 export async function getListPlaylists(req: Request, res: Response, next: NextFunction) {
-  const {token, page, limit} = req.query;
+  const { token, page, limit } = req.query;
   try {
     const playlists = await getPlaylists(token, limit, page);
     res.status(200).json(playlists);
     return next();
-  } catch(error) {
+  } catch (error) {
     const message = "There was an issue getting your playlists from Spotify. Please try again.";
     logger.error(message, { error });
     send500(res, message);
