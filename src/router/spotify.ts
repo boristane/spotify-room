@@ -1,5 +1,5 @@
 import express from "express";
-import { login, getToken, refreshToken, getUser, generatePlaylist, searchTrack, getRecommendation, getCurrentTrack } from "../controller/spotify";
+import { login, getToken, refreshToken, getUser, generatePlaylist, searchTrack, getRecommendation, getCurrentTrack, getListPlaylists } from "../controller/spotify";
 
 const router = express.Router();
 
@@ -9,6 +9,7 @@ router.get("/refresh-token", refreshToken);
 router.get("/me", getUser);
 router.get("/current-track", getCurrentTrack);
 router.get("/search", searchTrack);
+router.get("/playlists", getListPlaylists);
 router.post("/generate-playlist", generatePlaylist);
 router.put("/recommendations", getRecommendation);
 

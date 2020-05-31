@@ -91,6 +91,20 @@ async function pauseRoom(roomId: string, userId: string, deviceId: string) {
   return response;
 }
 
+async function addTrackToRoom(roomId: string, userId: string, uri: string, name: string, artists: string, image: string) {
+  const response = (await axios.post<{ message: string, room: IRoom }>(`/room/add-track/?id=${roomId}`, {
+    uri, name, artists: artists.split(","), image, userId,
+  }));
+  return response;
+}
+
+async function addPlaylistToRoom(roomId: string, userId: string, playlistId: string, token: string) {
+  const response = (await axios.post<{ message: string, room: IRoom }>(`/room/add-playlist/?id=${roomId}`, {
+    playlistId, token, userId,
+  }));
+  return response;
+}
+
 
 export default {
   joinRoom,
@@ -105,4 +119,6 @@ export default {
   playRoom,
   pauseRoom,
   makeHost,
+  addTrackToRoom,
+  addPlaylistToRoom,
 }

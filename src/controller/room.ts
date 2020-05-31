@@ -18,13 +18,13 @@ import {
   getUserCurrentTrack,
   setGuestIsPlaying,
 } from "../services/database";
-import { play, getCurrentlyPalyingTrack, pause } from "../services/spotify";
+import { play, getCurrentlyPalyingTrack, pause, getPlaylistTracks } from "../services/spotify";
 import * as _ from "lodash";
 import { IRoom } from "../models/room";
 import { sendEmail, emailType } from "../services/emails";
 import { validateEmail } from "../utils";
-import { send404, send401, send500,send400 } from "../helpers/httpResponses";
-import user from "../models/user";
+import { send404, send401, send500, send400 } from "../helpers/httpResponses";
+import { ISpotifyTrack } from "../typings/spotify";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
@@ -167,7 +167,7 @@ export async function goToNextTrack(req: Request, res: Response, next: NextFunct
     let nextTrack;
     try {
       nextTrack = await getNextTrack(room, roomMember.id, isHost);
-    } catch(error) {
+    } catch (error) {
       send404(res, error.message);
       return next();
     }
@@ -302,18 +302,18 @@ export async function hostMakeHost(req: Request, res: Response, next: NextFuncti
       send401(res, "You cannot perform this task because you are not the rooom host.");
       return next();
     }
-    const guestInRoom = room.guests.find(g => g.id === guest.id); 
-    if(!guestInRoom) {
+    const guestInRoom = room.guests.find(g => g.id === guest.id);
+    if (!guestInRoom) {
       send404(res, "We could not find the guest to be promoted to host in the rooom...");
       return next();
     }
-    if(!guestInRoom.isActive || !guestInRoom.isApproved) {
+    if (!guestInRoom.isActive || !guestInRoom.isApproved) {
       send404(res, "The guest to be promoted to host is not currently active in the rooom...");
       return next();
     }
     // TODO all ths should be moved to the db service
     const hostInGuests = room.guests.find(g => g.id === host.id);
-    if(!hostInGuests) {
+    if (!hostInGuests) {
       room.guests.push({
         id: host.id,
         token: room.host.token,
@@ -333,7 +333,7 @@ export async function hostMakeHost(req: Request, res: Response, next: NextFuncti
       hostInGuests.token = room.host.token;
       hostInGuests.deviceId = room.host.deviceId;
       hostInGuests.isActive = true;
-      if(hostInGuests.sessions.length >= 1 && !hostInGuests.sessions[hostInGuests.sessions.length - 1].endDate) {
+      if (hostInGuests.sessions.length >= 1 && !hostInGuests.sessions[hostInGuests.sessions.length - 1].endDate) {
         hostInGuests.sessions[hostInGuests.sessions.length - 1].endDate = new Date();
       }
       hostInGuests.sessions.push({
@@ -347,7 +347,7 @@ export async function hostMakeHost(req: Request, res: Response, next: NextFuncti
     room.host.name = guestInRoom.name;
 
     guestInRoom.isActive = false;
-    if(guestInRoom.sessions.length >= 1 && !guestInRoom.sessions[guestInRoom.sessions.length - 1].endDate) {
+    if (guestInRoom.sessions.length >= 1 && !guestInRoom.sessions[guestInRoom.sessions.length - 1].endDate) {
       guestInRoom.sessions[guestInRoom.sessions.length - 1].endDate = new Date();
     }
     await room.save();
@@ -564,7 +564,7 @@ export async function getRooom(req: Request, res: Response, next: NextFunction) 
 
 export async function getRoomUser(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
-  try { 
+  try {
     const user = await getUser(id);
     if (!user) {
       send404(res, "We could not find any user matching your details...");
@@ -578,11 +578,11 @@ export async function getRoomUser(req: Request, res: Response, next: NextFunctio
         info: user.id,
       }
     };
-  
+
     res.locals.body = response;
     res.status(200).json(response);
     return next();
-  } catch(error) {
+  } catch (error) {
     const message = "There was a problem getting a room user";
     logger.error(message, { error });
     send500(res, message);
@@ -605,7 +605,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
     const networkDelay = 1000;
     if (room.host.id === userId) {
-      if(!room.isActive) {
+      if (!room.isActive) {
         send404(res, "The rooom is not active, please refresh the browser.");
         return next();
       }
@@ -648,7 +648,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
       return next();
     }
 
-    if(!room.isActive) {
+    if (!room.isActive) {
       send404(res, "The host has left the listening session...");
       return next();
     }
@@ -776,6 +776,50 @@ export async function addTrackToRoom(req: Request, res: Response, next: NextFunc
 
   } catch (error) {
     const message = "There was a problem adding a track in a room"
+    logger.error(message, { error });
+    send500(res, message);
+    return next();
+  }
+}
+
+export async function addPlaylistToRoom(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.query;
+  const { userId, playlistId, token } = req.body;
+  try {
+    const user = await getUser(userId);
+    const room = await getRoom(id);
+    if (!room) {
+      send404(res, "We could not find this rooom...");
+      return next();
+    }
+    if (!user) {
+      send404(res, "We could not find any user matching your details...");
+      return next();
+    }
+    const isHost = room.host.id === userId;
+    const guest = room.guests.find((m) => m.id === user.id);
+    if (!guest && !isHost) {
+      send404(res, "We could not find you in this rooom. Please make sure you have joined and you are approved.");
+      return next();
+    }
+    const addedBy = isHost ? room.host.name : guest.name;
+    const tracks = (await getPlaylistTracks(token, playlistId)).tracks.items as any[];
+    for (let i = 0; i < tracks.length; i += 1) {
+      const track = tracks[i].track as ISpotifyTrack;
+      const isAlreadyInRoom = room.tracks.map(t => t.uri).includes(track.uri);
+      if(isAlreadyInRoom) continue;
+      if(track.is_local) continue;
+      const artists = track.artists.map(a => a.name);
+      const image = track.album.images[0]?.url;
+      await addTrackToRoomInDb(room, track.uri, track.name, artists, image, true, addedBy);
+    }
+    const response = { message: "Playlist added to room", room: prepareRoomForResponse(room) }
+    res.locals.body = response;
+    res.status(200).json(response);
+    return next();
+
+  } catch (error) {
+    const message = "There was a problem adding a playlist in a room"
     logger.error(message, { error });
     send500(res, message);
     return next();

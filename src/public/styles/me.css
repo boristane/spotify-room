@@ -133,7 +133,7 @@ html, body {
 
 .button-container {
   margin-top: 10px;
-  display: flex !important;
+  display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
@@ -403,7 +403,7 @@ ol, ul {
 
 .artist-name {
   font-size: 12px;
-  color: grey;
+  color: lightgray;
   margin-bottom: 15px;
 }
 
@@ -565,6 +565,17 @@ ol, ul {
   display: none;
 }
 
+.playlist-item {
+  padding: 10px 2px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  color: black;
+}
+
+.playlist-item:hover {
+  background-color: rgb(247, 247, 247);
+}
+
 .beta {
   font-weight: bold;
   background-color: #f59b23;
@@ -665,7 +676,7 @@ ol, ul {
   }
 
   .button-container {
-    display: block;
+    display: block !important;
     max-width: 200px;
     overflow: hidden;
     transition: all 0.2s ease-out;

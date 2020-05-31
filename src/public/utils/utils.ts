@@ -43,3 +43,11 @@ export function closeModals() {
     (elt as HTMLDivElement).style.display = "none";
   });
 }
+
+export function displayLoader() {
+  (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
+}
+
+export function hideLoader() {
+  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+}

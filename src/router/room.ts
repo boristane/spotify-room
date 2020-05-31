@@ -17,6 +17,7 @@ import {
   inviteViaEmail,
   updateTokenRoom,
   hostMakeHost,
+  addPlaylistToRoom,
 } from "../controller/room";
 
 const router = express.Router();
@@ -37,6 +38,7 @@ router.get("/approve-guest/", hostApproveGuest);
 router.put("/make-host/", hostMakeHost);
 router.get("/", getRooom);
 router.post("/add-track/", addTrackToRoom);
+router.post("/add-playlist/", addPlaylistToRoom);
 router.post("/email-invite/", inviteViaEmail);
 
 export default router;

@@ -29,10 +29,18 @@ async function generatePlaylist(token: string, uris: string[], userId: string, n
   return response;
 }
 
+async function getPlaylists(token: string, userId: string, limit: number, page: number) {
+  const response = await axios.get("/spotify/playlists", {
+    params: { token, userId, page, limit }
+  });
+  return response;
+}
+
 
 export default {
   getToken,
   refreshToken,
   searchForSongs,
-  generatePlaylist
+  generatePlaylist,
+  getPlaylists,
 }

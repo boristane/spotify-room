@@ -90,6 +90,15 @@
   background-color: white;
 }
 
+.playlist-modal-controls {
+  color: grey;
+  cursor: pointer;
+}
+
+.playlist-modal-controls:hover{
+  color: black;
+}
+
 .modal .icon-button:hover {
   background-color: rgb(247, 247, 247);
 }

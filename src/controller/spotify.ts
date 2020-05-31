@@ -4,7 +4,7 @@ import { sendEmail, emailType } from "../services/emails";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks, getCurrentlyPalyingTrack } from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks, getCurrentlyPalyingTrack, getPlaylists, play } from "../services/spotify";
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
@@ -27,7 +27,7 @@ export function login(req: Request, res: Response) {
   if(id) {
     res.cookie("rooom_id", id);
   }
-  const scope = "user-read-private user-top-read user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public";
+  const scope = "user-read-private user-top-read user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state streaming playlist-modify-public playlist-read-private";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
     qs.stringify({
@@ -188,6 +188,19 @@ export async function getRecommendation(req: Request, res: Response) {
   } catch (err) {
     const message = "There was an issue getting your recommendations, do not worry we will try again.";
     logger.error(message, { error: err });
+    send500(res, message);
+  }
+}
+
+export async function getListPlaylists(req: Request, res: Response, next: NextFunction) {
+  const {token, page, limit} = req.query;
+  try {
+    const playlists = await getPlaylists(token, limit, page);
+    res.status(200).json(playlists);
+    return next();
+  } catch(error) {
+    const message = "There was an issue getting your playlists from Spotify. Please try again.";
+    logger.error(message, { error });
     send500(res, message);
   }
 }

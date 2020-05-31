@@ -161,12 +161,12 @@ export async function createPlaylist(token: string, userId: string, name: string
   return response.data.id;
 }
 
-export async function getRecommendations(token: string, trackUris: string[]):Promise<ISpotifyTrack[]> {
+export async function getRecommendations(token: string, trackUris: string[]): Promise<ISpotifyTrack[]> {
   const t = trackUris.slice(0, 5).map(o => { const [, a] = o.split("spotify:track:"); return a; });
   // Get recommendations for a Highest in the room lmao
   if (t.length === 0) t.push("3eekarcy7kvN4yt5ZFzltW");
   const response = await axiosInstance.get(`/recommendations`, {
-    params: { seed_tracks: t.join(","), limit: 5, min_popularity: 50}, headers: {
+    params: { seed_tracks: t.join(","), limit: 5, min_popularity: 50 }, headers: {
       Authorization: `Bearer ${token}`
     }
   });
@@ -199,6 +199,28 @@ export async function getUserProfile(token: string): Promise<ISpotifyUser> {
     headers: {
       Authorization: `Bearer ${token}`
     }
+  });
+  return response.data;
+}
+
+export async function getPlaylists(token: string, limit: number, page: number) {
+  const response = await axiosInstance.get(`/me/playlists`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    params: {
+      limit,
+      offset: page * limit
+    }
+  });
+  return response.data;
+}
+
+export async function getPlaylistTracks(token: string, id: string) {
+  const response = await axiosInstance.get(`/playlists/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
   });
   return response.data;
 }

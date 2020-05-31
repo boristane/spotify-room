@@ -103,8 +103,9 @@
           </ul>
         </div>
         <div>
-          <button id="invite-friends" class="green-button"
-            style="display: block; margin: auto; margin-top: 15px;"><i data-feather="user-plus" style="width: 15px; height: 15px;"></i><span style="padding-left: 5px">Invite friends</span></button>
+          <button id="invite-friends" class="green-button" style="display: block; margin: auto; margin-top: 15px;"><i
+              data-feather="user-plus" style="width: 15px; height: 15px;"></i><span style="padding-left: 5px">Invite
+              friends</span></button>
         </div>
       </div>
       <div class="right-panel">
@@ -126,15 +127,21 @@
             <div id="host"></div>
             <div id="room-id" class="copy-to-clipboard" style="display: none;"></div>
             <div class="mobile-only mobile-button-container">
-              <button style="display: none; margin-right: 10px;" class="play room-block noselect play-button"><i data-feather="play" style="margin: auto"></i></button>
+              <button style="display: none; margin-right: 10px;" class="play room-block noselect play-button"><i
+                  data-feather="play" style="margin: auto"></i></button>
               <button id="more" class="grey-button" style="margin-top: 8px">
                 <i data-feather="more-horizontal" style="padding-top: 4px;"></i>
               </button>
             </div>
             <div class="button-container">
-              <button style="display: none;" class="play room-block noselect play-button not-mobile"><i data-feather="play" style="margin: auto;"></i></button>
-              <button id="playlist" style="display: none; margin-top: 8px" class="room-block noselect grey-button"><i data-feather="save" style="width: 13px; height: 13px;"></i><span style="padding-left: 5px">Export to
-                playlist</span></button>
+              <button style="display: none;" class="play room-block noselect play-button not-mobile"><i
+                  data-feather="play" style="margin: auto;"></i></button>
+              <button id="playlist" style="display: none; margin-top: 8px; padding-top: 5px;" class="room-flex noselect grey-button"><i
+                  data-feather="save" style="width: 20px;"></i><span style="padding-left: 5px; display: block; padding-top: 2px;">Save as
+                  playlist</span></button>
+              <button id="get-playlist" style="display: none; margin-top: 8px; padding-top: 5px;" class="room-flex noselect grey-button"><i
+                  data-feather="music" style="width: 20px;"></i><span style="padding-left: 5px; display: block; padding-top: 2px;">Import
+                  playlist</span></button>
             </div>
           </div>
         </div>
@@ -281,6 +288,28 @@
           <p style="margin-top: 15px">When you are ready, invite your friends to the rooom by clicking the "invite
             friends" button to the left of the page! 📨</p>
           <p style="margin-top: 15px">Enjoy your remote listening session! 🥳</p>
+        </div>
+      </div>
+      <div class="close">Close</div>
+    </div>
+  </div>
+
+  <div id="display-playlists" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <img class="logo" src="../assets/logo.png" alt="logo" style="width: 55px; min-width: 55px;">
+        <h2 style="padding: 10px;" class="modal-header-text">Welcome in <div class="modal-room-name"
+            style="display: inline-block;">the rooom</div>
+        </h2>
+      </div>
+      <div class="modal-body">
+        <div style="margin: 30px 0;">
+          <p style="margin-top: 15px">Please select the playlist to import</p>
+          <ol id="playlists-list" style="margin-top: 15px;"></ol>
+          <div style="display: flex; justify-content: space-between; margin-top: 15px">
+            <div class="playlist-modal-controls" id="spotify-playlist-previous">previous</div>
+            <div class="playlist-modal-controls" id="spotify-playlist-next">next</div>
+          </div>
         </div>
       </div>
       <div class="close">Close</div>

@@ -30,7 +30,7 @@ export function trackBuilder(track: {
   const classes = ["track", track.uri === currentTrackUri ? "current" : "", track.completed ? "completed" : "", track.approved ? "approved" : ""].join(" ");
   return `<li class="${classes}" data-uri="${track.uri}" data-name="${track.name}" data-artist="${track.artists}" data-image="${track.image}" data-approved="${track.approved}">
             <div>
-              <img src="${track.image}" style="width: ${track.uri === currentTrackUri ? "148px" : "60px"}"/>
+              <img src="${track.image || "https://d1apvrodb6vxub.cloudfront.net/covers/default-cover.png"}" style="width: ${track.uri === currentTrackUri ? "148px" : "60px"}"/>
             </div>
             <div style="padding-left: 10px;">
 

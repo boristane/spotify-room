@@ -13,6 +13,8 @@ import {
   debounce,
   closeModals,
   getCookies,
+  hideLoader,
+  displayLoader,
 } from "../utils/utils";
 import { setBackground } from "./colors";
 import roomApi from "./apis/room";
@@ -29,6 +31,7 @@ let oldRoom: IRoom;
 let isPlaying = false;
 let isOnboarded = false;
 let refreshRoomTimeoutId;
+let playlistSelectPage = 0;
 
 let w;
 
@@ -128,7 +131,7 @@ let isSearchTrayOpened = false;
 document.getElementById("more").addEventListener("click", (e) => {
   e.stopPropagation();
   if (!isSearchTrayOpened) {
-    (document.querySelector(".button-container") as HTMLDivElement).style.height = "50px";
+    (document.querySelector(".button-container") as HTMLDivElement).style.height = "100px";
     (document.querySelector(".button-container") as HTMLDivElement).style.padding = "10px";
   } else {
     (document.querySelector(".button-container") as HTMLDivElement).style.height = "0px";
@@ -189,6 +192,60 @@ document.getElementById("no-email").addEventListener("click", async (e) => {
   }
 });
 
+document.getElementById("get-playlist").addEventListener("click", async () => {
+  try {
+    playlistSelectPage = 0;
+    const playlists = (await spotifyApi.getPlaylists(token, user.id, 10, playlistSelectPage)).data;
+    document.getElementById("display-playlists").style.display = "flex";
+    displayPlaylists(playlists.items);
+  } catch (err) {
+    handleApiException(err, "There was an error getting your playlists from Spotify, please try again.")
+  }
+});
+
+document.getElementById("spotify-playlist-next").addEventListener("click", async () => {
+  try {
+    playlistSelectPage += 1;
+    const playlists = (await spotifyApi.getPlaylists(token, user.id, 10, playlistSelectPage)).data;
+    document.getElementById("display-playlists").style.display = "flex";
+    displayPlaylists(playlists.items);
+  } catch (err) {
+    handleApiException(err, "There was an error getting your playlists from Spotify, please try again.")
+  }
+});
+
+document.getElementById("spotify-playlist-previous").addEventListener("click", async () => {
+  try {
+    playlistSelectPage -= 1;
+    if (playlistSelectPage < 0) return;
+    const playlists = (await spotifyApi.getPlaylists(token, user.id, 10, playlistSelectPage)).data;
+    document.getElementById("display-playlists").style.display = "flex";
+    displayPlaylists(playlists.items);
+  } catch (err) {
+    handleApiException(err, "There was an error getting your playlists from Spotify, please try again.")
+  }
+});
+
+function displayPlaylists(playlists: any[]) {
+  const listContainer = document.getElementById("playlists-list");
+  const elts = playlists.map(playlist => `<li data-id="${playlist.id}" class="playlist-item">${playlist.name}</li>`);
+  listContainer.innerHTML = elts.join("");
+  document.querySelectorAll(".playlist-item").forEach(elt => {
+    elt.addEventListener("click", async () => {
+      const { id: playlistId } = (elt as HTMLLIElement).dataset;
+      try {
+        displayLoader();
+        const room = (await roomApi.addPlaylistToRoom(roomId, user.id, playlistId, token)).data.room;
+        hideLoader();
+        displayRoom(room);
+        closeModals();
+      } catch (err) {
+        handleApiException(err, "There was an issue importing the playlist. Please try again.")
+      }
+    });
+  })
+}
+
 export async function displayRoom(room: IRoom): Promise<boolean> {
   const waitingElt = document.getElementById("waiting");
   if (room === null) {
@@ -198,7 +255,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
     return false;
   }
   waitingElt.style.display = "none";
-  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+  hideLoader();
   document.getElementById("room").style.display = "block";
   oldRoom = room;
   isHost = room.host.id === user.id;
@@ -212,7 +269,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   }
   const tracklistElt = document.querySelector(".tracklist") as HTMLDivElement;
   const currentTrack = isHost ? room.tracks.find(t => t.current) : room.tracks.find(t => t.uri === room.guests.find(g => g.id === user.id).currentTrack);
-  const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack.uri));
+  const trackElts = room.tracks.map((track) => trackBuilder(track, isHost, currentTrack?.uri));
   tracklistElt.innerHTML = trackElts.join("");
   if (trackElts.length === 0) {
     tracklistElt.innerHTML = "<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>Let's start by adding songs!</p><p>You can use the search bar on the top-right or the recommendations below</p></div>"
@@ -339,10 +396,10 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
       });
       const { userid } = this.dataset;
       try {
-        const room = (await roomApi.makeHost(roomId, user.id, userid,)).data.room;
+        const room = (await roomApi.makeHost(roomId, user.id, userid)).data.room;
         displayMessage(messages.infos.makeHost);
         displayRoom(room);
-      } catch(error) {
+      } catch (error) {
         handleApiException(error, messages.errors.makeHost);
       }
     });
@@ -369,6 +426,10 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
 
   document.querySelectorAll(".room-block").forEach((elt: HTMLDivElement) => {
     elt.style.display = "block";
+  });
+
+  document.querySelectorAll(".room-flex").forEach((elt: HTMLDivElement) => {
+    elt.style.display = "flex";
   });
 
   if (currentTrack) {
@@ -596,9 +657,7 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
     return;
   }
   try {
-    const room = (await axios.post(`/room/add-track/?id=${roomId}`, {
-      uri, name, artists: artists.split(","), image, userId: user.id,
-    })).data.room as IRoom;
+    const room = (await roomApi.addTrackToRoom(roomId, user.id, uri, name, artists, image)).data.room;
     displayMessage(messages.infos.addTrack);
     displayRoom(room);
     if (room.tracks.filter((track) => track.addedBy === user.display_name).length === 1) {
@@ -608,7 +667,7 @@ async function addTrackToRoom(elt: HTMLElement): Promise<IRoom> {
     }
     return room;
   } catch (err) {
-    displayMessage(messages.errors.addTrack);
+    handleApiException(err, messages.errors.addTrack);
   }
 }
 
@@ -665,7 +724,7 @@ async function getInRoom(id: string) {
   }, maxTime);
 
   document.getElementById("get-in-room").style.display = "none";
-  (document.querySelector(".loader") as HTMLDivElement).style.display = "block";
+  displayLoader();
   (document.querySelector("body")).style.overflow = "hidden";
   try {
     await roomApi.joinRoom(id, token, user.id, deviceId);
@@ -675,12 +734,11 @@ async function getInRoom(id: string) {
     return;
   }
   const room = await getRoom(id, user.id);
-  displayRoom(room);
+  await displayRoom(room);
   const recommendations = await getRecommendations(room);
   displayRecommendations(recommendations);
   document.getElementById("get-in-room").style.display = "none";
-  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
-  addEventListeners(id);
+  hideLoader();
 
   setTimeout(() => {
     if (isHost) {
@@ -862,7 +920,7 @@ export async function doIt() {
     } finally {
       displayExistingRooms(roomUser.rooms);
       document.getElementById("get-in-room").style.display = "block";
-      (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+      hideLoader();
     }
   }
   document.getElementById("user").innerHTML = userBuilder(user);
@@ -929,7 +987,7 @@ function displayPermanentMessage(innerHtml: string) {
   waitingElt.innerHTML = innerHtml;
   waitingElt.style.display = "block";
   (document.getElementById("room") as HTMLDivElement).style.display = "none";
-  (document.querySelector(".loader") as HTMLDivElement).style.display = "none";
+  hideLoader();
 }
 
 async function refreshRoomLoop() {
