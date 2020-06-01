@@ -221,11 +221,15 @@ function displayPlaylists(playlists: any[]) {
   listContainer.innerHTML = elts.join("");
   document.querySelectorAll(".playlist-item").forEach(elt => {
     elt.addEventListener("click", async () => {
+      // @ts-ignore
+      gtag('event', "import-playlist", {
+        event_category: "room",
+      });
       const { id: playlistId } = (elt as HTMLLIElement).dataset;
       try {
         displayLoader();
         const room = (await roomApi.addPlaylistToRoom(roomId, user.id, playlistId, token)).data.room;
-        if(room.guests.length < 5) {
+        if (room.guests.length < 5) {
           setTimeout(() => {
             displayModalRoomIsBetter(room);
           }, 0.5 * 60 * 1000);
@@ -421,6 +425,10 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
 
   document.querySelectorAll(".get-playlist").forEach(elt => {
     elt.addEventListener("click", async () => {
+      // @ts-ignore
+      gtag('event', "list-playlists", {
+        event_category: "room",
+      });
       try {
         playlistSelectPage = 0;
         const playlists = (await spotifyApi.getPlaylists(token, user.id, 10, playlistSelectPage)).data;

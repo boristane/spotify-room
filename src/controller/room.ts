@@ -809,6 +809,7 @@ export async function addPlaylistToRoom(req: Request, res: Response, next: NextF
       const isAlreadyInRoom = room.tracks.map(t => t.uri).includes(track.uri);
       if (isAlreadyInRoom) continue;
       if (track.is_local) continue;
+      if (!track.available_markets.includes(user.country)) continue;
       const artists = track.artists.map(a => a.name);
       const image = track.album.images[0]?.url;
       await addTrackToRoomInDb(room, track.uri, track.name, artists, image, true, addedBy);
