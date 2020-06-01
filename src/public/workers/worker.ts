@@ -15,7 +15,7 @@ let token;
 async function refreshRoomToken() {
   token = await getToken();
   try {
-    await roomApi.refreshTokenInRoom(roomId, token, userId);
+    await roomApi.refreshTokenInRoom(roomId, userId, token);
   } catch (error) {
     sendMessage({ message: "There was an error when refreshing the token of the rooom" });
     return;
