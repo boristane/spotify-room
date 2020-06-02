@@ -86,7 +86,7 @@ export function guestBuilder(guest: {
   id: string;
 }, isUserHost: boolean) {
   if (isUserHost) {
-    return `<li class="member ${guest.isActive ? "active" : "inactive"} guest"><p>${guest.name}</p><p data-userId="${guest.id}" class="make-host">Make host</p></li>`;
+    return `<li class="member ${guest.isActive ? "active" : "inactive"} guest"><p>${guest.name}</p><p data-userId="${guest.id}" data-username="${guest.name}" class="make-host">Make host</p></li>`;
   }
   return `<li class="member ${guest.isActive ? "active" : "inactive"} guest"><p>${guest.name}</p></li>`;
 }

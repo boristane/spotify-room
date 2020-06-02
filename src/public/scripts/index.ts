@@ -274,7 +274,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
     tracklistElt.innerHTML = `<div style='text-align: center; padding: 30px;'><h1 style='margin-bottom: 15px;'>it feels a bit empty...</h1><p>Let's start by adding songs!</p><p margin-top: 10px;>You can use the search bar on the top-right, or start with one of your playlists!</p>${importPlaylistButtonHtml}</div>`;
   }
 
-  const currentEltIndex = room.tracks.findIndex(t => t.uri === currentTrack.uri);
+  const currentEltIndex = room.tracks.findIndex(t => t.uri === currentTrack?.uri);
   tracklistElt.parentElement.scrollTo({ top: 79 * currentEltIndex, behavior: 'smooth' });
   if (currentEltIndex > -1) {
     await setBackground("#cont", room.tracks[currentEltIndex].image);
@@ -388,19 +388,34 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   });
 
   document.querySelectorAll(".make-host").forEach((elt) => {
+
     elt.addEventListener("click", async function (e) {
+      e.stopPropagation();
       // @ts-ignore
       gtag('event', "make-host", {
         event_category: "room",
       });
-      const { userid } = this.dataset;
-      try {
-        const room = (await roomApi.makeHost(roomId, user.id, userid)).data.room;
-        displayMessage(messages.infos.makeHost);
-        displayRoom(room);
-      } catch (error) {
-        handleApiException(error, messages.errors.makeHost);
-      }
+      const { userid, username } = this.dataset;
+      document.getElementById("confirm-make-host").style.display = "flex";
+      document.querySelector(".new-host-name").textContent = username;
+      const OldButton = document.getElementById("yes-make-host");
+      const cloneButton = OldButton.cloneNode(true);
+      OldButton.parentNode.replaceChild(cloneButton, OldButton);
+      cloneButton.addEventListener("click", async () => {
+        try {
+          const room = (await roomApi.makeHost(roomId, user.id, userid)).data.room;
+          displayMessage(messages.infos.makeHost);
+          displayRoom(room);
+        } catch (error) {
+          handleApiException(error, messages.errors.makeHost);
+        } finally {
+          closeModals();
+        }
+      });
+
+      document.getElementById("no-make-host").addEventListener("click", () => {
+        closeModals();
+      });
     });
   });
 
