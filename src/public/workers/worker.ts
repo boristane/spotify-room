@@ -9,6 +9,7 @@ let roomId;
 let userId;
 let deviceId;
 let getCurrentTrackTimeoutId;
+let goToNextTrackTimeOutId;
 let refreshToken;
 let token;
 
@@ -37,7 +38,7 @@ async function getCurrentLoop() {
     const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}&userId=${userId}`)).data;
     sendMessage({ isPlaying: track.is_playing.toString() });
     if (track?.item?.duration_ms - track?.progress_ms <= loopTime) {
-      setTimeout(() => {
+      goToNextTrackTimeOutId = setTimeout(() => {
         goToNextTrack();
       }, track.item.duration_ms - track.progress_ms);
     }
@@ -60,9 +61,7 @@ onmessage = async function (e) {
     deviceId = e.data.deviceId;
   }
   if (e.data.startPlaying) {
-    if (getCurrentTrackTimeoutId) {
-      clearTimeout(getCurrentTrackTimeoutId);
-    }
+    clearTimeOuts();
     getCurrentTrackTimeoutId = setTimeout(getCurrentLoop, 1000);
     const maxTime = 4 * 60 * 60 * 1000;
     setTimeout(function () {
@@ -70,11 +69,18 @@ onmessage = async function (e) {
     }, maxTime);
   }
   if (e.data.stopPlaying) {
-    if (getCurrentTrackTimeoutId) {
-      clearTimeout(getCurrentTrackTimeoutId);
-    }
+    clearTimeOuts();
   }
 };
+
+function clearTimeOuts() {
+  if (getCurrentTrackTimeoutId) {
+    clearTimeout(getCurrentTrackTimeoutId);
+  }
+  if (goToNextTrackTimeOutId) {
+    clearTimeout(goToNextTrackTimeOutId);
+  }
+}
 
 async function goToNextTrack() {
   let success = false;
