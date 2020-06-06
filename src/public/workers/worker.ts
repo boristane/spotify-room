@@ -1,6 +1,6 @@
 import axios from "axios";
 import 'babel-polyfill';
-import { ICurrentTrackResponse } from "../../typings/spotify";
+import { ICurrentTrackResponse, ICurrentPlaybackResponse } from "../../typings/spotify";
 import roomApi from "../scripts/apis/room";
 import spotifyApi from "../scripts/apis/spotify";
 const sendMessage: any = self.postMessage;
@@ -35,12 +35,15 @@ async function getToken() {
 async function getCurrentLoop() {
   const loopTime = 10 * 1000;
   try {
-    const { track } = (await axios.get<{ track: ICurrentTrackResponse }>(`/spotify/current-track/?token=${token}&userId=${userId}`)).data;
-    sendMessage({ isPlaying: track.is_playing.toString() });
-    if (track?.item?.duration_ms - track?.progress_ms <= loopTime) {
+    const { playback } = (await axios.get<{ playback: ICurrentPlaybackResponse }>(`/spotify/current-playback/?token=${token}&userId=${userId}`)).data;
+    sendMessage({ isPlaying: playback.is_playing.toString() });
+    if (playback?.device?.id !== deviceId) {
+      return clearTimeOuts();
+    }
+    if (playback?.item?.duration_ms - playback?.progress_ms <= loopTime) {
       goToNextTrackTimeOutId = setTimeout(() => {
         goToNextTrack();
-      }, track.item.duration_ms - track.progress_ms);
+      }, playback.item.duration_ms - playback.progress_ms);
     }
   } catch (error) {
     await refreshRoomToken();

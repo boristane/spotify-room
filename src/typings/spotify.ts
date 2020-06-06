@@ -8,6 +8,32 @@ export interface ICurrentTrackResponse {
   timestamp: number;
 }
 
+export interface ICurrentPlaybackResponse {
+  timestamp: number,
+  device: {
+    id: string,
+    is_active: boolean,
+    is_restricted: boolean,
+    name: string,
+    type: string,
+    volume_percent: number
+  },
+  progress_ms: number,
+  is_playing: boolean,
+  currently_playing_type: string,
+  item: ISpotifyTrack,
+  shuffle_state: boolean,
+  repeat_state: string,
+  context: {
+    external_urls: {
+      spotify: string
+    },
+    href: string,
+    type: string,
+    uri: string,
+  }
+}
+
 export interface ISpotifyTrack {
   album: {
     album_type: string;

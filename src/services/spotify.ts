@@ -1,6 +1,6 @@
 import axios from "axios";
 import { promisify } from "util";
-import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState, ICurrentTrackResponse } from "../typings/spotify";
+import { ISpotifyUser, ISpotifyArtist, ISpotifyTrack, ISpotifyRepeatModeState, ICurrentTrackResponse, ICurrentPlaybackResponse } from "../typings/spotify";
 import { IArtistListDataItem } from "../typings/front";
 
 const sleep = promisify(setTimeout);
@@ -9,6 +9,13 @@ const axiosInstance = axios.create({ baseURL: "https://api.spotify.com/v1" });
 
 export async function getCurrentlyPalyingTrack(token: string): Promise<ICurrentTrackResponse> {
   const response = await axiosInstance.get("/me/player/currently-playing", {
+    headers: getHeader(token),
+  });
+  return response.data;
+}
+
+export async function getCurrentlyPlayback(token: string): Promise<ICurrentPlaybackResponse> {
+  const response = await axiosInstance.get("/me/player", {
     headers: getHeader(token),
   });
   return response.data;

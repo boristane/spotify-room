@@ -4,7 +4,7 @@ import { sendEmail, emailType } from "../services/emails";
 
 import axios from "axios";
 import { generateRandomString } from "../utils";
-import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks, getCurrentlyPalyingTrack, getPlaylists, play } from "../services/spotify";
+import { createPlaylist, addTracksToPlaylist, getUserProfile, search, getRecommendations, getTopTracks, getCurrentlyPalyingTrack, getPlaylists, play, getCurrentlyPlayback } from "../services/spotify";
 import { saveUser } from "../services/database";
 import qs from "qs";
 import logger from "logger";
@@ -141,6 +141,21 @@ export async function getCurrentTrack(req: Request, res: Response, next: NextFun
     return next();
   } catch (err) {
     const message = "There was a problem getting your current track from Spotify.";
+    logger.error(message, { error: err });
+    send500(res, message);
+    return next();
+  }
+}
+
+export async function getCurrentPlayback(req: Request, res: Response, next: NextFunction) {
+  const { token, userId }: { token: string, userId: string } = req.query;
+  try {
+    const playback = await getCurrentlyPlayback(token);
+    res.locals.body = { message: "Got the current playback status of the user." };
+    res.status(200).json({ playback });
+    return next();
+  } catch (err) {
+    const message = "There was a problem getting your current playback status from Spotify.";
     logger.error(message, { error: err });
     send500(res, message);
     return next();
