@@ -132,7 +132,6 @@ html, body {
 }
 
 .button-container {
-  margin-top: 10px;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -229,7 +228,6 @@ html, body {
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease-out;
-  margin-right: 30px;
   padding: 12px 0 10px 0px;
   width: 52px;
 }
@@ -261,7 +259,7 @@ ol, ul {
 .left-panel {
   transition: all 0.2s ease-out;
   width: 250px;
-  height: 100%;
+  height: calc(100vh - 110px);
   padding-top: 35px;
   background-color: #000;
 }
@@ -311,7 +309,7 @@ ol, ul {
 }
 
 .tracklist-container {
-  height: calc(100vh - 275px);
+  height: calc(100vh - 350px);
   overflow-y: scroll;
   padding-bottom: 0;
   padding-top: 0;

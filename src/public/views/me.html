@@ -134,13 +134,13 @@
               </button>
             </div>
             <div class="button-container">
-              <button style="display: none;" class="play room-block noselect play-button not-mobile"><i
-                  data-feather="play" style="margin: auto;"></i></button>
-              <button id="playlist" style="display: none; margin-top: 8px; padding-top: 5px;" class="room-flex noselect grey-button"><i
-                  data-feather="save" style="width: 20px;"></i><span style="padding-left: 5px; display: block; padding-top: 2px;">Save as
+              <button id="playlist" style="display: none; margin-top: 8px; padding-top: 5px;"
+                class="room-flex noselect grey-button"><i data-feather="save" style="width: 20px;"></i><span
+                  style="padding-left: 5px; display: block; padding-top: 2px;">Save as
                   playlist</span></button>
-              <button style="display: none; margin-top: 8px; padding-top: 5px;" class="room-flex noselect grey-button get-playlist"><i
-                  data-feather="music" style="width: 20px;"></i><span style="padding-left: 5px; display: block; padding-top: 2px;">Import
+              <button style="display: none; margin-top: 8px; padding-top: 5px;"
+                class="room-flex noselect grey-button get-playlist"><i data-feather="music"
+                  style="width: 20px;"></i><span style="padding-left: 5px; display: block; padding-top: 2px;">Import
                   playlist</span></button>
             </div>
           </div>
@@ -165,8 +165,17 @@
         </ol>
       </div>
     </div>
-
   </div>
+
+  <div style="display:none; width: 100%; position: fixed; bottom: 0; padding: 10px; background-color: #282828; z-index: 99999;" class="button-container room-block not-mobile" >
+    <div style="width: 250px; margin: auto;" class="button-container">
+      <i data-feather="chevrons-left" style="margin: auto;"></i>
+      <button class="play noselect play-button not-mobile"><i
+          data-feather="play" style="margin: auto;"></i></button>
+      <i data-feather="chevrons-right" style="margin: auto;"></i>
+    </div>
+  </div>
+
   <input type="text" value="" id="text-to-copy" style="display:block;position: absolute; top: -500px; left: -500px">
 
   <div id="waiting" style="display: none;">Waiting to be added to the rooom by the host...</div>
