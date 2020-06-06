@@ -290,7 +290,7 @@ export async function displayRoom(room: IRoom): Promise<boolean> {
   (document.getElementById("guests-to-approve-header") as HTMLDivElement).style.display = (guestToApproveElts.length > 0 && isHost) ? "block" : "none";
   document.getElementById("room-name").textContent = room.name;
   const numTracks = room.tracks.filter(t => t.approved).length;
-  document.getElementById("host").innerHTML = `<span>created by ${room.host.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
+  document.getElementById("host").innerHTML = `<span>hosted by ${room.host.name} - ${numTracks} track${numTracks > 1 ? "s" : ""}</span>`;
   document.getElementById("room-id").textContent = `https://rooom.click/?id=${room.id}`;
 
   document.querySelectorAll(".copy-to-clipboard").forEach(elt => {

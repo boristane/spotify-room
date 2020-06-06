@@ -25,6 +25,7 @@ import { sendEmail, emailType } from "../services/emails";
 import { validateEmail } from "../utils";
 import { send404, send401, send500, send400 } from "../helpers/httpResponses";
 import { ISpotifyTrack } from "../typings/spotify";
+import moment from "moment";
 
 export async function joinRoom(req: Request, res: Response, next: NextFunction) {
   const { id } = req.query;
@@ -570,7 +571,7 @@ export async function getRoomUser(req: Request, res: Response, next: NextFunctio
       send404(res, "We could not find any user matching your details...");
       return next();
     }
-    const rooms = (await getRoomsByUser(id)).reverse();
+    const rooms = (await getRoomsByUser(id)).sort((a, b) => moment(b.updatedAt).unix() - moment(a.updatedAt).unix());
     const response = {
       message: "User found",
       user: {
@@ -659,7 +660,11 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
     }
     const hostToken = room.host.token;
     const currentTrack = await getCurrentlyPalyingTrack(hostToken);
-    if (!currentTrack?.is_playing || currentTrack?.item?.uri !== room.tracks.find((t) => t.current)?.uri) {
+    if (!currentTrack?.is_playing) {
+      send404(res, "The host is currently not playing any music, please wait until they start the session");
+      return next();
+    }
+    if (currentTrack?.item?.uri !== room.tracks.find((t) => t.current)?.uri) {
       send404(res, "The host has left the rooom, the session is over...");
       return next();
     }

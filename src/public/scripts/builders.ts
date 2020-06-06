@@ -56,7 +56,7 @@ export function recommendationBuilder(track: ISpotifyTrack): string {
 
             </div>
             <div>
-              <button class="noselect green-button add-track" style="width: 40px; font-size: 10px;" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.album.images[0].url}" data-artists="${artistNames}">add</button>
+              <button class="noselect green-button add-track" style="width: 40px; font-size: 10px;" data-uri="${track.uri}" data-name="${track.name}" data-image="${track.album.images[0]?.url}" data-artists="${artistNames}">add</button>
             </div>
           </li>`;
 }
