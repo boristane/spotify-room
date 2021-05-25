@@ -619,7 +619,7 @@ export async function playRoom(req: Request, res: Response, next: NextFunction) 
         return next();
       }
       if (roomCurrentTrack) {
-        const currentTrack = await getCurrentlyPalyingTrack(hostToken);
+        const currentTrack = await getCurrentlyPalyingTrack(hostToken); // TODO
         if (roomCurrentTrack.uri === currentTrack?.item?.uri) {
           progress = currentTrack.progress_ms;
         }
