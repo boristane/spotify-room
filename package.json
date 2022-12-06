@@ -30,7 +30,7 @@
     "morgan": "^1.10.0",
     "morgan-json": "^1.1.0",
     "node-vibrant": "^3.1.5",
-    "qs": "^6.7.0",
+    "qs": "^6.9.7",
     "spm-agent-nodejs": "^4.0.2",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.2",
