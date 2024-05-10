@@ -31,12 +31,10 @@
     "morgan-json": "^1.1.0",
     "node-vibrant": "^3.1.5",
     "qs": "^6.7.0",
-    "spm-agent-nodejs": "^4.0.2",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.2",
     "uuid": "^7.0.3",
-    "winston": "^3.2.1",
-    "winston-logsene": "^2.0.8"
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

@@ -7,5 +7,5 @@ then
 else 
   echo "PROD env";
   npm run build-front;
-  npx ts-node index.ts;
+  npx ts-node -T index.ts;
 fi;

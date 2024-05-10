@@ -28,16 +28,10 @@ const format = json({
   originIp: ':req[x-forwarded-for]',
   responseTime: ':response-time'
 })
-const Logsene = require('winston-logsene')
 
 if (process.env.ENV === "prod") {
   const l = winston.createLogger({
-    transports: [new Logsene({
-      token: process.env.LOGS_TOKEN, // token
-      level: 'info',
-      type: 'api_logs',
-      url: 'https://logsene-receiver.sematext.com/_bulk'
-    })]
+    transports: []
   });
   const httpLogger = morgan(format, {
     stream: {
@@ -48,8 +42,7 @@ if (process.env.ENV === "prod") {
     try {
       httpLogger(req, res, next);
     } catch (err) {
-      logger.error("Error sending the logs to logsene", { error: err });
-    }
+      }
   });
 }
 
